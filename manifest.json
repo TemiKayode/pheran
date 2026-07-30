@@ -1,0 +1,50 @@
+{
+  "name": "PHERAN — Premium Nigerian Fashion",
+  "short_name": "PHERAN",
+  "description": "Shop handcrafted Nigerian fashion or create your own bespoke piece.",
+  "start_url": "/mvp/homepage.html",
+  "display": "standalone",
+  "background_color": "#2D1B4E",
+  "theme_color": "#5B2D8E",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "mvp/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "mvp/img-red-gown-front.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["shopping", "lifestyle"],
+  "lang": "en-NG",
+  "dir": "ltr",
+  "shortcuts": [
+    {
+      "name": "Shop Now",
+      "short_name": "Shop",
+      "description": "Browse all styles",
+      "url": "/mvp/category.html",
+      "icons": [{ "src": "mvp/favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Custom-Made",
+      "short_name": "Custom",
+      "description": "Design your own piece",
+      "url": "/mvp/custom.html",
+      "icons": [{ "src": "mvp/favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "My Cart",
+      "short_name": "Cart",
+      "description": "View your shopping cart",
+      "url": "/mvp/cart.html",
+      "icons": [{ "src": "mvp/favicon.svg", "sizes": "any" }]
+    }
+  ]
+}

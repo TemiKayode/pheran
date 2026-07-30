@@ -1,0 +1,258 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PHERAN — Gallery & Inspiration</title>
+  <meta name="description" content="Explore PHERAN's lookbook — editorial campaigns, customer styles, and behind-the-scenes films from our Lagos studio.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="PHERAN">
+  <meta property="og:title" content="Gallery & Inspiration — PHERAN">
+  <meta property="og:description" content="Explore PHERAN's lookbook — editorial campaigns, customer styles, and behind-the-scenes films from our Lagos studio.">
+  <meta property="og:image" content="https://pheran.ng/mvp/img-red-gown-front.jpg">
+  <meta property="og:url" content="https://pheran.ng/mvp/gallery.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@pheranng">
+  <meta name="twitter:title" content="Gallery & Inspiration — PHERAN">
+  <meta name="twitter:description" content="Explore PHERAN's lookbook — editorial campaigns, customer styles, and behind-the-scenes films from our Lagos studio.">
+  <meta name="twitter:image" content="https://pheran.ng/mvp/img-red-gown-front.jpg">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="img-red-gown-front.jpg">
+  <link rel="canonical" href="https://pheran.ng/mvp/gallery.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles-upgrade.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <button class="icon-btn" id="menu-btn" aria-label="Menu"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg></button>
+      <a class="logo" href="homepage.html"><img src="logo.jpeg" alt="PHERAN"></a>
+      <nav>
+        <a class="nav-link" href="category.html">Shop</a>
+        <a class="nav-link" href="custom.html">Custom</a>
+        <a class="nav-link" href="gallery.html" style="color:var(--purple-main);font-weight:700">Gallery</a>
+        <a class="nav-link" href="about.html">About</a>
+      </nav>
+      <div class="header-actions">
+        <a class="icon-btn" href="account.html" aria-label="My account"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg></a>
+        <a class="icon-btn" href="cart.html"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 10.5V6a3.75 3.75 0 0 0-7.5 0v4.5M3.375 7.5h17.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125H3.375A1.125 1.125 0 0 1 2.25 19.875V8.625c0-.621.504-1.125 1.125-1.125Z"/></svg><span id="cart-count-badge" class="cart-count">0</span></a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <div style="background:linear-gradient(180deg,rgba(91,45,142,0.07),transparent);padding:48px 0 32px;text-align:center">
+    <div class="container">
+      <div class="section-label">Inspiration</div>
+      <h1 class="page-title">The PHERAN Gallery</h1>
+      <p style="color:var(--text-secondary);max-width:480px;margin:0 auto">Real looks. Real women. Styling inspiration curated from our community and editorial shoots.</p>
+    </div>
+  </div>
+
+  <main class="container" style="padding:0 0 60px">
+    <!-- Filter tabs -->
+    <div class="gallery-filters" id="gallery-filters">
+      <button class="gallery-filter-btn active" data-filter="all">All Looks</button>
+      <button class="gallery-filter-btn" data-filter="dresses">Dresses</button>
+      <button class="gallery-filter-btn" data-filter="custom">Custom-Made</button>
+      <button class="gallery-filter-btn" data-filter="editorial">Editorial</button>
+      <button class="gallery-filter-btn" data-filter="occasion">Occasion</button>
+      <button class="gallery-filter-btn" data-filter="everyday">Everyday</button>
+    </div>
+
+    <!-- Masonry gallery -->
+    <div class="gallery-masonry" id="gallery-masonry"></div>
+
+    <!-- Load more -->
+    <div style="text-align:center;margin-top:32px">
+      <button class="btn secondary" id="gallery-load-more">Load More Looks</button>
+    </div>
+
+    <!-- Link to custom -->
+    <div style="background:linear-gradient(135deg,var(--purple-deepest,#2D1B4E),#5B2D8E);border-radius:20px;padding:48px 32px;text-align:center;color:#fff;margin-top:48px">
+      <h2 style="font-family:var(--font-display);font-size:1.8rem;margin:0 0 12px">Inspired by What You See?</h2>
+      <p style="color:rgba(255,255,255,0.8);max-width:420px;margin:0 auto 24px">Create your own bespoke version with our custom-made service. You bring the vision, we bring the craft.</p>
+      <a class="btn" href="custom.html" style="background:var(--gold,#D4A96A);color:var(--purple-deepest,#2D1B4E);border:none;font-size:1rem;padding:14px 28px">Start Designing</a>
+    </div>
+
+    <!-- Community -->
+    <div style="margin-top:48px">
+      <div class="section-label">Community</div>
+      <h2 style="font-family:var(--font-display);font-size:1.5rem;margin:0 0 8px">Share Your PHERAN Look</h2>
+      <p style="color:var(--text-secondary);margin:0 0 20px">Tag us <strong>@pheran.ng</strong> on Instagram to be featured in our gallery. We celebrate every look.</p>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px" id="community-grid"></div>
+    </div>
+  </main>
+
+  <!-- Gallery lightbox -->
+  <div id="lightbox" style="position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:200;display:none;align-items:center;justify-content:center;padding:20px">
+    <button onclick="document.getElementById('lightbox').style.display='none';const v=document.getElementById('lb-vid');if(v){v.pause();v.src=''}" style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:1.4rem;width:40px;height:40px;border-radius:50%;cursor:pointer">✕</button>
+    <div style="display:flex;gap:24px;max-width:900px;width:100%;align-items:flex-start;flex-wrap:wrap">
+      <img id="lb-img" src="" alt="" style="flex:1;min-width:260px;max-width:480px;border-radius:12px;object-fit:cover">
+      <video id="lb-vid" src="" controls muted playsinline style="flex:1;min-width:260px;max-width:480px;border-radius:12px;object-fit:cover;display:none;background:#000"></video>
+      <div id="lb-info" style="flex:1;min-width:220px;color:#fff;padding-top:8px"></div>
+    </div>
+  </div>
+
+  <footer class="footer-full">
+    <div class="container footer-bottom" style="padding:24px 0">
+      <p>© 2026 PHERAN. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <nav class="mobile-nav"><div class="mobile-nav-inner">
+    <a class="mobile-nav-item" href="homepage.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg></span>Home</a>
+    <a class="mobile-nav-item" href="category.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"/></svg></span>Shop</a>
+    <a class="mobile-nav-item active" href="gallery.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/></svg></span>Gallery</a>
+    <a class="mobile-nav-item" href="cart.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 10.5V6a3.75 3.75 0 0 0-7.5 0v4.5M3.375 7.5h17.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125H3.375A1.125 1.125 0 0 1 2.25 19.875V8.625c0-.621.504-1.125 1.125-1.125Z"/></svg></span>Cart</a>
+    <a class="mobile-nav-item" href="account.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg></span>Account</a>
+  </div></nav>
+
+  <script>
+    const badge=document.getElementById('cart-count-badge')
+    if(badge){const c=JSON.parse(localStorage.getItem('pheran_cart')||'[]').reduce((s,i)=>s+i.qty,0);badge.textContent=c}
+
+    // Real images mapped to gallery items
+    const REAL_IMGS = {
+      'red-gown-front':   'img-red-gown-front.jpg',
+      'red-gown-side':    'img-red-gown-side.jpg',
+      'grey-linen-front': 'img-grey-linen-front.jpg',
+      'grey-linen-side':  'img-grey-linen-side.jpg',
+      'pink-cami':        'img-pink-cami.jpg',
+      'wine-pinstripe':   'img-wine-pinstripe.jpg',
+    }
+    // Videos for gallery items (from ../videos/)
+    const GALLERY_VIDS = [
+      '../videos/245dd796-b8e8-4709-be68-f37681e7f4e7.mp4',
+      '../videos/302eff50-a1b3-45be-be4d-682bed5b7264.mp4',
+      '../videos/330ed6f1-c907-49c7-9f6c-d5c2b4fe5b21.mp4',
+      '../videos/3f5d39a5-1d73-4a5b-9374-d5285e612005.mp4',
+      '../videos/4a182829-91c0-4b78-9cf4-37b5ea25de7b.mp4',
+      '../videos/5849f7b5-9951-4cf3-9fd0-594173a76aaa.mp4',
+    ]
+
+    const galleryItems = [
+      {filter:'dresses occasion',title:'Red Beaded Off-Shoulder Gown',desc:'PHERAN Signature Collection · 2026',product:'evening-gown-005',img:'red-gown-front',isVideo:false},
+      {filter:'dresses editorial',title:'Evening Gown — Side Profile',desc:'Editorial shoot · Spring 2026',product:'evening-gown-005',img:'red-gown-side',isVideo:false},
+      {filter:'everyday',title:'Linen Bow-Strap Co-ord — Front',desc:'Customer look · @adaeze.style',product:'silk-wrap-001',img:'grey-linen-front',isVideo:false},
+      {filter:'everyday',title:'Linen Co-ord Set — Side View',desc:'Office to evening transition',product:'linen-dress-004',img:'grey-linen-side',isVideo:false},
+      {filter:'dresses editorial',title:'Pearl-Strap Ribbed Cami',desc:'New Arrivals · Summer 2026',product:'cotton-blouse-002',img:'pink-cami',isVideo:false},
+      {filter:'custom occasion',title:'Pinstripe Wide-Leg Set',desc:'Custom-made · Client: Fatima B.',product:'tailored-trousers-003',img:'wine-pinstripe',isVideo:false},
+      {filter:'editorial',title:'PHERAN Studio Film',desc:'Behind the seams · Lagos',product:'evening-gown-005',img:'red-gown-front',isVideo:true,vidIdx:0},
+      {filter:'custom',title:'Co-ord Collection Video',desc:'Campaign film · 2026',product:'silk-wrap-001',img:'grey-linen-front',isVideo:true,vidIdx:1},
+      {filter:'occasion',title:'Gown — Movement Film',desc:'Event styling · @chisom.looks',product:'evening-gown-005',img:'red-gown-side',isVideo:true,vidIdx:2},
+      {filter:'everyday',title:'Linen Set Video Lookbook',desc:'Everyday luxury · PHERAN',product:'linen-dress-004',img:'grey-linen-side',isVideo:true,vidIdx:3},
+      {filter:'custom occasion',title:'Bespoke Evening Film',desc:'Custom order · Lagos 2026',product:'evening-gown-005',img:'red-gown-front',isVideo:true,vidIdx:4},
+      {filter:'editorial dresses',title:'Campaign Behind the Scenes',desc:'Spring/Summer 2026 shoot',product:'cotton-blouse-002',img:'pink-cami',isVideo:true,vidIdx:5},
+    ]
+
+    let savedFaves = JSON.parse(localStorage.getItem('pheran_faves')||'[]')
+    let visibleCount = 9
+    let activeFilter = 'all'
+
+    const heartFilled = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 0 1-.383-.218 25.18 25.18 0 0 1-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0 1 12 5.052 5.5 5.5 0 0 1 16.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 0 1-4.244 3.17 15.247 15.247 0 0 1-.383.219l-.022.012-.007.004-.003.001a.752.752 0 0 1-.704 0l-.003-.001Z"/></svg>'
+    const heartOutline = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"/></svg>'
+    const playIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="white" stroke="none" aria-hidden="true"><path d="M8 6.82v10.36c0 .79.87 1.27 1.54.84l8.14-5.18c.62-.39.62-1.29 0-1.69L9.54 5.98C8.87 5.55 8 6.03 8 6.82z"/></svg>'
+
+    function renderGallery(){
+      const masonry = document.getElementById('gallery-masonry')
+      const filtered = activeFilter==='all'?galleryItems:galleryItems.filter(i=>i.filter.includes(activeFilter))
+      const visible = filtered.slice(0,visibleCount)
+      masonry.innerHTML = visible.map((item,idx)=>{
+        const imgSrc = REAL_IMGS[item.img] || ''
+        const vidBadge = item.isVideo ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(45,27,78,0.6);border-radius:50%;width:52px;height:52px;display:flex;align-items:center;justify-content:center;pointer-events:none">${playIcon}</div>` : ''
+        return `
+        <div class="gallery-item" data-idx="${idx}" data-filter="${item.filter}" onclick="openLightbox(${idx})">
+          <img src="${imgSrc}" alt="${item.title}" loading="lazy">
+          ${vidBadge}
+          <div class="gallery-item-overlay">
+            <div class="gi-title">${item.title}</div>
+            <div class="gi-link">${item.desc}</div>
+            <button class="gi-save" onclick="event.stopPropagation();toggleFave(${idx},this)" aria-label="Save look">${savedFaves.includes(idx)?heartFilled:heartOutline}</button>
+          </div>
+        </div>`
+      }).join('')
+      document.getElementById('gallery-load-more').style.display=visibleCount>=filtered.length?'none':'inline-flex'
+    }
+
+    function openLightbox(idx){
+      const filtered = activeFilter==='all'?galleryItems:galleryItems.filter(i=>i.filter.includes(activeFilter))
+      const item=filtered[idx]
+      if(!item) return
+      const lb=document.getElementById('lightbox')
+      const lbImg = document.getElementById('lb-img')
+      const lbVid = document.getElementById('lb-vid')
+      const imgSrc = REAL_IMGS[item.img] || ''
+      if(item.isVideo && GALLERY_VIDS[item.vidIdx]){
+        if(lbVid){
+          lbVid.src = GALLERY_VIDS[item.vidIdx]
+          lbVid.style.display='block'
+          lbVid.play()
+        }
+        lbImg.style.display = 'none'
+      } else {
+        lbImg.src = imgSrc
+        lbImg.style.display = 'block'
+        if(lbVid){ lbVid.style.display='none'; lbVid.pause(); lbVid.src='' }
+      }
+      document.getElementById('lb-info').innerHTML=`
+        <h3 style="font-family:'Playfair Display',serif;font-size:1.3rem;margin:0 0 10px">${item.title}</h3>
+        <p style="color:rgba(255,255,255,0.7);margin:0 0 20px;font-size:0.9rem">${item.desc}</p>
+        ${item.product?`<a href="product.html?id=${item.product}" style="display:inline-block;padding:12px 20px;background:var(--gold);color:var(--purple-deepest);border-radius:8px;text-decoration:none;font-weight:700">Shop this look →</a>`:'<a href="custom.html" style="display:inline-block;padding:12px 20px;background:var(--gold);color:var(--purple-deepest);border-radius:8px;text-decoration:none;font-weight:700">Design similar →</a>'}
+      `
+      lb.style.display='flex'
+    }
+
+    function toggleFave(idx,btn){
+      const i=savedFaves.indexOf(idx)
+      if(i>=0) savedFaves.splice(i,1);else savedFaves.push(idx)
+      localStorage.setItem('pheran_faves',JSON.stringify(savedFaves))
+      btn.innerHTML=savedFaves.includes(idx)?heartFilled:heartOutline
+    }
+
+    document.getElementById('gallery-load-more')?.addEventListener('click',()=>{visibleCount+=6;renderGallery()})
+    document.getElementById('gallery-filters')?.querySelectorAll('.gallery-filter-btn').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        document.querySelectorAll('.gallery-filter-btn').forEach(b=>b.classList.remove('active'))
+        btn.classList.add('active');activeFilter=btn.dataset.filter;visibleCount=9;renderGallery()
+      })
+    })
+    document.getElementById('lightbox')?.addEventListener('click',e=>{
+      if(e.target===document.getElementById('lightbox')){
+        document.getElementById('lightbox').style.display='none'
+        const v=document.getElementById('lb-vid')
+        if(v){v.pause();v.src=''}
+      }
+    })
+
+    // Community grid — real product images
+    const communityGrid=document.getElementById('community-grid')
+    if(communityGrid){
+      const communityImgs=[
+        {src:'img-red-gown-front.jpg',label:'@chisom.looks'},
+        {src:'img-grey-linen-front.jpg',label:'@adaeze.style'},
+        {src:'img-pink-cami.jpg',label:'@tolu.m'},
+        {src:'img-wine-pinstripe.jpg',label:'@fatima.b'},
+      ]
+      communityGrid.innerHTML=communityImgs.map((ci,i)=>`
+        <div style="aspect-ratio:1;border-radius:10px;overflow:hidden;cursor:pointer;position:relative" onclick="window.open('https://instagram.com/pheran.ng','_blank')">
+          <img src="${ci.src}" alt="Community look by ${ci.label}" loading="lazy" style="width:100%;height:100%;object-fit:cover">
+          <div style="position:absolute;inset:0;display:flex;align-items:flex-end;padding:10px;background:linear-gradient(to top,rgba(45,27,78,0.6) 0%,transparent 60%);opacity:0;transition:opacity 200ms" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0'">
+            <span style="color:#fff;font-size:0.8rem;font-weight:600">${ci.label}</span>
+          </div>
+        </div>`).join('')
+    }
+
+    renderGallery()
+  </script>
+  <script src="icons.js"></script>
+
+  <script src="mobile-menu.js"></script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>PHERAN Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --p:#2D1B4E;--pm:#5B2D8E;--pl:#EDE3F6;--gold:#D4A96A;
+      --gray-50:#F9F8FC;--gray-100:#F0EBF9;--gray-200:#E2D9F3;
+      --gray-500:#7C6899;--gray-700:#3D2E5C;
+      --text:#1C1927;--text-2:#655D78;
+      --success:#16a34a;--danger:#dc2626;--warn:#D97706;
+      --radius:12px;--shadow:0 2px 16px rgba(45,27,78,0.10);
+    }
+    body{font-family:'Inter',sans-serif;background:var(--gray-50);color:var(--text);min-height:100vh}
+
+    /* TOP BAR */
+    .topbar{position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:16px;background:var(--p);color:#fff;height:56px;padding:0 24px;box-shadow:0 1px 12px rgba(0,0,0,0.2)}
+    .topbar-logo{font-family:'Cormorant Garamond',serif;font-size:1.35rem;font-weight:700;letter-spacing:.12em;color:#fff;text-decoration:none}
+    .topbar-badge{background:var(--gold);color:var(--p);font-size:0.68rem;font-weight:700;padding:2px 7px;border-radius:99px;letter-spacing:.06em;text-transform:uppercase}
+    .topbar-spacer{flex:1}
+    .topbar-btn{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:#fff;padding:6px 14px;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;text-decoration:none;transition:background 150ms}
+    .topbar-btn:hover{background:rgba(255,255,255,0.22)}
+
+    /* SHELL */
+    .shell{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 56px)}
+
+    /* SIDEBAR */
+    .sidebar{background:#fff;border-right:1px solid var(--gray-200);padding:20px 12px;display:flex;flex-direction:column;gap:4px}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;font-size:0.88rem;font-weight:500;color:var(--text-2);text-decoration:none;cursor:pointer;border:none;background:transparent;width:100%;text-align:left;transition:all 150ms}
+    .nav-item:hover,.nav-item.active{background:var(--pl);color:var(--pm);font-weight:600}
+    .nav-icon{width:18px;height:18px;flex-shrink:0}
+    .nav-divider{height:1px;background:var(--gray-100);margin:10px 4px}
+    .sidebar-label{font-size:0.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gray-500);padding:8px 12px 4px}
+
+    /* MAIN */
+    .main{padding:28px 32px;overflow-y:auto}
+    .page-header{display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap}
+    .page-title{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:700;color:var(--p)}
+    .product-count{background:var(--pm);color:#fff;font-size:0.78rem;font-weight:700;padding:3px 9px;border-radius:99px}
+    .header-actions{display:flex;gap:10px;margin-left:auto;align-items:center;flex-wrap:wrap}
+
+    /* SEARCH */
+    .search-wrap{display:flex;align-items:center;background:#fff;border:1px solid var(--gray-200);border-radius:10px;padding:0 12px;gap:8px;height:38px}
+    .search-wrap input{border:none;outline:none;font-size:0.88rem;font-family:inherit;width:200px;color:var(--text);background:transparent}
+    .search-wrap svg{color:var(--gray-500);flex-shrink:0}
+
+    /* BUTTONS */
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:10px;font-size:0.85rem;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all 150ms;text-decoration:none}
+    .btn-primary{background:var(--pm);color:#fff}.btn-primary:hover{background:var(--p)}
+    .btn-secondary{background:#fff;color:var(--pm);border:1.5px solid var(--gray-200)}.btn-secondary:hover{border-color:var(--pm);background:var(--pl)}
+    .btn-danger{background:#FEE2E2;color:var(--danger);border:1.5px solid #FECACA}.btn-danger:hover{background:var(--danger);color:#fff}
+    .btn-ghost{background:transparent;color:var(--text-2);border:1.5px solid var(--gray-200)}.btn-ghost:hover{background:var(--gray-100)}
+    .btn-sm{padding:6px 12px;font-size:0.8rem}
+
+    /* PRODUCT GRID */
+    .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+    .product-card{background:#fff;border:1.5px solid var(--gray-200);border-radius:14px;overflow:hidden;cursor:pointer;transition:all 200ms;position:relative;display:flex;flex-direction:column}
+    .product-card:hover{border-color:var(--pm);box-shadow:0 4px 20px rgba(91,45,142,0.15);transform:translateY(-2px)}
+    .product-card.selected{border-color:var(--pm);box-shadow:0 0 0 3px rgba(91,45,142,0.15)}
+    .card-img-wrap{position:relative;aspect-ratio:3/4;background:var(--gray-100);overflow:hidden;flex-shrink:0}
+    .card-img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 300ms ease}
+    .product-card:hover .card-img{transform:scale(1.04)}
+    .card-img-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--gray-500);font-size:0.75rem;background:linear-gradient(135deg,var(--gray-100),var(--pl))}
+    .card-avail{position:absolute;top:8px;left:8px;font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:99px;text-transform:uppercase;letter-spacing:.04em}
+    .avail-in{background:#DCFCE7;color:#15803D}
+    .avail-limited{background:#FEF3C7;color:#92400E}
+    .avail-out{background:#FEE2E2;color:var(--danger)}
+    .card-img-count{position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.55);color:#fff;font-size:0.65rem;font-weight:600;padding:2px 6px;border-radius:6px}
+    .card-body{padding:12px;flex:1;display:flex;flex-direction:column;gap:6px}
+    .card-name{font-weight:700;font-size:0.9rem;line-height:1.3;color:var(--text)}
+    .card-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .card-price{font-weight:800;font-size:1rem;color:var(--p)}
+    .card-old{font-size:0.8rem;color:var(--gray-500);text-decoration:line-through}
+    .card-cat{font-size:0.7rem;background:var(--pl);color:var(--pm);padding:2px 7px;border-radius:99px;font-weight:700}
+    .card-stars{font-size:0.78rem;color:var(--gold);font-weight:600}
+    .card-detail{font-size:0.75rem;color:var(--text-2)}
+    .card-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:2px}
+    .card-tag{font-size:0.67rem;background:var(--gray-100);color:var(--text-2);padding:2px 5px;border-radius:4px}
+    .card-footer{padding:10px 12px;border-top:1px solid var(--gray-100);display:flex;gap:6px}
+
+    /* EDIT PANEL */
+    .edit-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.32);z-index:200;display:none;backdrop-filter:blur(4px)}
+    .edit-overlay.open{display:block}
+    .edit-panel{position:fixed;right:0;top:0;bottom:0;width:560px;max-width:100vw;background:#fff;z-index:201;display:flex;flex-direction:column;box-shadow:-4px 0 32px rgba(0,0,0,0.15);transform:translateX(100%);transition:transform 300ms cubic-bezier(.25,.46,.45,.94)}
+    .edit-panel.open{transform:translateX(0)}
+    .ep-header{display:flex;align-items:center;gap:12px;padding:16px 24px;border-bottom:1px solid var(--gray-200);flex-shrink:0}
+    .ep-title{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:700;color:var(--p);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .ep-close{background:var(--gray-100);border:none;width:32px;height:32px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-2);font-size:1.1rem;transition:background 150ms;flex-shrink:0}
+    .ep-close:hover{background:var(--gray-200)}
+    .ep-body{flex:1;overflow-y:auto;padding:20px 24px;display:flex;flex-direction:column;gap:14px}
+    .ep-footer{padding:14px 24px;border-top:1px solid var(--gray-200);display:flex;gap:10px;flex-shrink:0;flex-wrap:wrap}
+
+    /* FORM */
+    .field{display:flex;flex-direction:column;gap:5px}
+    .field label{font-size:0.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gray-500)}
+    .field input,.field select,.field textarea{padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:10px;font-size:0.88rem;font-family:inherit;color:var(--text);transition:border-color 150ms;outline:none;background:#fff}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--pm)}
+    .field textarea{resize:vertical;min-height:80px}
+    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .field-hint{font-size:0.74rem;color:var(--gray-500);margin-top:1px}
+    .ep-section{font-size:0.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--pm);background:var(--pl);padding:5px 10px;border-radius:6px}
+
+    /* TAGS */
+    .tags-wrap{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:10px;min-height:42px;cursor:text;transition:border-color 150ms;background:#fff}
+    .tags-wrap:focus-within{border-color:var(--pm)}
+    .tag{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;background:var(--pl);color:var(--pm);border-radius:99px;font-size:0.78rem;font-weight:600}
+    .tag button{background:none;border:none;cursor:pointer;color:var(--pm);font-size:0.9rem;line-height:1;padding:0 1px;opacity:.7}
+    .tag button:hover{opacity:1}
+    .tag-input{border:none;outline:none;font-size:0.85rem;font-family:inherit;color:var(--text);min-width:80px;background:transparent}
+
+    /* IMAGE UPLOAD */
+    .img-previews{display:flex;gap:8px;flex-wrap:wrap;min-height:80px}
+    .img-thumb{position:relative;width:70px;height:88px;border-radius:8px;overflow:hidden;border:1.5px solid var(--gray-200);flex-shrink:0}
+    .img-thumb img{width:100%;height:100%;object-fit:cover}
+    .img-thumb-del{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:rgba(220,38,38,0.9);border:none;cursor:pointer;color:#fff;font-size:0.75rem;display:flex;align-items:center;justify-content:center;line-height:1}
+    .img-thumb-del:hover{background:var(--danger)}
+    .img-primary-badge{position:absolute;bottom:3px;left:3px;background:var(--gold);color:var(--p);font-size:0.58rem;font-weight:700;padding:1px 4px;border-radius:3px}
+    .img-upload-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:70px;height:88px;border:2px dashed var(--gray-200);border-radius:8px;cursor:pointer;color:var(--gray-500);font-size:0.72rem;font-weight:600;text-align:center;background:var(--gray-50);transition:all 150ms}
+    .img-upload-btn:hover{border-color:var(--pm);background:var(--pl);color:var(--pm)}
+    .url-row{display:flex;gap:6px;align-items:center}
+    .url-row input{flex:1;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:0.83rem;font-family:inherit;outline:none}
+    .url-row input:focus{border-color:var(--pm)}
+
+    /* TOAST */
+    .toast-wrap{position:fixed;bottom:24px;right:24px;z-index:500;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+    .toast{background:var(--p);color:#fff;padding:12px 18px;border-radius:12px;font-size:0.86rem;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,0.2);pointer-events:auto;display:flex;align-items:center;gap:10px;animation:slideUp .25s ease;max-width:320px}
+    .toast.success{background:var(--success)}.toast.error{background:var(--danger)}
+    @keyframes slideUp{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+    /* EMPTY */
+    .empty{text-align:center;padding:64px 24px;color:var(--gray-500);grid-column:1/-1}
+    .empty svg{width:44px;height:44px;margin-bottom:12px;opacity:.5}
+    .empty strong{display:block;margin-bottom:4px}
+    .empty p{font-size:0.85rem}
+
+    @media(max-width:900px){.shell{grid-template-columns:1fr}.sidebar{display:none}.main{padding:20px 16px}}
+    @media(max-width:600px){.edit-panel{width:100%}.product-grid{grid-template-columns:repeat(2,1fr)}}
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="topbar-logo" href="#">PHERAN</a>
+  <span class="topbar-badge">Admin</span>
+  <div class="topbar-spacer"></div>
+  <a href="../homepage.html" target="_blank" class="topbar-btn">View Site ↗</a>
+</header>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sidebar-label">Catalogue</div>
+    <button class="nav-item active">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"/></svg>
+      Products
+    </button>
+    <div class="nav-divider"></div>
+    <div class="sidebar-label">Quick Links</div>
+    <a class="nav-item" href="../category.html" target="_blank">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+      Shop Page
+    </a>
+    <a class="nav-item" href="../homepage.html" target="_blank">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg>
+      Homepage
+    </a>
+  </aside>
+
+  <main class="main">
+    <div class="page-header">
+      <h1 class="page-title">Products</h1>
+      <span class="product-count" id="count-badge">…</span>
+      <div class="header-actions">
+        <div class="search-wrap">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
+          <input id="search-input" placeholder="Search products…" oninput="filterProducts()">
+        </div>
+        <button class="btn btn-primary" onclick="openNew()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M12 4.5v15m7.5-7.5h-15"/></svg>
+          New Product
+        </button>
+      </div>
+    </div>
+    <div class="product-grid" id="product-grid"></div>
+  </main>
+</div>
+
+<!-- OVERLAY + PANEL -->
+<div class="edit-overlay" id="edit-overlay" onclick="closePanel()"></div>
+<div class="edit-panel" id="edit-panel">
+  <div class="ep-header">
+    <div class="ep-title" id="ep-title">Product</div>
+    <button class="ep-close" onclick="closePanel()">✕</button>
+  </div>
+  <div class="ep-body">
+    <input type="hidden" id="ep-id">
+
+    <div class="ep-section">Basic Info</div>
+
+    <div class="field">
+      <label>Product Name *</label>
+      <input id="ep-name" placeholder="e.g. Red Beaded Gown">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Category *</label>
+        <select id="ep-category">
+          <option>Dresses</option><option>Tops</option>
+          <option>Bottoms</option><option>Co-ords</option>
+          <option>Accessories</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Availability</label>
+        <select id="ep-avail">
+          <option>In Stock</option><option>Limited</option><option>Out of Stock</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Price (₦) *</label>
+        <input id="ep-price" type="number" min="0" placeholder="78000">
+      </div>
+      <div class="field">
+        <label>Old / Compare-at Price (₦)</label>
+        <input id="ep-old-price" type="number" min="0" placeholder="95000">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Fabric</label>
+        <input id="ep-fabric" placeholder="e.g. Premium Linen">
+      </div>
+      <div class="field">
+        <label>Rating (0–5)</label>
+        <input id="ep-rating" type="number" step="0.1" min="0" max="5" value="4.5">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Review Count</label>
+        <input id="ep-count" type="number" min="0" placeholder="128">
+      </div>
+      <div class="field"></div>
+    </div>
+
+    <div class="ep-section">Sizes &amp; Colours</div>
+
+    <div class="field">
+      <label>Sizes</label>
+      <div class="tags-wrap" id="sizes-wrap" onclick="document.getElementById('sizes-input').focus()">
+        <input class="tag-input" id="sizes-input" placeholder="Type + Enter  (XS, S, M, L…)" onkeydown="handleTagKey(event,'sizes')">
+      </div>
+      <div class="field-hint">Press Enter or comma to add each size</div>
+    </div>
+    <div class="field">
+      <label>Colours</label>
+      <div class="tags-wrap" id="colors-wrap" onclick="document.getElementById('colors-input').focus()">
+        <input class="tag-input" id="colors-input" placeholder="Type + Enter  (Ivory, Sage…)" onkeydown="handleTagKey(event,'colors')">
+      </div>
+    </div>
+
+    <div class="ep-section">Images</div>
+
+    <div id="img-previews" class="img-previews"></div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <label class="img-upload-btn" for="hidden-file">
+        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"/></svg>
+        Upload
+      </label>
+      <input type="file" id="hidden-file" accept="image/*" multiple onchange="handleFileUpload(event)" style="display:none">
+    </div>
+    <div class="url-row">
+      <input id="img-url-input" placeholder="Or type/paste image filename or URL, then press Add">
+      <button class="btn btn-secondary btn-sm" onclick="addImageUrl()">Add</button>
+    </div>
+    <div class="field-hint">First image is the main product photo. Click × to remove.</div>
+
+    <div class="ep-section">Description</div>
+
+    <div class="field">
+      <label>Description</label>
+      <textarea id="ep-desc" rows="4" placeholder="Describe the product — fabric, fit, occasion, care…"></textarea>
+    </div>
+
+    <div class="ep-section">Video (optional)</div>
+
+    <div class="field">
+      <label>Video path or URL</label>
+      <input id="ep-video" placeholder="e.g. ../videos/filename.mp4">
+      <div class="field-hint">Used on the product page as a 360° spin or look video</div>
+    </div>
+  </div>
+
+  <div class="ep-footer">
+    <button class="btn btn-primary" onclick="saveProduct()" style="flex:1">
+      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M4.5 12.75l6 6 9-13.5"/></svg>
+      Save Changes
+    </button>
+    <button class="btn btn-ghost btn-sm" onclick="closePanel()">Cancel</button>
+    <button class="btn btn-danger btn-sm" id="delete-btn" onclick="deleteProduct()" style="display:none">
+      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
+      Delete
+    </button>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+let allProducts = []
+let currentImages = []
+let tagState = { sizes: [], colors: [] }
+
+/* ── Data ──────────────────────────────────── */
+async function loadProducts() {
+  try {
+    // Fetch data.json directly — bypasses paginated API, always reliable
+    const res = await fetch('/data.json?' + Date.now())
+    if (!res.ok) throw new Error('HTTP ' + res.status)
+    const data = await res.json()
+    allProducts = data.products || []
+    renderGrid(allProducts)
+  } catch (e) {
+    toast('Could not load products: ' + e.message, 'error')
+    document.getElementById('count-badge').textContent = '!'
+  }
+}
+
+function renderGrid(products) {
+  const grid = document.getElementById('product-grid')
+  document.getElementById('count-badge').textContent = products.length
+
+  if (!products.length) {
+    grid.innerHTML = `<div class="empty"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"/></svg><strong>No products found</strong><p>Add your first product with the button above.</p></div>`
+    return
+  }
+
+  grid.innerHTML = products.map(p => {
+    const img = p.images && p.images[0]
+    const availClass = p.availability === 'Limited' ? 'avail-limited' : p.availability === 'Out of Stock' ? 'avail-out' : 'avail-in'
+    const availLabel = p.availability || 'In Stock'
+    const stars = '★'.repeat(Math.round(p.rating || 0))
+    const imgCount = (p.images || []).length
+
+    return `
+    <div class="product-card" onclick="openEdit('${esc(p.id)}')">
+      <div class="card-img-wrap">
+        ${img
+          ? `<img class="card-img" src="${esc(img)}" alt="${esc(p.title)}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=card-img-placeholder><svg width=36 height=36 fill=none stroke=currentColor viewBox=\\'0 0 24 24\\'><path stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'1\\' d=\\'M2.25 15.75l5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z\\'/></svg>No image</div>'">`
+          : `<div class="card-img-placeholder"><svg width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/></svg><span>No image</span></div>`}
+        <span class="card-avail ${availClass}">${esc(availLabel)}</span>
+        ${imgCount > 1 ? `<span class="card-img-count">${imgCount} photos</span>` : ''}
+      </div>
+      <div class="card-body">
+        <div class="card-name">${esc(p.title)}</div>
+        <div class="card-row">
+          <span class="card-price">₦${Number(p.price || 0).toLocaleString()}</span>
+          ${p.oldPrice ? `<span class="card-old">₦${Number(p.oldPrice).toLocaleString()}</span>` : ''}
+          <span class="card-cat">${esc(p.category)}</span>
+        </div>
+        <div class="card-row">
+          <span class="card-stars">${stars}</span>
+          <span class="card-detail">${p.rating || '-'} · ${p.count || 0} reviews</span>
+        </div>
+        ${p.fabric ? `<div class="card-detail">Fabric: ${esc(p.fabric)}</div>` : ''}
+        ${(p.sizes || []).length ? `<div class="card-tags">${(p.sizes).map(s=>`<span class="card-tag">${esc(s)}</span>`).join('')}</div>` : ''}
+        ${(p.colors || []).length ? `<div class="card-detail">${(p.colors).join(' · ')}</div>` : ''}
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-secondary btn-sm" style="flex:1" onclick="event.stopPropagation();openEdit('${esc(p.id)}')">Edit</button>
+        <a class="btn btn-ghost btn-sm" href="../product.html?id=${esc(p.id)}" target="_blank" onclick="event.stopPropagation()">View ↗</a>
+      </div>
+    </div>`
+  }).join('')
+}
+
+function filterProducts() {
+  const q = document.getElementById('search-input').value.toLowerCase()
+  renderGrid(q
+    ? allProducts.filter(p =>
+        p.title.toLowerCase().includes(q) ||
+        (p.category || '').toLowerCase().includes(q) ||
+        (p.fabric || '').toLowerCase().includes(q) ||
+        (p.colors || []).join(' ').toLowerCase().includes(q))
+    : allProducts)
+}
+
+/* ── Panel ─────────────────────────────────── */
+function openPanel(title, isNew) {
+  document.getElementById('ep-title').textContent = title
+  document.getElementById('delete-btn').style.display = isNew ? 'none' : ''
+  document.getElementById('edit-overlay').classList.add('open')
+  document.getElementById('edit-panel').classList.add('open')
+}
+function closePanel() {
+  document.getElementById('edit-overlay').classList.remove('open')
+  document.getElementById('edit-panel').classList.remove('open')
+  currentImages = []
+  tagState = { sizes: [], colors: [] }
+}
+
+function openNew() {
+  clearForm()
+  document.getElementById('ep-id').value = ''
+  openPanel('New Product', true)
+}
+
+function openEdit(id) {
+  const p = allProducts.find(p => p.id === id)
+  if (!p) return
+  clearForm()
+  document.getElementById('ep-id').value = p.id
+  document.getElementById('ep-name').value = p.title || ''
+  document.getElementById('ep-category').value = p.category || 'Dresses'
+  document.getElementById('ep-avail').value = p.availability || 'In Stock'
+  document.getElementById('ep-price').value = p.price || ''
+  document.getElementById('ep-old-price').value = p.oldPrice || ''
+  document.getElementById('ep-fabric').value = p.fabric || ''
+  document.getElementById('ep-rating').value = p.rating || 4.5
+  document.getElementById('ep-count').value = p.count || ''
+  document.getElementById('ep-desc').value = p.description || ''
+  document.getElementById('ep-video').value = p.video || ''
+  tagState.sizes = [...(p.sizes || [])]
+  tagState.colors = [...(p.colors || [])]
+  renderTags('sizes')
+  renderTags('colors')
+  currentImages = [...(p.images || [])]
+  renderImagePreviews()
+  openPanel(p.title || 'Edit Product', false)
+}
+
+function clearForm() {
+  ['ep-name','ep-price','ep-old-price','ep-fabric','ep-desc','ep-video','ep-count']
+    .forEach(id => document.getElementById(id).value = '')
+  document.getElementById('ep-category').value = 'Dresses'
+  document.getElementById('ep-avail').value = 'In Stock'
+  document.getElementById('ep-rating').value = '4.5'
+  tagState = { sizes: [], colors: [] }
+  renderTags('sizes'); renderTags('colors')
+  currentImages = []; renderImagePreviews()
+}
+
+/* ── Tags ──────────────────────────────────── */
+function handleTagKey(e, type) {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault()
+    const val = e.target.value.trim().replace(/,$/, '')
+    if (val && !tagState[type].includes(val)) {
+      tagState[type].push(val); renderTags(type)
+    }
+    e.target.value = ''
+  } else if (e.key === 'Backspace' && !e.target.value && tagState[type].length) {
+    tagState[type].pop(); renderTags(type)
+  }
+}
+function removeTag(type, val) { tagState[type] = tagState[type].filter(v => v !== val); renderTags(type) }
+function renderTags(type) {
+  const wrap = document.getElementById(`${type}-wrap`)
+  const input = document.getElementById(`${type}-input`)
+  wrap.querySelectorAll('.tag').forEach(t => t.remove())
+  tagState[type].forEach(val => {
+    const tag = document.createElement('span')
+    tag.className = 'tag'
+    tag.innerHTML = `${esc(val)} <button onclick="removeTag('${type}','${esc(val)}')" type="button">×</button>`
+    wrap.insertBefore(tag, input)
+  })
+}
+
+/* ── Images ────────────────────────────────── */
+async function handleFileUpload(e) {
+  const files = Array.from(e.target.files || [])
+  if (!files.length) return
+  e.target.value = ''
+  try {
+    const fd = new FormData()
+    files.forEach(f => fd.append('images', f))
+    const res = await fetch('/api/upload', { method: 'POST', body: fd })
+    const json = await res.json()
+    if (json.ok && json.paths) {
+      json.paths.forEach(p => currentImages.push(p))
+      renderImagePreviews()
+      toast(`${json.paths.length} image(s) saved to server`, 'success')
+      return
+    }
+  } catch (_) {}
+  // Fallback: embed as base64
+  let done = 0
+  files.forEach(file => {
+    const reader = new FileReader()
+    reader.onload = ev => {
+      currentImages.push(ev.target.result)
+      if (++done === files.length) { renderImagePreviews(); toast(`${done} image(s) added (embedded)`) }
+    }
+    reader.readAsDataURL(file)
+  })
+}
+function addImageUrl() {
+  const inp = document.getElementById('img-url-input')
+  const url = inp.value.trim()
+  if (url) { currentImages.push(url); inp.value = ''; renderImagePreviews() }
+}
+function removeImage(idx) { currentImages.splice(idx, 1); renderImagePreviews() }
+function renderImagePreviews() {
+  document.getElementById('img-previews').innerHTML = currentImages.map((src, i) => `
+    <div class="img-thumb">
+      <img src="${esc(src)}" alt="img ${i+1}" onerror="this.style.opacity='.3'">
+      <button class="img-thumb-del" onclick="removeImage(${i})" type="button">×</button>
+      ${i === 0 ? '<span class="img-primary-badge">MAIN</span>' : ''}
+    </div>`).join('')
+}
+
+/* ── Save / Delete ─────────────────────────── */
+async function saveProduct() {
+  const id = document.getElementById('ep-id').value || `product-${Date.now()}`
+  const name = document.getElementById('ep-name').value.trim()
+  if (!name) { toast('Product name is required', 'error'); return }
+  const price = Number(document.getElementById('ep-price').value)
+  if (!price) { toast('Price is required', 'error'); return }
+
+  const oldPrice = Number(document.getElementById('ep-old-price').value || 0)
+  const payload = {
+    id, title: name,
+    category: document.getElementById('ep-category').value,
+    availability: document.getElementById('ep-avail').value,
+    price,
+    ...(oldPrice ? { oldPrice } : {}),
+    fabric: document.getElementById('ep-fabric').value.trim(),
+    rating: Number(document.getElementById('ep-rating').value) || 4.5,
+    count: Number(document.getElementById('ep-count').value) || 0,
+    sizes: tagState.sizes,
+    colors: tagState.colors,
+    images: currentImages,
+    description: document.getElementById('ep-desc').value.trim(),
+    video: document.getElementById('ep-video').value.trim() || undefined
+  }
+
+  try {
+    const res = await fetch('/api/products/admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    const json = await res.json()
+    if (json.ok) {
+      toast(json.message || 'Saved!', 'success')
+      closePanel(); await loadProducts()
+    } else {
+      toast(json.error || 'Save failed', 'error')
+    }
+  } catch (e) { toast('Network error — is the server running?', 'error') }
+}
+
+async function deleteProduct() {
+  const id = document.getElementById('ep-id').value
+  if (!id) return
+  const name = document.getElementById('ep-name').value || 'this product'
+  if (!confirm(`Delete "${name}"? This cannot be undone.`)) return
+  try {
+    const res = await fetch('/api/products/admin', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    })
+    const json = await res.json()
+    if (json.ok) { toast('Product deleted', 'success'); closePanel(); await loadProducts() }
+    else toast(json.error || 'Delete failed', 'error')
+  } catch (e) { toast('Network error', 'error') }
+}
+
+/* ── Helpers ───────────────────────────────── */
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c =>
+    ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]))
+}
+function toast(msg, type = '') {
+  const wrap = document.getElementById('toast-wrap')
+  const el = document.createElement('div')
+  el.className = `toast ${type}`
+  el.textContent = msg
+  wrap.appendChild(el)
+  setTimeout(() => el.remove(), 3400)
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel() })
+
+loadProducts()
+</script>
+</body>
+</html>

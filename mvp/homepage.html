@@ -1,0 +1,529 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PHERAN — Premium Nigerian Fashion</title>
+  <meta name="description" content="PHERAN is Nigeria's premier luxury fashion house. Shop handcrafted gowns, co-ord sets, and bespoke pieces made for the modern African woman.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="PHERAN">
+  <meta property="og:title" content="PHERAN — Premium Nigerian Fashion">
+  <meta property="og:description" content="PHERAN is Nigeria's premier luxury fashion house. Shop handcrafted gowns, co-ord sets, and bespoke pieces made for the modern African woman.">
+  <meta property="og:image" content="https://pheran.ng/mvp/img-red-gown-front.jpg">
+  <meta property="og:url" content="https://pheran.ng/mvp/homepage.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@pheranng">
+  <meta name="twitter:title" content="PHERAN — Premium Nigerian Fashion">
+  <meta name="twitter:description" content="PHERAN is Nigeria's premier luxury fashion house. Shop handcrafted gowns, co-ord sets, and bespoke pieces made for the modern African woman.">
+  <meta name="twitter:image" content="https://pheran.ng/mvp/img-red-gown-front.jpg">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="img-red-gown-front.jpg">
+  <link rel="canonical" href="https://pheran.ng/mvp/homepage.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles-upgrade.css">
+  <link rel="manifest" href="../manifest.json">
+  <style>
+    /* ── Video Carousel ── */
+    .hero-carousel{position:relative;overflow:hidden;height:100vh;min-height:640px}
+    .vid-slide{position:absolute;inset:0;opacity:0;transition:opacity .9s ease;pointer-events:none;z-index:1}
+    .vid-slide.active{opacity:1;pointer-events:auto;z-index:2}
+    .vid-slide .hero-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+    .vid-slide .hero-vid-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(20,5,40,.18) 0%,rgba(20,5,40,.52) 55%,rgba(20,5,40,.76) 100%)}
+    .vid-slide .hero-inner{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;padding-top:80px;padding-bottom:130px}
+    /* Per-slide overlay tints */
+    .vid-slide[data-slide="1"] .hero-vid-overlay{background:linear-gradient(to bottom,rgba(50,0,0,.18) 0%,rgba(50,0,0,.56) 55%,rgba(50,0,0,.78) 100%)}
+    .vid-slide[data-slide="2"] .hero-vid-overlay{background:linear-gradient(to bottom,rgba(30,10,0,.18) 0%,rgba(60,20,10,.54) 55%,rgba(60,20,10,.78) 100%)}
+    /* Slide-in text animation */
+    .vid-slide .hero-eyebrow,.vid-slide h1,.vid-slide .lead,.vid-slide .hero-ctas{opacity:0;transform:translateY(20px)}
+    .vid-slide.active .hero-eyebrow{animation:heroUp .7s cubic-bezier(.22,1,.36,1) .15s both}
+    .vid-slide.active h1{animation:heroUp .7s cubic-bezier(.22,1,.36,1) .3s both}
+    .vid-slide.active .lead{animation:heroUp .7s cubic-bezier(.22,1,.36,1) .45s both}
+    .vid-slide.active .hero-ctas{animation:heroUp .7s cubic-bezier(.22,1,.36,1) .6s both}
+    @keyframes heroUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    /* Progress dots */
+    .carousel-dots{position:absolute;bottom:26px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:10;align-items:center}
+    .carousel-dot{background:none;border:none;cursor:pointer;padding:8px 0;display:flex;align-items:center}
+    .dot-bar{display:block;width:44px;height:3px;background:rgba(255,255,255,.28);border-radius:2px;overflow:hidden;position:relative}
+    .dot-progress{display:block;position:absolute;top:0;left:0;height:100%;width:0;background:#fff;border-radius:2px}
+    .carousel-dot.active .dot-progress{animation:dotFill 10s linear forwards}
+    @keyframes dotFill{from{width:0}to{width:100%}}
+    /* Trust row */
+    .carousel-trust{position:absolute;bottom:66px;left:0;right:0;display:flex;justify-content:center;gap:20px;z-index:10;color:rgba(255,255,255,.7);font-size:.76rem;letter-spacing:.03em;pointer-events:none}
+    /* Arrows */
+    .carousel-arrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;width:48px;height:48px;border-radius:50%;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;transition:background .2s,border-color .2s;backdrop-filter:blur(6px)}
+    .carousel-arrow:hover{background:rgba(255,255,255,.26);border-color:rgba(255,255,255,.55)}
+    .carousel-prev{left:22px}
+    .carousel-next{right:22px}
+    @media(max-width:640px){.carousel-arrow{display:none}.carousel-trust{display:none}.vid-slide .hero-inner{padding-bottom:100px}}
+  </style>
+</head>
+<body>
+
+  <!-- Announcement bar -->
+  <div class="announcement-bar" role="banner">
+    Free shipping on orders over ₦15,000 &nbsp;·&nbsp; <a href="custom.html">Bespoke orders open now</a> &nbsp;·&nbsp; Handcrafted in Ibadan, Nigeria
+  </div>
+
+  <!-- Search overlay -->
+  <div id="search-overlay" class="search-overlay" role="dialog" aria-label="Search">
+    <div class="search-box">
+      <div class="search-input-wrap">
+        <span style="display:flex;align-items:center;color:var(--gray-400)"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg></span>
+        <input id="search-input" class="search-input" type="text" placeholder="Search for dresses, tops, fabric…" autocomplete="off" />
+        <button class="search-close" id="search-close" aria-label="Close search">✕</button>
+      </div>
+      <div id="search-results" class="search-results"></div>
+    </div>
+  </div>
+
+  <!-- Cart drawer -->
+  <div class="cart-overlay" id="cart-overlay"></div>
+  <aside class="cart-drawer" id="cart-drawer" aria-label="Shopping cart">
+    <div class="cart-drawer-header">
+      <h2>Your Cart (<span id="cart-drawer-count">0</span>)</h2>
+      <button class="cart-drawer-close" id="cart-drawer-close" aria-label="Close cart">✕</button>
+    </div>
+    <div class="cart-drawer-body" id="cart-drawer-body"></div>
+    <div class="cart-drawer-footer" id="cart-drawer-footer"></div>
+  </aside>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <button class="icon-btn" id="menu-btn" aria-label="Menu"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg></button>
+      <a class="logo" href="homepage.html"><img src="logo.jpeg" alt="PHERAN"></a>
+      <nav>
+        <a class="nav-link" href="category.html">Shop</a>
+        <a class="nav-link" href="custom.html">Custom</a>
+        <a class="nav-link" href="gallery.html">Gallery</a>
+        <a class="nav-link" href="about.html">About</a>
+      </nav>
+      <div class="header-actions">
+        <button class="icon-btn" id="search-btn" aria-label="Search"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg></button>
+        <a class="icon-btn" href="account.html" aria-label="My account"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg></a>
+        <button class="icon-btn" id="cart-btn" aria-label="Open cart"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 10.5V6a3.75 3.75 0 0 0-7.5 0v4.5M3.375 7.5h17.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125H3.375A1.125 1.125 0 0 1 2.25 19.875V8.625c0-.621.504-1.125 1.125-1.125Z"/></svg><span class="cart-count" id="cart-count-badge">0</span></button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Carousel -->
+    <section class="hero hero-carousel" id="hero-carousel">
+
+      <!-- Slide 1 — Linen Co-ord -->
+      <div class="vid-slide active" data-slide="0">
+        <video class="hero-vid" autoplay muted playsinline preload="auto">
+          <source src="../videos/04351cfe-f9c7-4fd2-aaad-e9dbd19cc3a8.mp4" type="video/mp4">
+        </video>
+        <div class="hero-vid-overlay"></div>
+        <div class="hero-inner container">
+          <div class="hero-eyebrow">New Season · Handcrafted in Nigeria</div>
+          <h1>Create Your Signature —<br>Ready or Custom</h1>
+          <p class="lead">Elevated everyday pieces and made-for-you exclusives crafted with the finest fabrics from across West Africa.</p>
+          <div class="hero-ctas">
+            <a class="btn primary" href="category.html">Shop Ready-to-Wear</a>
+            <a class="btn secondary" style="background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.6);color:#fff" href="custom.html">Design Custom</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 2 — Red Beaded Gown -->
+      <div class="vid-slide" data-slide="1">
+        <video class="hero-vid" muted playsinline preload="none">
+          <source src="../videos/157429e1-509d-4512-b99a-e32e2ca5bcf5.mp4" type="video/mp4">
+        </video>
+        <div class="hero-vid-overlay"></div>
+        <div class="hero-inner container">
+          <div class="hero-eyebrow">The Showpiece Collection</div>
+          <h1>Wear the Moment.<br>Own the Room.</h1>
+          <p class="lead">Hand-embellished couture gowns for the woman who commands every entrance. Made to order in Ibadan.</p>
+          <div class="hero-ctas">
+            <a class="btn primary" href="product.html?id=evening-gown-005">Shop The Gown</a>
+            <a class="btn secondary" style="background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.6);color:#fff" href="custom.html">Make It Yours</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 3 — Pinstripe Power Set -->
+      <div class="vid-slide" data-slide="2">
+        <video class="hero-vid" muted playsinline preload="none">
+          <source src="../videos/103456c2-e4d0-4963-a132-c2fe6e2d7b81.mp4" type="video/mp4">
+        </video>
+        <div class="hero-vid-overlay"></div>
+        <div class="hero-inner container">
+          <div class="hero-eyebrow">The Harmattan Edit</div>
+          <h1>Power Dressing,<br>Nigerianly.</h1>
+          <p class="lead">Structured silhouettes in rich Harmattan tones — crafted for the woman who leads every room she enters.</p>
+          <div class="hero-ctas">
+            <a class="btn primary" href="category.html">Shop the Edit</a>
+            <a class="btn secondary" style="background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.6);color:#fff" href="custom.html">Design Custom</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trust bar -->
+      <div class="carousel-trust" aria-hidden="true">
+        <span>Free shipping on orders over ₦15,000</span>
+        <span>·</span>
+        <span>30-day returns</span>
+        <span>·</span>
+        <span>Handcrafted in Ibadan</span>
+      </div>
+
+      <!-- Progress dots -->
+      <div class="carousel-dots" role="tablist" aria-label="Hero slides">
+        <button class="carousel-dot active" data-idx="0" role="tab" aria-selected="true" aria-label="Slide 1"><span class="dot-bar"><span class="dot-progress"></span></span></button>
+        <button class="carousel-dot" data-idx="1" role="tab" aria-selected="false" aria-label="Slide 2"><span class="dot-bar"><span class="dot-progress"></span></span></button>
+        <button class="carousel-dot" data-idx="2" role="tab" aria-selected="false" aria-label="Slide 3"><span class="dot-bar"><span class="dot-progress"></span></span></button>
+      </div>
+
+      <!-- Prev / Next arrows -->
+      <button class="carousel-arrow carousel-prev" aria-label="Previous slide">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button class="carousel-arrow carousel-next" aria-label="Next slide">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </section>
+
+    <!-- Press strip -->
+    <div class="press-strip">
+      <div class="container">
+        <div class="press-inner">
+          <span class="press-label">As seen in</span>
+          <span class="press-name">Vogue Africa</span>
+          <span class="press-name">TW Magazine</span>
+          <span class="press-name">This Day Style</span>
+          <span class="press-name">Guardian Life</span>
+          <span class="press-name">Glam Africa</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trust bar -->
+    <div class="trust-bar">
+      <div class="container">
+        <div class="trust-items">
+          <div class="trust-item">
+            <div class="trust-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/></svg></div>
+            <div class="trust-label">Free Delivery</div>
+            <div class="trust-sub">On orders over ₦15,000</div>
+          </div>
+          <div class="trust-item">
+            <div class="trust-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"/></svg></div>
+            <div class="trust-label">Secure Payment</div>
+            <div class="trust-sub">256-bit SSL encryption</div>
+          </div>
+          <div class="trust-item">
+            <div class="trust-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg></div>
+            <div class="trust-label">Easy Returns</div>
+            <div class="trust-sub">30-day hassle-free policy</div>
+          </div>
+          <div class="trust-item">
+            <div class="trust-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 0 0 2.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 0 1 2.916.52 6.003 6.003 0 0 1-5.395 4.972m0 0a6.726 6.726 0 0 1-2.749 1.35m0 0a6.772 6.772 0 0 1-3.044 0"/></svg></div>
+            <div class="trust-label">Handcrafted</div>
+            <div class="trust-sub">Made by Ibadan artisans</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Featured Collections -->
+    <section class="featured-collections container">
+      <div class="section-label">Collections</div>
+      <h2>Shop the Edit</h2>
+      <p class="featured-subtitle">Curated looks for every occasion, every woman.</p>
+      <div class="collections-grid">
+        <a class="collection-card" href="category.html?category=Dresses" style="text-decoration:none">
+          <div class="cc-bg"></div>
+          <img class="cc-img" src="img-red-gown-front.jpg" alt="Evening gown collection" loading="lazy">
+          <div class="cc-body">
+            <div class="cc-label">Collection</div>
+            <h3 class="cc-title">Evening Gowns</h3>
+            <span class="cc-link">Explore →</span>
+          </div>
+        </a>
+        <a class="collection-card" href="custom.html" style="text-decoration:none">
+          <div class="cc-bg"></div>
+          <img class="cc-img" src="img-wine-pinstripe.jpg" alt="Custom made" loading="lazy">
+          <div class="cc-body">
+            <div class="cc-label">Bespoke</div>
+            <h3 class="cc-title">Custom-Made</h3>
+            <span class="cc-link">Configure →</span>
+          </div>
+        </a>
+        <a class="collection-card" href="category.html?category=Tops" style="text-decoration:none">
+          <div class="cc-bg"></div>
+          <img class="cc-img" src="img-pink-cami.jpg" alt="Tops and cami collection" loading="lazy">
+          <div class="cc-body">
+            <div class="cc-label">New Arrivals</div>
+            <h3 class="cc-title">Tops & Blouses</h3>
+            <span class="cc-link">Shop now →</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- Bestsellers -->
+    <section class="bestsellers container">
+      <div class="section-label">Most Loved</div>
+      <h2>Bestsellers</h2>
+      <div id="bestsellers" class="horizontal-scroll"></div>
+    </section>
+
+    <!-- Editorial strip -->
+    <section class="editorial-strip">
+      <div class="container">
+        <div class="section-label">Journal</div>
+        <h2>Style Stories</h2>
+        <p>Inspiration, styling guides, and behind-the-scenes from the PHERAN studio.</p>
+        <div class="editorial-grid">
+          <div class="editorial-card">
+            <img class="ec-img" src="img-grey-linen-front.jpg" alt="Linen co-ord style guide" loading="lazy">
+            <div class="ec-body">
+              <div class="ec-tag">Style Guide</div>
+              <h3 class="ec-title">How to Wear the Linen Co-ord Set Three Ways</h3>
+              <p class="ec-desc">From a Lagos brunch to an evening event — one co-ord, three unforgettable looks curated by our in-house stylist.</p>
+              <a class="ec-link" href="about.html">Read more →</a>
+            </div>
+          </div>
+          <div class="editorial-card">
+            <img class="ec-img" src="img-red-gown-side.jpg" alt="Behind the seams at PHERAN studio" loading="lazy" style="object-position:top">
+            <div class="ec-body">
+              <div class="ec-tag">Behind the Seams</div>
+              <h3 class="ec-title">The Artisans Behind Every PHERAN Piece</h3>
+              <p class="ec-desc">Meet the master tailors and fabric specialists in Ibadan and Abuja who bring every PHERAN design to life.</p>
+              <a class="ec-link" href="about.html">Read more →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Social proof / Testimonials -->
+    <section class="social-proof container">
+      <div class="section-label">Reviews</div>
+      <h2>What Our Customers Say</h2>
+      <div class="testimonial-grid">
+        <div class="testimonial-card">
+          <div class="t-stars">★★★★★</div>
+          <p class="t-body">"The Silk Wrap Dress is everything. The quality is exceptional and it fits like it was made for me — because the custom size option is incredible."</p>
+          <div class="t-author">
+            <span class="t-avatar">A</span>
+            <div>
+              <div class="t-name">Adaeze O.</div>
+              <div class="t-meta">Lagos, Nigeria</div>
+              <span class="t-verified">✓ Verified purchase</span>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="t-stars">★★★★★</div>
+          <p class="t-body">"I ordered three pieces and they all arrived beautifully packaged. The Tailored Trousers are so flattering. PHERAN is my go-to for elevated Nigerian fashion."</p>
+          <div class="t-author">
+            <span class="t-avatar">F</span>
+            <div>
+              <div class="t-name">Fatima B.</div>
+              <div class="t-meta">Abuja, Nigeria</div>
+              <span class="t-verified">✓ Verified purchase</span>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="t-stars">★★★★★</div>
+          <p class="t-body">"The custom-made experience was seamless. I sent my measurements, chose my fabric, and received a perfectly fitted Evening Gown within two weeks. Unbelievable."</p>
+          <div class="t-author">
+            <span class="t-avatar">C</span>
+            <div>
+              <div class="t-name">Chisom E.</div>
+              <div class="t-meta">Port Harcourt, Nigeria</div>
+              <span class="t-verified">✓ Verified purchase</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Custom CTA -->
+    <section class="container" style="padding:48px 0">
+      <div style="background:linear-gradient(135deg,var(--purple-deepest,#2D1B4E),#5B2D8E);border-radius:20px;padding:52px 40px;text-align:center;color:#fff">
+        <div class="section-label" style="color:rgba(255,255,255,0.6)">Bespoke Service</div>
+        <h2 style="font-family:var(--font-display);font-size:2rem;margin:0 0 12px">Your Vision. Your Fabric. Your Fit.</h2>
+        <p style="color:rgba(255,255,255,0.8);max-width:480px;margin:0 auto 28px;line-height:1.7">Design a one-of-a-kind piece from scratch. Choose your fabric, provide your measurements, and our artisans will craft it to perfection.</p>
+        <a class="btn" href="custom.html" style="background:var(--gold,#D4A96A);color:var(--purple-deepest,#2D1B4E);border:none;font-size:1rem;padding:16px 32px">Start Designing</a>
+      </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="newsletter container">
+      <div class="section-label">Stay in the Loop</div>
+      <h2>New arrivals, exclusive offers, and custom previews.</h2>
+      <p style="color:var(--text-secondary);margin:0 0 20px">Join 12,000+ women who receive our weekly style edit.</p>
+      <form class="newsletter-form" id="newsletter-form">
+        <input type="email" placeholder="Enter your email" aria-label="Email">
+        <button class="btn primary" type="submit">Subscribe</button>
+      </form>
+      <p style="font-size:0.78rem;color:var(--text-muted);margin-top:10px">No spam. Unsubscribe anytime.</p>
+    </section>
+  </main>
+
+  <footer class="footer-full">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <span class="logo">PHERAN</span>
+          <p>Premium Nigerian fashion crafted with intention. From everyday elegance to bespoke creations, every piece tells your story.</p>
+          <div class="footer-social">
+            <a href="#" aria-label="Instagram"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37Z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
+            <a href="#" aria-label="Twitter"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4l16 16M4 20 12 12 4 4M20 4l-8 8 8 8"/></svg></a>
+            <a href="#" aria-label="TikTok"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></a>
+            <a href="#" aria-label="Pinterest"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Shop</h4>
+          <a href="category.html?category=Dresses">Dresses</a>
+          <a href="category.html?category=Tops">Tops & Blouses</a>
+          <a href="category.html?category=Bottoms">Bottoms</a>
+          <a href="custom.html">Custom-Made</a>
+          <a href="gallery.html">Gallery</a>
+        </div>
+        <div class="footer-col">
+          <h4>Company</h4>
+          <a href="about.html">Our Story</a>
+          <a href="about.html#values">Sustainability</a>
+          <a href="support.html">Help & FAQ</a>
+          <a href="support.html#contact">Contact Us</a>
+        </div>
+        <div class="footer-col">
+          <h4>Account</h4>
+          <a href="account.html">My Account</a>
+          <a href="account.html#orders">Order History</a>
+          <a href="account.html#saved">Saved Items</a>
+          <a href="policies.html">Shipping Policy</a>
+          <a href="policies.html#returns">Returns</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 PHERAN. All rights reserved. Made with love in Ibadan, Nigeria.</p>
+        <div class="footer-bottom-links">
+          <a href="policies.html">Privacy Policy</a>
+          <a href="policies.html#terms">Terms of Service</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Mobile navigation -->
+  <nav class="mobile-nav" aria-label="Mobile navigation">
+    <div class="mobile-nav-inner">
+      <a class="mobile-nav-item active" href="homepage.html">
+        <span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg></span>Home
+      </a>
+      <a class="mobile-nav-item" href="category.html">
+        <span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"/></svg></span>Shop
+      </a>
+      <a class="mobile-nav-item" href="gallery.html">
+        <span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/></svg></span>Gallery
+      </a>
+      <button class="mobile-nav-item" id="mobile-cart-btn">
+        <span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 10.5V6a3.75 3.75 0 0 0-7.5 0v4.5M3.375 7.5h17.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125H3.375A1.125 1.125 0 0 1 2.25 19.875V8.625c0-.621.504-1.125 1.125-1.125Z"/></svg></span>Cart
+      </button>
+      <a class="mobile-nav-item" href="account.html">
+        <span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg></span>Account
+      </a>
+    </div>
+  </nav>
+
+  <!-- PWA install banner -->
+  <div class="pwa-banner" id="pwa-banner">
+    <div class="pwa-banner-text">
+      <strong>Add PHERAN to Home Screen</strong>
+      Shop faster with our app experience
+    </div>
+    <button class="pwa-install-btn" id="pwa-install-btn">Install</button>
+    <button class="pwa-dismiss" id="pwa-dismiss" aria-label="Dismiss">✕</button>
+  </div>
+
+  <script src="icons.js"></script>
+  <script src="script.js"></script>
+  <script>
+    // Newsletter form
+    document.getElementById('newsletter-form').addEventListener('submit', e=>{
+      e.preventDefault()
+      const btn = e.target.querySelector('button')
+      btn.textContent = 'Subscribed!'
+      btn.disabled = true
+    })
+  </script>
+
+  <script src="mobile-menu.js"></script>
+
+  <script>
+  /* ── Hero Carousel ── */
+  ;(function(){
+    var carousel = document.getElementById('hero-carousel')
+    if(!carousel) return
+    var slides  = carousel.querySelectorAll('.vid-slide')
+    var dots    = carousel.querySelectorAll('.carousel-dot')
+    var videos  = carousel.querySelectorAll('.hero-vid')
+    var current = 0, timer = null, userPaused = false
+
+    function activateDot(dot){
+      dot.classList.remove('active')
+      void dot.offsetWidth          // force reflow → restart CSS animation
+      dot.classList.add('active')
+      dot.setAttribute('aria-selected','true')
+    }
+
+    function goTo(idx){
+      var next = ((idx % slides.length) + slides.length) % slides.length
+      if(next === current) return
+      // hide current
+      slides[current].classList.remove('active')
+      dots[current].classList.remove('active')
+      dots[current].setAttribute('aria-selected','false')
+      videos[current].pause()
+      // show next
+      current = next
+      slides[current].classList.add('active')
+      activateDot(dots[current])
+      var vid = videos[current]
+      vid.preload = 'auto'
+      vid.currentTime = 0
+      vid.play().catch(function(){})
+      resetTimer()
+    }
+
+    function resetTimer(){
+      clearInterval(timer)
+      if(!userPaused) timer = setInterval(function(){ goTo(current + 1) }, 10000)
+    }
+
+    // boot
+    videos[0].play().catch(function(){})
+    activateDot(dots[0])
+    timer = setInterval(function(){ goTo(current + 1) }, 10000)
+
+    dots.forEach(function(d){ d.addEventListener('click', function(){ goTo(Number(d.dataset.idx)) }) })
+    carousel.querySelector('.carousel-prev').addEventListener('click', function(){ goTo(current - 1) })
+    carousel.querySelector('.carousel-next').addEventListener('click', function(){ goTo(current + 1) })
+
+    // pause auto-advance on hover / touch
+    carousel.addEventListener('mouseenter', function(){ userPaused = true; clearInterval(timer) })
+    carousel.addEventListener('mouseleave', function(){ userPaused = false; resetTimer() })
+
+    // keyboard nav
+    document.addEventListener('keydown', function(e){
+      if(e.key==='ArrowLeft')  goTo(current - 1)
+      else if(e.key==='ArrowRight') goTo(current + 1)
+    })
+  })()
+  </script>
+</body>
+</html>
+
+

@@ -1,0 +1,274 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PHERAN — Product</title>
+  <meta name="description" content="Discover handcrafted luxury pieces from PHERAN, Nigeria's premium fashion house. Made with intention, worn with confidence.">
+  <meta property="og:type" content="product">
+  <meta property="og:site_name" content="PHERAN">
+  <meta property="og:title" content="PHERAN">
+  <meta property="og:description" content="Discover handcrafted luxury pieces from PHERAN, Nigeria's premium fashion house. Made with intention, worn with confidence.">
+  <meta property="og:image" content="https://pheran.ng/mvp/img-red-gown-front.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@pheranng">
+  <meta name="twitter:title" content="PHERAN">
+  <meta name="twitter:description" content="Discover handcrafted luxury pieces from PHERAN, Nigeria's premium fashion house. Made with intention, worn with confidence.">
+  <meta name="twitter:image" content="https://pheran.ng/mvp/img-red-gown-front.jpg">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="img-red-gown-front.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles-upgrade.css">
+  <link rel="manifest" href="../manifest.json">
+</head>
+<body class="product-page">
+
+  <!-- Search overlay -->
+  <div id="search-overlay" class="search-overlay" role="dialog" aria-label="Search">
+    <div class="search-box">
+      <div class="search-input-wrap">
+        <span style="display:flex;align-items:center;color:var(--gray-400)"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg></span>
+        <input id="search-input" class="search-input" type="text" placeholder="Search for dresses, tops, fabric…" autocomplete="off" />
+        <button class="search-close" id="search-close" aria-label="Close search">✕</button>
+      </div>
+      <div id="search-results" class="search-results"></div>
+    </div>
+  </div>
+
+  <!-- Cart drawer -->
+  <div class="cart-overlay" id="cart-overlay"></div>
+  <aside class="cart-drawer" id="cart-drawer" aria-label="Shopping cart">
+    <div class="cart-drawer-header">
+      <h2>Your Cart (<span id="cart-drawer-count">0</span>)</h2>
+      <button class="cart-drawer-close" id="cart-drawer-close" aria-label="Close cart">✕</button>
+    </div>
+    <div class="cart-drawer-body" id="cart-drawer-body"></div>
+    <div class="cart-drawer-footer" id="cart-drawer-footer"></div>
+  </aside>
+
+  <!-- Sticky purchase bar -->
+  <div class="sticky-bar" id="sticky-bar">
+    <div class="sticky-bar-info">
+      <div class="sticky-bar-title" id="sticky-title">Product</div>
+      <div class="sticky-bar-price" id="sticky-price">₦0</div>
+    </div>
+    <div class="sticky-bar-selectors">
+      <select id="sticky-color" aria-label="Select color"></select>
+      <select id="sticky-size" aria-label="Select size"></select>
+    </div>
+    <button class="sticky-bar-add" id="sticky-add">Add to Cart</button>
+  </div>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <button class="icon-btn" id="menu-btn" aria-label="Menu"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg></button>
+      <a class="logo" href="homepage.html"><img src="logo.jpeg" alt="PHERAN"></a>
+      <nav>
+        <a class="nav-link" href="category.html">Shop</a>
+        <a class="nav-link" href="custom.html">Custom</a>
+        <a class="nav-link" href="gallery.html">Gallery</a>
+        <a class="nav-link" href="about.html">About</a>
+      </nav>
+      <div class="header-actions">
+        <button class="icon-btn" id="search-btn" aria-label="Search"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg></button>
+        <a class="icon-btn" href="account.html" aria-label="My account"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg></a>
+        <button class="icon-btn" id="cart-btn" aria-label="Open cart"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 10.5V6a3.75 3.75 0 0 0-7.5 0v4.5M3.375 7.5h17.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125H3.375A1.125 1.125 0 0 1 2.25 19.875V8.625c0-.621.504-1.125 1.125-1.125Z"/></svg><span class="cart-count" id="cart-count-badge">0</span></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container product-page">
+    <div class="product-media">
+      <div class="media-stage">
+        <img id="main-photo" class="main-photo" src="" alt="Product image">
+        <button id="spin-button" type="button" class="btn tertiary spin-button">360° view</button>
+      </div>
+      <div id="thumbs" class="thumbs"></div>
+    </div>
+
+    <div class="product-info">
+      <div class="product-header">
+        <span id="product-category" class="product-category"></span>
+        <div class="rating-row">
+          <div id="p-rating" class="rating"></div>
+          <span id="p-count" class="review-count"></span>
+        </div>
+      </div>
+
+      <h1 id="p-title">Product Title</h1>
+
+      <!-- Urgency / social proof -->
+      <div id="urgency-pill" class="urgency-pill" style="display:none">🔥 <span id="urgency-text"></span></div>
+      <div id="social-proof-line" class="social-proof-line"></div>
+
+      <div class="price-row">
+        <div class="price"><span id="p-price">₦0</span> <span class="old" id="p-old" style="text-decoration:line-through;font-size:1.1rem;color:var(--text-muted)"></span></div>
+        <span id="availability" class="badge badge-soft">In stock</span>
+      </div>
+
+      <!-- Trust strip -->
+      <div class="trust-strip">
+        <span class="trust-badge"><span class="tb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/></svg></span> Free delivery over ₦15k</span>
+        <span class="trust-badge"><span class="tb-icon">↩</span> 30-day returns</span>
+        <span class="trust-badge"><span class="tb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"/></svg></span> Secure payment</span>
+        <span class="trust-badge"><span class="tb-icon">🧵</span> Ethically made</span>
+      </div>
+
+      <div class="selectors">
+        <div class="selector-block">
+          <label for="color-swatches">Color</label>
+          <div id="color-swatches" class="swatches"></div>
+        </div>
+        <div class="selector-block">
+          <label for="size-select">Size</label>
+          <div class="size-block">
+            <select id="size-select" aria-label="Select size"></select>
+            <button id="size-guide-btn" type="button" class="link-btn">Size guide</button>
+          </div>
+        </div>
+        <div class="selector-block qty-block">
+          <label>Quantity</label>
+          <div class="qty-control">
+            <button id="qty-decrease" type="button">−</button>
+            <input id="qty-input" type="number" value="1" min="1" aria-label="Quantity">
+            <button id="qty-increase" type="button">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions action-row" id="main-actions">
+        <button id="add-to-cart" class="btn primary" style="flex:1;padding:14px">Add to Cart</button>
+        <button id="buy-now" class="btn secondary" style="flex:1;padding:14px">Buy Now</button>
+        <button id="wishlist-toggle" class="wishlist-btn" aria-label="Save to wishlist">♡</button>
+      </div>
+
+      <div class="confidence-row">
+        <div class="confidence-card">Model is 5'10" and wears size M</div>
+        <div class="confidence-card">Fit note: true to size with a relaxed drape</div>
+      </div>
+
+      <div class="details-accordion">
+        <button type="button" class="accordion-toggle active" data-target="desc-panel">Description</button>
+        <div id="desc-panel" class="accordion-panel open"><p id="p-desc">Product description</p></div>
+
+        <button type="button" class="accordion-toggle" data-target="fabric-panel">Fabric &amp; Care</button>
+        <div id="fabric-panel" class="accordion-panel"><p id="p-fabric">Premium fabric with care instructions.</p></div>
+
+        <button type="button" class="accordion-toggle" data-target="shipping-panel">Shipping &amp; Returns</button>
+        <div id="shipping-panel" class="accordion-panel">
+          <p>Standard delivery: 3–5 business days · ₦1,500<br>
+          Express delivery: 1–2 business days · ₦3,500<br>
+          Free delivery on orders over ₦15,000<br><br>
+          Returns accepted within 30 days of delivery. Item must be unworn, unwashed, and in original packaging. Custom-made pieces are non-refundable.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Recommendations -->
+  <section class="recommendations section-secondary">
+    <div class="container">
+      <div class="section-head">
+        <h2>Complete the Look</h2>
+        <p class="text-muted">Recommended pieces curated for this style.</p>
+      </div>
+      <div id="recommendation-grid" class="recommendation-grid"></div>
+    </div>
+  </section>
+
+  <!-- Reviews Section -->
+  <section class="reviews-section" id="reviews-section">
+    <div class="container">
+      <div class="section-label">Reviews</div>
+      <h2 class="page-title" id="reviews-heading">Customer Reviews</h2>
+
+      <div class="reviews-summary" id="reviews-summary">
+        <div class="reviews-score">
+          <div class="big-rating" id="big-rating">4.6</div>
+          <div class="star-display" id="star-display">★★★★★</div>
+          <div class="review-total" id="review-total">Based on 128 reviews</div>
+        </div>
+        <div class="reviews-bars" id="reviews-bars"></div>
+      </div>
+
+      <div class="reviews-list" id="reviews-list"></div>
+
+      <div style="text-align:center;margin-top:24px">
+        <button class="btn secondary" id="load-more-reviews">Load more reviews</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Size Guide Modal -->
+  <div id="size-guide-modal" class="modal" aria-hidden="true">
+    <div class="modal-dialog">
+      <button type="button" class="modal-close" aria-label="Close size guide">✕</button>
+      <h3>Size Guide</h3>
+      <p>Choose the best fit with this simple guide. If you are between sizes, we recommend sizing up for a relaxed fit.</p>
+      <ul class="size-guide-list">
+        <li><strong>XS:</strong> Bust 31–33&quot;, Waist 24–26&quot;, Hip 34–36&quot;</li>
+        <li><strong>S:</strong> Bust 33–35&quot;, Waist 26–28&quot;, Hip 36–38&quot;</li>
+        <li><strong>M:</strong> Bust 35–37&quot;, Waist 28–30&quot;, Hip 38–40&quot;</li>
+        <li><strong>L:</strong> Bust 37–39&quot;, Waist 30–32&quot;, Hip 40–42&quot;</li>
+        <li><strong>XL:</strong> Bust 39–41&quot;, Waist 32–34&quot;, Hip 42–44&quot;</li>
+      </ul>
+      <button type="button" class="btn primary" id="close-size-guide" style="width:100%;margin-top:16px">Got it</button>
+    </div>
+  </div>
+
+  <footer class="footer-full">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <button class="icon-btn" id="menu-btn" aria-label="Menu"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg></button>
+      <a class="logo" href="homepage.html">PHERAN</a>
+          <p>Premium Nigerian fashion crafted with intention.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Shop</h4>
+          <a href="category.html">All Products</a>
+          <a href="custom.html">Custom-Made</a>
+          <a href="gallery.html">Gallery</a>
+        </div>
+        <div class="footer-col">
+          <h4>Help</h4>
+          <a href="support.html">FAQ</a>
+          <a href="policies.html">Shipping</a>
+          <a href="policies.html#returns">Returns</a>
+        </div>
+        <div class="footer-col">
+          <h4>Account</h4>
+          <a href="account.html">My Account</a>
+          <a href="account.html#orders">Orders</a>
+          <a href="cart.html">Cart</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 PHERAN. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Mobile navigation -->
+  <nav class="mobile-nav" aria-label="Mobile navigation">
+    <div class="mobile-nav-inner">
+      <a class="mobile-nav-item" href="homepage.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg></span>Home</a>
+      <a class="mobile-nav-item active" href="category.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"/></svg></span>Shop</a>
+      <a class="mobile-nav-item" href="gallery.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/></svg></span>Gallery</a>
+      <button class="mobile-nav-item" id="mobile-cart-btn"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 10.5V6a3.75 3.75 0 0 0-7.5 0v4.5M3.375 7.5h17.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125H3.375A1.125 1.125 0 0 1 2.25 19.875V8.625c0-.621.504-1.125 1.125-1.125Z"/></svg></span>Cart</button>
+      <a class="mobile-nav-item" href="account.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg></span>Account</a>
+    </div>
+  </nav>
+
+  <script src="icons.js"></script>
+  <script src="script.js"></script>
+
+  <script src="mobile-menu.js"></script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,219 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PHERAN — Your Cart</title>
+  <meta name="description" content="Review your PHERAN selections and proceed to secure checkout. Free delivery on orders over ₦15,000.">
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="img-grey-linen-front.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles-upgrade.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <button class="icon-btn" id="menu-btn" aria-label="Menu"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg></button>
+      <a class="logo" href="homepage.html"><img src="logo.jpeg" alt="PHERAN"></a>
+      <nav>
+        <a class="nav-link" href="category.html">Shop</a>
+        <a class="nav-link" href="custom.html">Custom</a>
+        <a class="nav-link" href="gallery.html">Gallery</a>
+      </nav>
+      <div class="header-actions">
+        <a class="icon-btn" href="account.html" aria-label="My account"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg></a>
+        <a class="icon-btn" href="cart.html" aria-label="Cart" style="color:var(--purple-main)"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 10.5V6a3.75 3.75 0 0 0-7.5 0v4.5M3.375 7.5h17.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125H3.375A1.125 1.125 0 0 1 2.25 19.875V8.625c0-.621.504-1.125 1.125-1.125Z"/></svg><span id="cart-count-badge" class="cart-count">0</span></a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding:32px 0 60px">
+    <div class="section-label">Shopping</div>
+    <h1 class="page-title">Your Cart</h1>
+
+    <div class="cart-page-layout" id="cart-page-layout">
+      <!-- Items column -->
+      <div class="cart-page-items" id="cart-page-items">
+        <div id="cart-empty-full" style="display:none;text-align:center;padding:64px 0">
+          <div style="color:var(--purple-light);margin-bottom:16px"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 10.5V6a3.75 3.75 0 0 0-7.5 0v4.5M3.375 7.5h17.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125H3.375A1.125 1.125 0 0 1 2.25 19.875V8.625c0-.621.504-1.125 1.125-1.125Z"/></svg></div>
+          <h2 style="font-family:var(--font-display)">Your cart is empty</h2>
+          <p style="color:var(--text-secondary)">Discover our latest styles and add your favourites.</p>
+          <a class="btn primary" href="category.html" style="margin-top:16px;display:inline-block">Shop the Collection</a>
+        </div>
+        <div id="cart-items-list"></div>
+      </div>
+
+      <!-- Summary column -->
+      <div class="cart-page-summary" id="cart-page-summary" style="display:none">
+        <h3>Order Summary</h3>
+        <div id="cart-summary-lines"></div>
+        <div class="promo-row">
+          <input type="text" placeholder="Promo code" id="promo-input" aria-label="Promo code">
+          <button id="promo-apply">Apply</button>
+        </div>
+        <div id="promo-msg" style="font-size:0.82rem;margin-top:4px"></div>
+        <div id="cart-total-row" class="cart-summary-row total" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--gray-200)"></div>
+        <a class="cart-checkout-btn" href="checkout.html" style="margin-top:18px">Proceed to Checkout</a>
+        <a class="cart-view-full" href="category.html" style="display:block;text-align:center;margin-top:10px;color:var(--purple-main);font-size:0.9rem;text-decoration:none">Continue shopping</a>
+        <div class="cart-trust" style="margin-top:16px">
+          <span><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"/></svg> Secure checkout</span>
+          <span>↩ 30-day returns</span>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:12px;flex-wrap:wrap">
+          <span class="payment-icon">Visa</span>
+          <span class="payment-icon">Mastercard</span>
+          <span class="payment-icon">PayPal</span>
+          <span class="payment-icon">Flutterwave</span>
+          <span class="payment-icon">Paystack</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- You may also like -->
+    <section id="you-may-like" style="margin-top:48px;display:none">
+      <div class="section-label">Recommended</div>
+      <h2 style="font-family:var(--font-display);margin:0 0 20px">You May Also Like</h2>
+      <div id="cart-recommendations" class="recommendation-grid"></div>
+    </section>
+  </main>
+
+  <footer class="footer-full">
+    <div class="container footer-bottom" style="padding:24px 0">
+      <p>© 2026 PHERAN. All rights reserved.</p>
+      <div class="footer-bottom-links">
+        <a href="policies.html">Privacy</a>
+        <a href="policies.html#terms">Terms</a>
+        <a href="support.html">Help</a>
+      </div>
+    </div>
+  </footer>
+
+  <nav class="mobile-nav"><div class="mobile-nav-inner">
+    <a class="mobile-nav-item" href="homepage.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg></span>Home</a>
+    <a class="mobile-nav-item" href="category.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"/></svg></span>Shop</a>
+    <a class="mobile-nav-item active" href="cart.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 10.5V6a3.75 3.75 0 0 0-7.5 0v4.5M3.375 7.5h17.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125H3.375A1.125 1.125 0 0 1 2.25 19.875V8.625c0-.621.504-1.125 1.125-1.125Z"/></svg></span>Cart</a>
+    <a class="mobile-nav-item" href="account.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg></span>Account</a>
+  </div></nav>
+
+  <script src="icons.js"></script>
+  <script src="script.js"></script>
+  <script>
+    function formatCurr(v){return new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(Number(v||0))}
+    function getCart(){
+      try{
+        const raw=JSON.parse(localStorage.getItem('pheran_cart')||'[]')
+        return Array.isArray(raw)?raw.filter(i=>i&&typeof i==='object'&&typeof i.key==='string'&&typeof i.title==='string'):[]
+      }catch(e){return[]}
+    }
+    function saveCart(c){localStorage.setItem('pheran_cart',JSON.stringify(c));renderPage()}
+    function cartTotal(c){return c.reduce((s,i)=>s+i.price*i.qty,0)}
+
+    async function loadProducts(){
+      try{const r=await fetch('data.json');const d=await r.json();return d.products||[]}catch(e){return[]}
+    }
+
+    async function renderPage(){
+      const cart = getCart()
+      const products = await loadProducts()
+      const itemsList = document.getElementById('cart-items-list')
+      const summary = document.getElementById('cart-page-summary')
+      const emptyEl = document.getElementById('cart-empty-full')
+      const badge = document.getElementById('cart-count-badge')
+      const count = cart.reduce((s,i)=>s+i.qty,0)
+      if(badge) badge.textContent = count
+
+      if(!cart.length){
+        if(emptyEl) emptyEl.style.display='block'
+        if(summary) summary.style.display='none'
+        if(itemsList) itemsList.innerHTML=''
+        const yl = document.getElementById('you-may-like')
+        if(yl){yl.style.display='block';renderRecs(products,[],yl)}
+        return
+      }
+      if(emptyEl) emptyEl.style.display='none'
+      if(summary) summary.style.display='block'
+
+      itemsList.innerHTML = cart.map(item=>`
+        <div class="cart-page-item" data-key="${esc(item.key)}">
+          <img src="${esc(item.image||'')}" alt="${esc(item.title)}" loading="lazy">
+          <div>
+            <div style="font-weight:700;margin-bottom:4px">${esc(item.title)}</div>
+            <div style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:10px">${esc(item.color||'')} ${item.size?'· Size '+esc(item.size):''}</div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="qty-control" style="width:max-content">
+                <button class="qty-dec" data-key="${esc(item.key)}">−</button>
+                <input type="number" class="qty-val" value="${Number(item.qty)||1}" min="1" data-key="${esc(item.key)}" style="width:48px;text-align:center;border:none;font-size:1rem">
+                <button class="qty-inc" data-key="${esc(item.key)}">+</button>
+              </div>
+              <button class="cart-item-remove" data-key="${esc(item.key)}" style="font-size:0.85rem;background:transparent;border:none;color:var(--cta-destructive);cursor:pointer">Remove</button>
+            </div>
+          </div>
+          <div style="font-weight:800;color:var(--purple-main);white-space:nowrap">${formatCurr(item.price*item.qty)}<br><span style="font-size:0.8rem;color:var(--text-muted);font-weight:400">${formatCurr(item.price)} each</span></div>
+        </div>`).join('')
+
+      itemsList.querySelectorAll('.qty-inc').forEach(b=>b.addEventListener('click',()=>{
+        const k=b.dataset.key;const c2=getCart();const it=c2.find(x=>x.key===k);if(it){it.qty++;saveCart(c2)}
+      }))
+      itemsList.querySelectorAll('.qty-dec').forEach(b=>b.addEventListener('click',()=>{
+        const k=b.dataset.key;const c2=getCart();const idx=c2.findIndex(x=>x.key===k)
+        if(idx>=0){if(c2[idx].qty<=1) c2.splice(idx,1);else c2[idx].qty--;saveCart(c2)}
+      }))
+      itemsList.querySelectorAll('.qty-val').forEach(inp=>inp.addEventListener('change',()=>{
+        const k=inp.dataset.key;const c2=getCart();const it=c2.find(x=>x.key===k)
+        if(it){const v=Number(inp.value);if(v<1){c2.splice(c2.indexOf(it),1)}else{it.qty=v};saveCart(c2)}
+      }))
+      itemsList.querySelectorAll('.cart-item-remove').forEach(b=>b.addEventListener('click',()=>{
+        const c2=getCart().filter(x=>x.key!==b.dataset.key);saveCart(c2)
+      }))
+
+      const total=cartTotal(cart)
+      const shipping=total>=15000?0:1500
+      const lines=document.getElementById('cart-summary-lines')
+      if(lines) lines.innerHTML=cart.map(i=>`
+        <div class="cart-summary-row"><span>${esc(i.title)} ×${Number(i.qty)||1}</span><span>${formatCurr(i.price*i.qty)}</span></div>`).join('')+
+        `<div class="cart-summary-row"><span>Shipping</span><span>${shipping===0?'<span style="color:var(--success)">Free</span>':formatCurr(shipping)}</span></div>`+
+        (total<15000?`<div style="font-size:0.8rem;color:var(--text-muted);margin:4px 0 8px">Add ${formatCurr(15000-total)} for free shipping</div>`:'')
+      const totalRow=document.getElementById('cart-total-row')
+      if(totalRow) totalRow.innerHTML=`<span>Total</span><span style="font-size:1.1rem;font-weight:800">${formatCurr(total+shipping)}</span>`
+
+      const yl=document.getElementById('you-may-like')
+      if(yl){yl.style.display='block';renderRecs(products,cart,yl)}
+    }
+
+    function renderRecs(products,cart,container){
+      const inCartIds=cart.map(i=>i.id)
+      const picks=products.filter(p=>!inCartIds.includes(p.id)).sort((a,b)=>(b.rating||0)-(a.rating||0)).slice(0,3)
+      const grid=document.getElementById('cart-recommendations')
+      if(!grid) return
+      grid.innerHTML=picks.map(p=>`
+        <div class="recommendation-card" data-product-id="${esc(p.id)}" style="cursor:pointer">
+          <img src="${esc(p.images[0])}" alt="${esc(p.title)}" loading="lazy">
+          <h3>${esc(p.title)}</h3>
+          <div class="price">${formatCurr(p.price)}</div>
+        </div>`).join('')
+      grid.querySelectorAll('.recommendation-card').forEach(el=>{
+        el.addEventListener('click',()=>{window.location.href='product.html?id='+el.dataset.productId})
+      })
+    }
+
+    // Promo code (prototype)
+    document.getElementById('promo-apply')?.addEventListener('click',()=>{
+      const val=(document.getElementById('promo-input')?.value||'').toUpperCase().trim()
+      const msg=document.getElementById('promo-msg')
+      if(val==='PHERAN10'){msg.textContent='✓ 10% discount applied!';msg.style.color='var(--success)'}
+      else if(val){msg.textContent='Code not recognised. Try PHERAN10 for 10% off.';msg.style.color='var(--error)'}
+    })
+
+    renderPage()
+  </script>
+
+  <script src="mobile-menu.js"></script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,160 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PHERAN — Order Confirmed</title>
+  <meta name="description" content="Your PHERAN order has been placed. Thank you for choosing handcrafted Nigerian luxury fashion.">
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="img-red-gown-front.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles-upgrade.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <button class="icon-btn" id="menu-btn" aria-label="Menu"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg></button>
+      <a class="logo" href="homepage.html"><img src="logo.jpeg" alt="PHERAN"></a>
+      <div></div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="confirmation-hero">
+      <div class="conf-icon">🎉</div>
+      <h1>Order Confirmed!</h1>
+      <p id="conf-subtitle">Thank you! Your order has been placed and is being prepared with care.</p>
+      <p id="conf-order-id" style="font-size:0.9rem;color:var(--text-muted);margin-top:8px"></p>
+    </div>
+
+    <!-- Tracking progress -->
+    <div style="background:#fff;border:1px solid var(--gray-200);border-radius:16px;padding:28px;margin-bottom:24px">
+      <h3 style="font-family:var(--font-display);margin:0 0 20px">Order Status</h3>
+      <div class="tracking-bar">
+        <div class="tracking-step done">
+          <div class="ts-dot">✓</div>
+          <div class="ts-label">Confirmed</div>
+        </div>
+        <div class="tracking-step active">
+          <div class="ts-dot">●</div>
+          <div class="ts-label">Processing</div>
+        </div>
+        <div class="tracking-step">
+          <div class="ts-dot">○</div>
+          <div class="ts-label">Dispatched</div>
+        </div>
+        <div class="tracking-step">
+          <div class="ts-dot">○</div>
+          <div class="ts-label">Delivered</div>
+        </div>
+      </div>
+      <p style="font-size:0.88rem;color:var(--text-secondary);margin:16px 0 0;text-align:center">Estimated delivery: <strong id="delivery-estimate"></strong></p>
+    </div>
+
+    <div class="confirmation-grid">
+      <!-- Order details -->
+      <div class="conf-card">
+        <h3>Order Details</h3>
+        <div id="conf-order-items"></div>
+        <div class="conf-row" style="margin-top:12px;font-weight:700;border-top:1px solid var(--gray-200);padding-top:10px">
+          <span>Total paid</span><span id="conf-total" style="color:var(--purple-main)"></span>
+        </div>
+      </div>
+
+      <!-- Delivery info -->
+      <div class="conf-card">
+        <h3>Delivery Information</h3>
+        <div class="conf-row"><span>Recipient</span><span id="conf-name"></span></div>
+        <div class="conf-row"><span>Address</span><span id="conf-addr" style="text-align:right;max-width:55%"></span></div>
+        <div style="margin-top:16px;padding:14px;background:var(--gray-50);border-radius:10px">
+          <div style="font-size:0.82rem;font-weight:700;color:var(--text-muted);margin-bottom:6px">CARE NOTES</div>
+          <p style="font-size:0.85rem;color:var(--text-secondary);margin:0;line-height:1.6">Your PHERAN piece has been carefully packaged. Each garment comes with care instructions. Please store in a cool, dry place away from direct sunlight to maintain the fabric quality.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- What's next -->
+    <div style="background:var(--white-warm);border:1px solid var(--gray-200);border-radius:16px;padding:28px;margin-bottom:32px">
+      <h3 style="font-family:var(--font-display);margin:0 0 16px">What Happens Next?</h3>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px">
+        <div style="text-align:center">
+          <div style="font-size:2rem;margin-bottom:10px">📧</div>
+          <strong style="display:block;margin-bottom:6px;font-size:0.92rem">Confirmation Email</strong>
+          <p style="font-size:0.83rem;color:var(--text-secondary);margin:0">You'll receive an email with your order details within the next few minutes.</p>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:2rem;margin-bottom:10px">🧵</div>
+          <strong style="display:block;margin-bottom:6px;font-size:0.92rem">Crafting Your Order</strong>
+          <p style="font-size:0.83rem;color:var(--text-secondary);margin:0">Our team picks, packs, and quality-checks every item before it leaves our studio.</p>
+        </div>
+        <div style="text-align:center">
+          <div style="color:var(--purple-main);margin-bottom:10px"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/></svg></div>
+          <strong style="display:block;margin-bottom:6px;font-size:0.92rem">On Its Way to You</strong>
+          <p style="font-size:0.83rem;color:var(--text-secondary);margin:0">Once dispatched, you'll get a tracking link to follow your order in real time.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Referral / review CTA -->
+    <div style="text-align:center;margin-bottom:48px">
+      <div style="background:linear-gradient(135deg,var(--purple-deepest),#5B2D8E);border-radius:16px;padding:36px;color:#fff;display:inline-block;width:100%;max-width:580px">
+        <h3 style="font-family:var(--font-display);margin:0 0 10px;color:#fff;font-size:1.4rem">Love PHERAN? Share the Experience</h3>
+        <p style="color:rgba(255,255,255,0.8);margin:0 0 20px;font-size:0.9rem">Refer a friend and you both receive ₦2,000 off your next order.</p>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+          <a class="btn" href="category.html" style="background:var(--gold);color:var(--purple-deepest);border:none">Continue Shopping</a>
+          <a class="btn" href="account.html#orders" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.5)">View My Orders</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer-full">
+    <div class="container footer-bottom" style="padding:24px 0">
+      <p>© 2026 PHERAN. All rights reserved.</p>
+      <div class="footer-bottom-links">
+        <a href="support.html">Help &amp; FAQ</a>
+        <a href="policies.html#returns">Returns</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function escapeHtml(str){return String(str??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+    const esc=escapeHtml
+    let order=null
+    try{order=JSON.parse(localStorage.getItem('pheran_last_order')||'null')}catch(e){}
+    function fmt(v){return new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(Number(v||0))}
+
+    if(order&&typeof order==='object'){
+      document.getElementById('conf-subtitle').textContent = `Thank you, ${order.name?.split(' ')[0]||'friend'}! Your order has been placed.`
+      document.getElementById('conf-order-id').textContent = `Order reference: ${order.id}`
+      document.getElementById('conf-name').textContent = order.name||''
+      document.getElementById('conf-addr').textContent = order.address||''
+      document.getElementById('conf-total').textContent = fmt(order.total)
+
+      const items = Array.isArray(order.items)?order.items:[]
+      document.getElementById('conf-order-items').innerHTML = items.map(i=>`
+        <div class="conf-row">
+          <span>${esc(i.title)} ×${Number(i.qty)||1}</span>
+          <span>${fmt(i.price*i.qty)}</span>
+        </div>`).join('')
+
+      // Estimated delivery: 4 business days from order date
+      const orderDate = new Date(order.date||Date.now())
+      let days = 0, d = new Date(orderDate)
+      while(days<4){d.setDate(d.getDate()+1);if(d.getDay()!==0&&d.getDay()!==6) days++}
+      document.getElementById('delivery-estimate').textContent = d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})
+    }
+  </script>
+  <script src="icons.js"></script>
+
+  <script src="mobile-menu.js"></script>
+</body>
+</html>
+
+
+

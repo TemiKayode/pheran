@@ -1,0 +1,409 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PHERAN — My Account</title>
+  <meta name="description" content="Manage your PHERAN account, track your orders, and access your saved wishlist.">
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="img-grey-linen-front.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles-upgrade.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <button class="icon-btn" id="menu-btn" aria-label="Menu"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg></button>
+      <a class="logo" href="homepage.html"><img src="logo.jpeg" alt="PHERAN"></a>
+      <nav>
+        <a class="nav-link" href="category.html">Shop</a>
+        <a class="nav-link" href="custom.html">Custom</a>
+        <a class="nav-link" href="gallery.html">Gallery</a>
+      </nav>
+      <div class="header-actions">
+        <a class="icon-btn" href="cart.html"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 10.5V6a3.75 3.75 0 0 0-7.5 0v4.5M3.375 7.5h17.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125H3.375A1.125 1.125 0 0 1 2.25 19.875V8.625c0-.621.504-1.125 1.125-1.125Z"/></svg><span id="cart-count-badge" class="cart-count">0</span></a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Auth screen (shown when not signed in) -->
+    <div id="auth-screen" style="padding:48px 0">
+      <div class="auth-card">
+        <h2>Welcome to PHERAN</h2>
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tab-signin" onclick="showTab('signin')">Sign In</button>
+          <button class="auth-tab" id="tab-signup" onclick="showTab('signup')">Create Account</button>
+        </div>
+
+        <!-- Sign In -->
+        <div id="form-signin">
+          <div class="auth-field">
+            <label for="si-email">Email</label>
+            <input id="si-email" type="email" placeholder="adaeze@email.com" autocomplete="email">
+          </div>
+          <div class="auth-field">
+            <label for="si-password">Password</label>
+            <input id="si-password" type="password" placeholder="••••••••" autocomplete="current-password">
+          </div>
+          <div style="text-align:right;margin-bottom:16px">
+            <a href="#" style="font-size:0.85rem;color:var(--purple-main)">Forgot password?</a>
+          </div>
+          <button class="auth-submit" id="signin-btn">Sign In</button>
+          <div id="signin-msg" style="margin-top:10px;text-align:center;font-size:0.85rem"></div>
+        </div>
+
+        <!-- Sign Up -->
+        <div id="form-signup" style="display:none">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="auth-field">
+              <label for="su-first">First name</label>
+              <input id="su-first" type="text" placeholder="Adaeze">
+            </div>
+            <div class="auth-field">
+              <label for="su-last">Last name</label>
+              <input id="su-last" type="text" placeholder="Okafor">
+            </div>
+          </div>
+          <div class="auth-field">
+            <label for="su-email">Email</label>
+            <input id="su-email" type="email" placeholder="adaeze@email.com">
+          </div>
+          <div class="auth-field">
+            <label for="su-phone">Phone</label>
+            <input id="su-phone" type="tel" placeholder="+234 801 234 5678">
+          </div>
+          <div class="auth-field">
+            <label for="su-password">Password</label>
+            <input id="su-password" type="password" placeholder="At least 8 characters">
+          </div>
+          <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:14px">
+            By creating an account you agree to our <a href="policies.html">Terms</a> and <a href="policies.html">Privacy Policy</a>.
+          </div>
+          <button class="auth-submit" id="signup-btn">Create Account</button>
+        </div>
+
+        <div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid var(--gray-200)">
+          <a href="category.html" style="font-size:0.88rem;color:var(--purple-main)">Continue as guest →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard (shown when signed in) -->
+    <div id="dashboard-screen" style="display:none;padding:32px 0 60px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+        <div>
+          <div class="section-label">My Account</div>
+          <h1 class="page-title" id="dash-greeting">Welcome back!</h1>
+        </div>
+        <button class="btn secondary" id="signout-btn" style="padding:10px 18px;font-size:0.88rem">Sign Out</button>
+      </div>
+
+      <div class="account-layout">
+        <!-- Sidebar nav -->
+        <nav class="account-nav">
+          <button class="account-nav-item active" data-panel="orders" onclick="showPanel('orders')"><span class="an-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.25 7.5l-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"/></svg></span>My Orders</button>
+          <button class="account-nav-item" data-panel="saved" onclick="showPanel('saved')"><span class="an-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"/></svg></span>Saved Items</button>
+          <button class="account-nav-item" data-panel="profile" onclick="showPanel('profile')"><span class="an-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg></span>Profile</button>
+          <button class="account-nav-item" data-panel="returns" onclick="showPanel('returns')"><span class="an-icon">↩</span>Returns</button>
+          <button class="account-nav-item" data-panel="preferences" onclick="showPanel('preferences')"><span class="an-icon">⚙️</span>Preferences</button>
+        </nav>
+
+        <!-- Panels -->
+        <div>
+          <!-- Orders -->
+          <div class="account-panel active" id="panel-orders">
+            <h2>My Orders</h2>
+            <div id="orders-list"></div>
+          </div>
+
+          <!-- Saved Items -->
+          <div class="account-panel" id="panel-saved">
+            <h2>Saved Items</h2>
+            <div id="saved-items-grid" class="saved-items-grid"></div>
+            <div id="saved-empty" style="display:none;text-align:center;padding:40px 0">
+              <div style="color:var(--purple-light);margin-bottom:12px"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"/></svg></div>
+              <p style="color:var(--text-secondary)">You haven't saved any items yet.</p>
+              <a class="btn primary" href="category.html" style="margin-top:12px;display:inline-block">Shop the Collection</a>
+            </div>
+          </div>
+
+          <!-- Profile -->
+          <div class="account-panel" id="panel-profile">
+            <h2>Profile Details</h2>
+            <div style="max-width:480px">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+                <div class="field-group">
+                  <label>First name</label>
+                  <input id="prof-first" type="text" style="padding:10px 12px;border:1px solid var(--gray-200);border-radius:10px;font-family:var(--font-body);font-size:0.95rem">
+                </div>
+                <div class="field-group">
+                  <label>Last name</label>
+                  <input id="prof-last" type="text" style="padding:10px 12px;border:1px solid var(--gray-200);border-radius:10px;font-family:var(--font-body);font-size:0.95rem">
+                </div>
+              </div>
+              <div class="field-group" style="margin-bottom:14px">
+                <label>Email</label>
+                <input id="prof-email" type="email" style="padding:10px 12px;border:1px solid var(--gray-200);border-radius:10px;font-family:var(--font-body);font-size:0.95rem">
+              </div>
+              <div class="field-group" style="margin-bottom:14px">
+                <label>Phone</label>
+                <input id="prof-phone" type="tel" style="padding:10px 12px;border:1px solid var(--gray-200);border-radius:10px;font-family:var(--font-body);font-size:0.95rem">
+              </div>
+              <button class="btn primary" id="save-profile" style="padding:12px 24px">Save Changes</button>
+              <span id="profile-saved-msg" style="font-size:0.85rem;color:var(--success);margin-left:12px;display:none">✓ Saved!</span>
+            </div>
+          </div>
+
+          <!-- Returns -->
+          <div class="account-panel" id="panel-returns">
+            <h2>Returns & Exchanges</h2>
+            <div style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:14px;padding:24px;margin-bottom:20px">
+              <h3 style="font-family:var(--font-display);margin:0 0 12px;font-size:1.1rem">Return Policy</h3>
+              <p style="color:var(--text-secondary);font-size:0.9rem;margin:0;line-height:1.7">We accept returns within 30 days of delivery for ready-to-wear items in original condition. Custom-made pieces are non-refundable unless there is a quality issue. To initiate a return, select the relevant order below or contact our support team.</p>
+            </div>
+            <div id="returns-orders-list"></div>
+            <div style="text-align:center;margin-top:24px">
+              <a class="btn secondary" href="support.html#contact" style="display:inline-block">Contact Support</a>
+            </div>
+          </div>
+
+          <!-- Preferences -->
+          <div class="account-panel" id="panel-preferences">
+            <h2>Preferences</h2>
+            <div style="max-width:480px;display:flex;flex-direction:column;gap:16px">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:16px;background:#fff;border:1px solid var(--gray-200);border-radius:12px">
+                <div>
+                  <strong>New arrivals emails</strong>
+                  <p style="font-size:0.83rem;color:var(--text-secondary);margin:4px 0 0">Get notified when new styles drop</p>
+                </div>
+                <label class="toggle-switch" style="position:relative;display:inline-block;width:44px;height:24px">
+                  <input type="checkbox" id="pref-arrivals" checked style="opacity:0;width:0;height:0">
+                  <span style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:var(--purple-main);border-radius:24px;transition:.2s"></span>
+                </label>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:16px;background:#fff;border:1px solid var(--gray-200);border-radius:12px">
+                <div>
+                  <strong>Exclusive offers &amp; sales</strong>
+                  <p style="font-size:0.83rem;color:var(--text-secondary);margin:4px 0 0">Members-only discounts and early access</p>
+                </div>
+                <label style="position:relative;display:inline-block;width:44px;height:24px">
+                  <input type="checkbox" id="pref-offers" checked style="opacity:0;width:0;height:0">
+                  <span style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:var(--purple-main);border-radius:24px;transition:.2s"></span>
+                </label>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:16px;background:#fff;border:1px solid var(--gray-200);border-radius:12px">
+                <div>
+                  <strong>Order updates via SMS</strong>
+                  <p style="font-size:0.83rem;color:var(--text-secondary);margin:4px 0 0">Shipping and delivery notifications</p>
+                </div>
+                <label style="position:relative;display:inline-block;width:44px;height:24px">
+                  <input type="checkbox" id="pref-sms" style="opacity:0;width:0;height:0">
+                  <span style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:var(--gray-300);border-radius:24px;transition:.2s" id="sms-toggle"></span>
+                </label>
+              </div>
+              <button class="btn primary" id="save-prefs" style="padding:12px 24px;margin-top:4px;align-self:flex-start">Save Preferences</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer-full">
+    <div class="container footer-bottom" style="padding:24px 0">
+      <p>© 2026 PHERAN. All rights reserved.</p>
+      <div class="footer-bottom-links">
+        <a href="policies.html">Privacy</a>
+        <a href="support.html">Help</a>
+      </div>
+    </div>
+  </footer>
+
+  <nav class="mobile-nav"><div class="mobile-nav-inner">
+    <a class="mobile-nav-item" href="homepage.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg></span>Home</a>
+    <a class="mobile-nav-item" href="category.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"/></svg></span>Shop</a>
+    <a class="mobile-nav-item" href="cart.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 10.5V6a3.75 3.75 0 0 0-7.5 0v4.5M3.375 7.5h17.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125H3.375A1.125 1.125 0 0 1 2.25 19.875V8.625c0-.621.504-1.125 1.125-1.125Z"/></svg></span>Cart</a>
+    <a class="mobile-nav-item active" href="account.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg></span>Account</a>
+  </div></nav>
+
+  <script>
+    /* ── Utilities ── */
+    function fmt(v){return new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(Number(v||0))}
+    function esc(str){return String(str??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+    const badge=document.getElementById('cart-count-badge')
+    if(badge){try{const c=JSON.parse(localStorage.getItem('pheran_cart')||'[]').reduce((s,i)=>s+(Number(i.qty)||0),0);badge.textContent=c}catch(e){}}
+
+    function showTab(tab){
+      document.getElementById('form-signin').style.display=tab==='signin'?'block':'none'
+      document.getElementById('form-signup').style.display=tab==='signup'?'block':'none'
+      document.getElementById('tab-signin').classList.toggle('active',tab==='signin')
+      document.getElementById('tab-signup').classList.toggle('active',tab==='signup')
+    }
+    function showPanel(name){
+      document.querySelectorAll('.account-panel').forEach(p=>p.classList.remove('active'))
+      document.getElementById('panel-'+name)?.classList.add('active')
+      document.querySelectorAll('.account-nav-item').forEach(b=>b.classList.toggle('active',b.dataset.panel===name))
+    }
+    if(window.location.hash==='#orders') showPanel('orders')
+    if(window.location.hash==='#saved')  showPanel('saved')
+
+    function setMsg(id,text,isError){
+      const el=document.getElementById(id);if(!el)return
+      el.textContent=text
+      el.style.color=isError?'var(--error)':'var(--success)'
+    }
+    function setBtnState(id,loading,label){
+      const btn=document.getElementById(id);if(!btn)return
+      btn.disabled=loading
+      btn.textContent=loading?'Please wait…':label
+    }
+
+    /* ── Dashboard ── */
+    function showDashboard(user){
+      document.getElementById('auth-screen').style.display='none'
+      document.getElementById('dashboard-screen').style.display='block'
+      document.getElementById('dash-greeting').textContent='Welcome back, '+esc(user.firstName)+'!'
+      document.getElementById('prof-first').value=user.firstName||''
+      document.getElementById('prof-last').value=user.lastName||''
+      document.getElementById('prof-email').value=user.email||''
+      document.getElementById('prof-phone').value=user.phone||''
+      renderOrders()
+      renderSavedItems()
+      renderReturns()
+    }
+    function showAuthScreen(){
+      document.getElementById('dashboard-screen').style.display='none'
+      document.getElementById('auth-screen').style.display='block'
+    }
+
+    /* ── Orders (server-side with localStorage fallback) ── */
+    async function renderOrders(){
+      const el=document.getElementById('orders-list')
+      let orders=[]
+      try{
+        const r=await fetch('/api/orders?userId='+encodeURIComponent(currentUserId||'anonymous'))
+        if(r.ok){ const d=await r.json(); orders=d.orders||[] }
+      }catch(e){}
+      // fallback: localStorage orders
+      if(!orders.length){ try{const raw=JSON.parse(localStorage.getItem('pheran_orders')||'[]');orders=Array.isArray(raw)?raw:[]}catch(e){} }
+      if(!orders.length){el.innerHTML='<div style="text-align:center;padding:40px 0;color:var(--text-secondary)"><p>No orders yet.</p><a class="btn primary" href="category.html" style="margin-top:12px;display:inline-block">Start Shopping</a></div>';return}
+      el.innerHTML=orders.map(o=>`
+        <div class="order-card">
+          <div class="order-card-header">
+            <div>
+              <div class="order-number">${esc(o.id)}</div>
+              <div class="order-date">${new Date(o.createdAt||o.date||Date.now()).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</div>
+            </div>
+            <span class="order-status-badge status-processing">${esc(o.status||'Processing')}</span>
+          </div>
+          <div class="order-total-row">
+            <span>${(o.items||[]).length} item${(o.items||[]).length!==1?'s':''}</span>
+            <span><strong>${fmt(o.total)}</strong></span>
+          </div>
+        </div>`).join('')
+    }
+
+    function renderSavedItems(){
+      let wishlist=[]
+      try{const raw=JSON.parse(localStorage.getItem('pheran_wishlist')||'[]');wishlist=Array.isArray(raw)?raw.filter(i=>typeof i==='string'):[]}catch(e){}
+      const grid=document.getElementById('saved-items-grid')
+      const empty=document.getElementById('saved-empty')
+      if(!wishlist.length){grid.innerHTML='';if(empty)empty.style.display='block';return}
+      if(empty)empty.style.display='none'
+      fetch('data.json').then(r=>r.json()).then(data=>{
+        const saved=(data.products||[]).filter(p=>wishlist.includes(p.id))
+        grid.innerHTML=saved.map(p=>`<div class="recommendation-card" data-product-id="${esc(p.id)}" style="cursor:pointer"><img src="${esc(p.images[0])}" alt="${esc(p.title)}" loading="lazy"><h3>${esc(p.title)}</h3><div class="price">${fmt(p.price)}</div></div>`).join('')
+        grid.querySelectorAll('.recommendation-card').forEach(el=>el.addEventListener('click',()=>{window.location.href='product.html?id='+el.dataset.productId}))
+      }).catch(()=>{grid.innerHTML='<p style="color:var(--text-muted)">Could not load saved items.</p>'})
+    }
+
+    function renderReturns(){
+      let orders=[]
+      try{const raw=JSON.parse(localStorage.getItem('pheran_orders')||'[]');orders=Array.isArray(raw)?raw:[]}catch(e){}
+      const el=document.getElementById('returns-orders-list')
+      if(!orders.length){el.innerHTML='<p style="color:var(--text-secondary);font-size:0.9rem">No orders eligible for return yet.</p>';return}
+      el.innerHTML='<p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:12px">Select an order to request a return or exchange:</p>'+
+        orders.map(o=>`<div class="order-card return-card" data-order-id="${esc(o.id)}" style="cursor:pointer"><div class="order-card-header"><div class="order-number">${esc(o.id)}</div><span class="order-status-badge" style="background:var(--soft-pink);color:var(--rose-gold)">Request Return →</span></div><div class="order-total-row"><span>${fmt(o.total)}</span><span>${new Date(o.date||o.createdAt||Date.now()).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</span></div></div>`).join('')
+      el.querySelectorAll('.return-card').forEach(card=>card.addEventListener('click',()=>alert('Return request for '+card.dataset.orderId+' submitted. Our team will contact you within 24 hours.')))
+    }
+
+    /* ── Auth API ── */
+    let currentUserId = null
+
+    async function apiCheckSession(){
+      try{
+        const r=await fetch('/api/auth/me',{credentials:'include'})
+        if(r.ok){ const d=await r.json(); if(d.ok&&d.user){ currentUserId=d.user.id; showDashboard(d.user); return } }
+      }catch(e){}
+      showAuthScreen()
+    }
+
+    document.getElementById('signin-btn')?.addEventListener('click', async()=>{
+      const email=document.getElementById('si-email')?.value?.trim()
+      const pw=document.getElementById('si-password')?.value
+      if(!email||!pw){setMsg('signin-msg','Please enter your email and password.',true);return}
+      setBtnState('signin-btn',true,'Sign In')
+      setMsg('signin-msg','','')
+      try{
+        const r=await fetch('/api/auth/login',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pw})})
+        const d=await r.json()
+        if(d.ok){ currentUserId=d.user.id; showDashboard(d.user) }
+        else setMsg('signin-msg',d.error||'Sign in failed.',true)
+      }catch(e){ setMsg('signin-msg','Connection error. Is the server running?',true) }
+      setBtnState('signin-btn',false,'Sign In')
+    })
+
+    document.getElementById('signup-btn')?.addEventListener('click', async()=>{
+      const fn=document.getElementById('su-first')?.value?.trim()
+      const ln=document.getElementById('su-last')?.value?.trim()
+      const em=document.getElementById('su-email')?.value?.trim()
+      const ph=document.getElementById('su-phone')?.value?.trim()
+      const pw=document.getElementById('su-password')?.value
+      if(!fn||!em||!pw){alert('Please fill in first name, email, and password.');return}
+      setBtnState('signup-btn',true,'Create Account')
+      try{
+        const r=await fetch('/api/auth/register',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({firstName:fn,lastName:ln,email:em,phone:ph,password:pw})})
+        const d=await r.json()
+        if(d.ok){ currentUserId=d.user.id; showDashboard(d.user) }
+        else alert(d.error||'Registration failed.')
+      }catch(e){ alert('Connection error. Is the server running?') }
+      setBtnState('signup-btn',false,'Create Account')
+    })
+
+    document.getElementById('signout-btn')?.addEventListener('click', async()=>{
+      try{ await fetch('/api/auth/logout',{method:'POST',credentials:'include'}) }catch(e){}
+      currentUserId=null
+      showAuthScreen()
+    })
+
+    document.getElementById('save-profile')?.addEventListener('click', async()=>{
+      const body={firstName:document.getElementById('prof-first')?.value,lastName:document.getElementById('prof-last')?.value,phone:document.getElementById('prof-phone')?.value}
+      try{
+        const r=await fetch('/api/auth/profile',{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+        const d=await r.json()
+        if(d.ok){ const msg=document.getElementById('profile-saved-msg');if(msg){msg.style.display='inline';setTimeout(()=>msg.style.display='none',2000)} }
+        else alert(d.error||'Could not save profile.')
+      }catch(e){ alert('Connection error.') }
+    })
+
+    document.getElementById('save-prefs')?.addEventListener('click',()=>{alert('Preferences saved!')})
+    document.getElementById('pref-sms')?.addEventListener('change',function(){
+      document.getElementById('sms-toggle').style.background=this.checked?'var(--purple-main)':'var(--gray-300)'
+    })
+
+    /* ── Init: check session on page load ── */
+    apiCheckSession()
+  </script>
+  <script src="icons.js"></script>
+
+  <script src="mobile-menu.js"></script>
+</body>
+</html>
+
+
+

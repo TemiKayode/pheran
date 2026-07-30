@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PHERAN Admin — Co-occurrence</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    .admin-wrap{padding:20px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid #eee;text-align:left}
+    .controls{display:flex;gap:8px;margin-bottom:12px}
+  </style>
+</head>
+<body>
+  <div class="admin-wrap">
+    <h1>Co-occurrence Counts</h1>
+    <div class="controls">
+      <a href="products.html" style="text-decoration:none"><button type="button">Manage Products</button></a>
+      <button id="refresh">Refresh</button>
+      <button id="download">Download JSON</button>
+      <button id="show-events">Show Session Events</button>
+      <button id="show-cache">Show Client Cache Metrics</button>
+      <button id="prune-cache">Prune Client Cache</button>
+      <button id="clear-cache">Clear Client Cache</button>
+      <button id="show-server-cache">Show Server Cache Metrics</button>
+      <button id="prune-server-cache">Prune Server Cache</button>
+      <button id="clear-server-cache">Clear Server Cache</button>
+      <label style="display:flex;align-items:center;gap:6px;margin-left:6px">Max entries: <input id="max-entries" type="number" value="200" style="width:80px;margin-left:6px"></label>
+    </div>
+    <div id="co-table-wrap"></div>
+    <div id="cache-wrap" style="margin-top:12px"></div>
+    <div id="server-cache-wrap" style="margin-top:12px"></div>
+    <div id="events-wrap" style="margin-top:18px"></div>
+  </div>
+  <script>
+    async function fetchCo(){
+      const res = await fetch('/api/cooccurrence');
+      if(!res.ok) return null; return res.json();
+    }
+    async function fetchEvents(){
+      const res = await fetch('/api/session-events'); if(!res.ok) return null; return res.json();
+    }
+    function renderTable(obj){
+      const wrap = document.getElementById('co-table-wrap'); wrap.innerHTML = '';
+      const entries = Object.entries(obj).sort((a,b)=> b[1]-a[1]);
+      const t = document.createElement('table');
+      const thead = document.createElement('thead'); thead.innerHTML = '<tr><th>Product ID</th><th>Count</th></tr>';
+      t.appendChild(thead);
+      const tbody = document.createElement('tbody');
+      entries.forEach(([k,v])=>{ const tr = document.createElement('tr'); tr.innerHTML = `<td>${k}</td><td>${v}</td>`; tbody.appendChild(tr) });
+      t.appendChild(tbody); wrap.appendChild(t);
+    }
+    document.getElementById('refresh').addEventListener('click', async ()=>{ const data = await fetchCo(); if(data && data.co) renderTable(data.co) });
+    document.getElementById('download').addEventListener('click', async ()=>{ const data = await fetchCo(); if(!data) return; const blob = new Blob([JSON.stringify(data.co, null, 2)], {type:'application/json'}); const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='cooccurrence.json'; a.click(); URL.revokeObjectURL(url); });
+    document.getElementById('show-events').addEventListener('click', async ()=>{ const ev = await fetchEvents(); const wrap = document.getElementById('events-wrap'); wrap.innerHTML = '<h3>Recent Session Events</h3>'; if(ev && ev.events){ const pre = document.createElement('pre'); pre.textContent = JSON.stringify(ev.events.slice(-50), null, 2); wrap.appendChild(pre) } });
+    // initial load
+    (async ()=>{ const d = await fetchCo(); if(d && d.co) renderTable(d.co) })();
+
+    // IndexedDB cache metrics & pruning (client-side cache used by the storefront)
+    const IDB_DB = 'pheran_cache_db'
+    const IDB_STORE = 'responses'
+    let idb = null
+    function openIDB(){
+      return new Promise((resolve,reject)=>{
+        if(idb) return resolve(idb)
+        const req = indexedDB.open(IDB_DB,1)
+        req.onupgradeneeded = ()=>{ try{ req.result.createObjectStore(IDB_STORE) }catch(e){} }
+        req.onsuccess = ()=>{ idb = req.result; resolve(idb) }
+        req.onerror = ()=> reject(req.error)
+      })
+    }
+    async function idbKeysAndStats(){
+      try{
+        const db = await openIDB()
+        return await new Promise((res,rej)=>{
+          const tx = db.transaction(IDB_STORE,'readonly')
+          const store = tx.objectStore(IDB_STORE)
+          const req = store.openCursor()
+          const out = { count:0, totalSize:0, keys:[] }
+          req.onsuccess = e=>{
+            const cur = e.target.result
+            if(!cur){ res(out); return }
+            try{
+              const v = cur.value
+              const size = typeof v === 'string' ? v.length : JSON.stringify(v).length
+              out.count += 1
+              out.totalSize += size
+              out.keys.push({ key: cur.key, size })
+            }catch(e){}
+            cur.continue()
+          }
+          req.onerror = ()=> rej(req.error)
+        })
+      }catch(e){ return { count:0, totalSize:0, keys:[] } }
+    }
+    async function pruneCache({ maxEntries=200, maxAgeMs=60*1000 }={}){
+      try{
+        const db = await openIDB()
+        const tx = db.transaction(IDB_STORE,'readwrite')
+        const store = tx.objectStore(IDB_STORE)
+        const items = []
+        await new Promise((res,rej)=>{
+          const req = store.openCursor()
+          req.onsuccess = e=>{
+            const cur = e.target.result
+            if(!cur){ res(); return }
+            items.push({ key: cur.key, val: cur.value })
+            cur.continue()
+          }
+          req.onerror = ()=> rej(req.error)
+        })
+        // remove by age
+        const now = Date.now()
+        for(const it of items){ try{ if(it.val && it.val.ts && (now - it.val.ts) > maxAgeMs){ store.delete(it.key) } }catch(e){} }
+        // enforce max entries (delete oldest by ts)
+        const remaining = []
+        await new Promise((res,rej)=>{ const req = store.openCursor(); req.onsuccess = e=>{ const cur = e.target.result; if(!cur){ res(); return } ; remaining.push({ key: cur.key, ts: cur.value && cur.value.ts ? cur.value.ts : 0 }); cur.continue() }; req.onerror=()=>rej(req.error) })
+        if(remaining.length > maxEntries){ remaining.sort((a,b)=>a.ts-b.ts); const toRemove = remaining.slice(0, remaining.length - maxEntries); for(const r of toRemove) store.delete(r.key) }
+        return true
+      }catch(e){ return false }
+    }
+    async function clearCache(){ try{ const db = await openIDB(); const tx = db.transaction(IDB_STORE,'readwrite'); tx.objectStore(IDB_STORE).clear(); return true }catch(e){ return false } }
+
+    async function renderCacheMetrics(){ const wrap = document.getElementById('cache-wrap'); wrap.innerHTML = '<h3>Client Cache Metrics</h3>'; const stats = await idbKeysAndStats(); const p = document.createElement('div'); p.innerHTML = `<strong>Entries:</strong> ${stats.count} &nbsp; <strong>Approx total bytes:</strong> ${stats.totalSize}`; wrap.appendChild(p); if(stats.keys.length){ const pre = document.createElement('pre'); pre.textContent = JSON.stringify(stats.keys.slice(0,200), null, 2); wrap.appendChild(pre) } }
+
+    document.getElementById('show-cache').addEventListener('click', async ()=>{ await renderCacheMetrics() })
+    document.getElementById('prune-cache').addEventListener('click', async ()=>{ const maxEntries = parseInt(document.getElementById('max-entries').value||'200',10); const ok = await pruneCache({ maxEntries, maxAgeMs: 60*1000 }); if(ok) await renderCacheMetrics(); else alert('Prune failed') })
+    document.getElementById('clear-cache').addEventListener('click', async ()=>{ if(confirm('Clear client IndexedDB cache?')){ const ok = await clearCache(); if(ok) renderCacheMetrics(); else alert('Clear failed') } })
+
+    // server-side cache metrics / controls
+    async function fetchServerCacheMetrics(){ const res = await fetch('/api/cache-metrics'); if(!res.ok) return null; return res.json() }
+    async function renderServerCacheMetrics(){ const wrap = document.getElementById('server-cache-wrap'); wrap.innerHTML = '<h3>Server Cache Metrics</h3>'; const d = await fetchServerCacheMetrics(); if(!d){ wrap.appendChild(document.createTextNode('No data')); return } const p = document.createElement('div'); p.innerHTML = `<strong>Requests:</strong> ${d.stats.requests} &nbsp; <strong>Hits:</strong> ${d.stats.hits} &nbsp; <strong>Misses:</strong> ${d.stats.misses} &nbsp; <strong>Total bytes:</strong> ${d.stats.totalResponseBytes} &nbsp; <strong>Entries:</strong> ${d.cacheSize}`; wrap.appendChild(p); if(d.entries && d.entries.length){ const pre = document.createElement('pre'); pre.textContent = JSON.stringify(d.entries.slice(0,200), null, 2); wrap.appendChild(pre) } }
+
+    async function serverPrune(){ const maxEntries = parseInt(document.getElementById('max-entries').value||'200',10); const res = await fetch('/api/cache/prune',{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ maxEntries, maxAgeMs: 60000 }) }); if(res.ok) return res.json(); return null }
+    async function serverClear(){ const res = await fetch('/api/cache/clear',{ method:'POST' }); if(res.ok) return res.json(); return null }
+
+    document.getElementById('show-server-cache').addEventListener('click', async ()=>{ await renderServerCacheMetrics() })
+    document.getElementById('prune-server-cache').addEventListener('click', async ()=>{ const r = await serverPrune(); if(r && r.ok) renderServerCacheMetrics(); else alert('Server prune failed') })
+    document.getElementById('clear-server-cache').addEventListener('click', async ()=>{ if(confirm('Clear server in-memory cache?')){ const r = await serverClear(); if(r && r.ok) renderServerCacheMetrics(); else alert('Server clear failed') } })
+  </script>
+</body>
+</html>

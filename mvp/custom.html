@@ -1,0 +1,358 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PHERAN — Custom-Made</title>
+  <meta name="description" content="Commission a one-of-a-kind piece made just for you. Share your vision and PHERAN's atelier will bring it to life in 10–21 days.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="PHERAN">
+  <meta property="og:title" content="Custom-Made — PHERAN">
+  <meta property="og:description" content="Commission a one-of-a-kind piece made just for you. Share your vision and PHERAN's atelier will bring it to life in 10–21 days.">
+  <meta property="og:image" content="https://pheran.ng/mvp/img-red-gown-side.jpg">
+  <meta property="og:url" content="https://pheran.ng/mvp/custom.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@pheranng">
+  <meta name="twitter:title" content="Custom-Made — PHERAN">
+  <meta name="twitter:description" content="Commission a one-of-a-kind piece made just for you. Share your vision and PHERAN's atelier will bring it to life in 10–21 days.">
+  <meta name="twitter:image" content="https://pheran.ng/mvp/img-red-gown-side.jpg">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="img-red-gown-side.jpg">
+  <link rel="canonical" href="https://pheran.ng/mvp/custom.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles-upgrade.css">
+</head>
+<body>
+  <!-- Cart drawer -->
+  <div class="cart-overlay" id="cart-overlay"></div>
+  <aside class="cart-drawer" id="cart-drawer">
+    <div class="cart-drawer-header">
+      <h2>Your Cart (<span id="cart-drawer-count">0</span>)</h2>
+      <button class="cart-drawer-close" id="cart-drawer-close">✕</button>
+    </div>
+    <div class="cart-drawer-body" id="cart-drawer-body"></div>
+    <div class="cart-drawer-footer" id="cart-drawer-footer"></div>
+  </aside>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <button class="icon-btn" id="menu-btn" aria-label="Menu"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg></button>
+      <a class="logo" href="homepage.html"><img src="logo.jpeg" alt="PHERAN"></a>
+      <nav>
+        <a class="nav-link" href="category.html">Shop</a>
+        <a class="nav-link" href="custom.html" style="color:var(--purple-main);font-weight:700">Custom</a>
+        <a class="nav-link" href="gallery.html">Gallery</a>
+        <a class="nav-link" href="about.html">About</a>
+      </nav>
+      <div class="header-actions">
+        <a class="icon-btn" href="account.html" aria-label="My account"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg></a>
+        <button class="icon-btn" id="cart-btn"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 10.5V6a3.75 3.75 0 0 0-7.5 0v4.5M3.375 7.5h17.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125H3.375A1.125 1.125 0 0 1 2.25 19.875V8.625c0-.621.504-1.125 1.125-1.125Z"/></svg><span class="cart-count" id="cart-count-badge">0</span></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <div style="background:linear-gradient(135deg,var(--purple-deepest,#2D1B4E),#5B2D8E);padding:56px 0;text-align:center;color:#fff">
+    <div class="container">
+      <div class="section-label" style="color:rgba(255,255,255,0.6)">Bespoke Service</div>
+      <h1 style="font-family:var(--font-display);font-size:2.2rem;margin:0 0 12px">Your Vision. Your Fabric. Your Fit.</h1>
+      <p style="color:rgba(255,255,255,0.8);max-width:520px;margin:0 auto;line-height:1.7">Design a one-of-a-kind piece handcrafted by our master tailors in Ibadan, Nigeria. Every decision is yours — we bring the craft.</p>
+      <div style="display:flex;gap:24px;justify-content:center;margin-top:24px;font-size:0.85rem;color:rgba(255,255,255,0.7)">
+        <span>Hand-sewn in Ibadan</span>
+        <span><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0 0 12 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 0 1-2.031.352 5.988 5.988 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971Zm-16.5.52c-.99.143-1.99.317-2.98.52m2.98-.52-2.62 10.726c-.122.499.106 1.028.589 1.202a5.989 5.989 0 0 0 2.031.352 5.989 5.989 0 0 0 2.031-.352c.483-.174.711-.703.59-1.202L5.25 4.971Z"/></svg> Made to your measurements</span>
+        <span><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.25 7.5l-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"/></svg> Delivered in 10–14 days</span>
+      </div>
+    </div>
+  </div>
+
+  <main class="container custom-layout">
+    <!-- Configuration panels -->
+    <div>
+      <!-- Step 1: Garment type -->
+      <div class="config-panel">
+        <h3>1. Choose Your Garment</h3>
+        <div class="config-option-grid" id="garment-grid">
+          <div class="config-option selected" data-type="dress" data-price="35000">
+            <span class="co-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3h6l1.5 6M3 3l3 16h12l3-16H3Z"/><path d="M9 3c0 2.5 1.5 4.5 3 6 1.5-1.5 3-3.5 3-6"/></svg></span>Dress
+          </div>
+          <div class="config-option" data-type="blouse" data-price="22000">
+            <span class="co-icon">👚</span>Blouse
+          </div>
+          <div class="config-option" data-type="trousers" data-price="24000">
+            <span class="co-icon">👖</span>Trousers
+          </div>
+          <div class="config-option" data-type="skirt" data-price="19000">
+            <span class="co-icon">🩱</span>Skirt
+          </div>
+          <div class="config-option" data-type="suit" data-price="65000">
+            <span class="co-icon">🧥</span>Co-ord Set
+          </div>
+          <div class="config-option" data-type="gown" data-price="85000">
+            <span class="co-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"/></svg></span>Evening Gown
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Fabric -->
+      <div class="config-panel">
+        <h3>2. Select Your Fabric</h3>
+        <div class="config-option-grid" id="fabric-grid">
+          <div class="config-option selected" data-fabric="silk" data-price-add="8000">
+            <span class="co-icon">🌟</span>Silk Blend<div style="font-size:0.75rem;color:var(--text-muted);margin-top:3px">+₦8,000</div>
+          </div>
+          <div class="config-option" data-fabric="linen" data-price-add="3000">
+            <span class="co-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2C6.477 2 3 7.477 3 12a9 9 0 0 0 9 9c1.855 0 3.579-.563 5.008-1.527M3 12C7 6 14 4 21 6c-2 8-8 14-14 14"/></svg></span>Linen<div style="font-size:0.75rem;color:var(--text-muted);margin-top:3px">+₦3,000</div>
+          </div>
+          <div class="config-option" data-fabric="cotton" data-price-add="2000">
+            <span class="co-icon">☁️</span>Cotton<div style="font-size:0.75rem;color:var(--text-muted);margin-top:3px">+₦2,000</div>
+          </div>
+          <div class="config-option" data-fabric="ankara" data-price-add="4000">
+            <span class="co-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.883-5.924 15.998 15.998 0 0 0-3.883 5.924Z"/></svg></span>Ankara Print<div style="font-size:0.75rem;color:var(--text-muted);margin-top:3px">+₦4,000</div>
+          </div>
+          <div class="config-option" data-fabric="aso-oke" data-price-add="12000">
+            <span class="co-icon">👑</span>Aso-oke<div style="font-size:0.75rem;color:var(--text-muted);margin-top:3px">+₦12,000</div>
+          </div>
+          <div class="config-option" data-fabric="wool" data-price-add="7000">
+            <span class="co-icon">🧶</span>Wool Blend<div style="font-size:0.75rem;color:var(--text-muted);margin-top:3px">+₦7,000</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px">
+          <span style="font-size:0.82rem;color:var(--text-secondary)">Colour preference:</span>
+          <input type="text" id="color-preference" placeholder="e.g. Deep purple, Ivory, Navy" style="flex:1;min-width:200px;padding:8px 12px;border:1px solid var(--gray-200);border-radius:8px;font-size:0.9rem">
+        </div>
+      </div>
+
+      <!-- Step 3: Style details -->
+      <div class="config-panel">
+        <h3>3. Style Details</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="field-group">
+            <label>Neckline</label>
+            <select id="neckline" style="padding:10px 12px;border:1px solid var(--gray-200);border-radius:8px;font-family:var(--font-body)">
+              <option>V-neck</option><option>Round neck</option><option>Off-shoulder</option>
+              <option>Square neck</option><option>Turtleneck</option><option>Halter</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Sleeve length</label>
+            <select id="sleeves" style="padding:10px 12px;border:1px solid var(--gray-200);border-radius:8px;font-family:var(--font-body)">
+              <option>Sleeveless</option><option>Short sleeves</option><option>3/4 sleeves</option>
+              <option>Long sleeves</option><option>Puff sleeves</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Length</label>
+            <select id="length" style="padding:10px 12px;border:1px solid var(--gray-200);border-radius:8px;font-family:var(--font-body)">
+              <option>Mini</option><option>Midi</option><option>Maxi</option><option>Floor-length</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>Silhouette</label>
+            <select id="silhouette" style="padding:10px 12px;border:1px solid var(--gray-200);border-radius:8px;font-family:var(--font-body)">
+              <option>Fitted</option><option>A-line</option><option>Wrap</option>
+              <option>Straight</option><option>Flared</option><option>Bodycon</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-group" style="margin-top:14px">
+          <label>Additional details (embroidery, pockets, lining, etc.)</label>
+          <textarea id="extra-details" rows="3" placeholder="e.g. Gold embroidery on neckline, hidden pockets, fully lined" style="width:100%;padding:10px 12px;border:1px solid var(--gray-200);border-radius:8px;font-family:var(--font-body);font-size:0.9rem;resize:vertical"></textarea>
+        </div>
+      </div>
+
+      <!-- Step 4: Measurements -->
+      <div class="config-panel">
+        <h3>4. Your Measurements</h3>
+        <p style="font-size:0.88rem;color:var(--text-secondary);margin:0 0 16px">All measurements in centimetres (cm). <a href="#" style="color:var(--purple-main)">How to measure yourself →</a></p>
+        <div class="measurement-grid">
+          <div class="field-group">
+            <label for="m-bust">Bust</label>
+            <input id="m-bust" type="number" placeholder="e.g. 92" min="50" max="160" style="padding:10px 12px;border:1px solid var(--gray-200);border-radius:8px;font-family:var(--font-body)">
+          </div>
+          <div class="field-group">
+            <label for="m-waist">Waist</label>
+            <input id="m-waist" type="number" placeholder="e.g. 74" min="40" max="140" style="padding:10px 12px;border:1px solid var(--gray-200);border-radius:8px;font-family:var(--font-body)">
+          </div>
+          <div class="field-group">
+            <label for="m-hip">Hip</label>
+            <input id="m-hip" type="number" placeholder="e.g. 100" min="60" max="160" style="padding:10px 12px;border:1px solid var(--gray-200);border-radius:8px;font-family:var(--font-body)">
+          </div>
+          <div class="field-group">
+            <label for="m-length">Desired length (cm)</label>
+            <input id="m-length" type="number" placeholder="e.g. 120" min="30" max="200" style="padding:10px 12px;border:1px solid var(--gray-200);border-radius:8px;font-family:var(--font-body)">
+          </div>
+          <div class="field-group">
+            <label for="m-shoulder">Shoulder width</label>
+            <input id="m-shoulder" type="number" placeholder="e.g. 38" min="25" max="70" style="padding:10px 12px;border:1px solid var(--gray-200);border-radius:8px;font-family:var(--font-body)">
+          </div>
+          <div class="field-group">
+            <label for="m-height">Your height (cm)</label>
+            <input id="m-height" type="number" placeholder="e.g. 168" min="130" max="210" style="padding:10px 12px;border:1px solid var(--gray-200);border-radius:8px;font-family:var(--font-body)">
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5: Delivery -->
+      <div class="config-panel">
+        <h3>5. Delivery Expectation</h3>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <label style="display:flex;align-items:center;gap:12px;padding:14px;border:2px solid var(--purple-main);border-radius:12px;cursor:pointer;background:var(--purple-05)">
+            <input type="radio" name="custom-delivery" value="standard" checked style="accent-color:var(--purple-main)">
+            <div style="flex:1"><strong>Standard — 10–14 business days</strong><div style="font-size:0.83rem;color:var(--text-secondary)">Our recommended timeframe for exceptional quality</div></div>
+            <span style="font-weight:700;color:var(--purple-main)">Included</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--gray-200);border-radius:12px;cursor:pointer">
+            <input type="radio" name="custom-delivery" value="rush" style="accent-color:var(--purple-main)">
+            <div style="flex:1"><strong>Rush — 5–7 business days</strong><div style="font-size:0.83rem;color:var(--text-secondary)">Priority handling by our lead tailors</div></div>
+            <span style="font-weight:700">+₦15,000</span>
+          </label>
+        </div>
+        <div class="field-group" style="margin-top:14px">
+          <label for="occasion">Occasion / Event (optional)</label>
+          <input id="occasion" type="text" placeholder="e.g. Wedding, Birthday, Corporate event, Date night" style="padding:10px 12px;border:1px solid var(--gray-200);border-radius:8px;font-family:var(--font-body);font-size:0.9rem">
+        </div>
+        <div class="field-group" style="margin-top:14px">
+          <label for="event-date">Event date (optional)</label>
+          <input id="event-date" type="date" style="padding:10px 12px;border:1px solid var(--gray-200);border-radius:8px;font-family:var(--font-body);font-size:0.9rem">
+        </div>
+      </div>
+
+      <button class="btn primary" style="width:100%;padding:16px;font-size:1rem;margin-top:4px" id="submit-custom">Add Custom Piece to Cart →</button>
+      <p style="text-align:center;font-size:0.82rem;color:var(--text-muted);margin-top:10px">Our team will review your specifications and confirm within 24 hours.</p>
+    </div>
+
+    <!-- Live summary -->
+    <div>
+      <div class="config-summary" id="config-summary">
+        <h3>Your Custom Piece</h3>
+        <div id="summary-lines"></div>
+        <div class="summary-price">
+          <div class="sp-label">Estimated price</div>
+          <div class="sp-amount" id="summary-price">₦43,000</div>
+        </div>
+        <div class="delivery-note">
+          📅 Your piece will be ready in <strong>10–14 business days</strong> and delivered to your door.
+        </div>
+        <div style="border-top:1px solid rgba(255,255,255,0.2);padding-top:14px;margin-top:4px;font-size:0.82rem;color:rgba(255,255,255,0.7);line-height:1.6">
+          ✓ Handcrafted by master tailors<br>
+          ✓ Quality-checked before dispatch<br>
+          ✓ Alteration support included<br>
+          ✓ Beautifully gift-packaged
+        </div>
+      </div>
+
+      <!-- Process steps -->
+      <div style="background:#fff;border:1px solid var(--gray-200);border-radius:14px;padding:22px;margin-top:20px">
+        <h3 style="font-family:var(--font-display);font-size:1rem;margin:0 0 16px">How It Works</h3>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--purple-main);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.82rem;flex-shrink:0">1</div>
+            <div><strong style="font-size:0.9rem">Configure & Order</strong><p style="margin:2px 0 0;font-size:0.82rem;color:var(--text-secondary)">Choose your garment, fabric, style, and provide your measurements.</p></div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--purple-main);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.82rem;flex-shrink:0">2</div>
+            <div><strong style="font-size:0.9rem">Confirmation Call</strong><p style="margin:2px 0 0;font-size:0.82rem;color:var(--text-secondary)">Our team contacts you within 24 hours to finalise details and confirm payment.</p></div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--purple-main);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.82rem;flex-shrink:0">3</div>
+            <div><strong style="font-size:0.9rem">Crafting Begins</strong><p style="margin:2px 0 0;font-size:0.82rem;color:var(--text-secondary)">Your piece is handcrafted by our skilled tailors using your chosen fabric.</p></div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--success);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.82rem;flex-shrink:0">✓</div>
+            <div><strong style="font-size:0.9rem">Delivered to You</strong><p style="margin:2px 0 0;font-size:0.82rem;color:var(--text-secondary)">Your unique piece arrives beautifully packaged, perfectly fitted.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer-full">
+    <div class="container footer-bottom" style="padding:24px 0">
+      <p>© 2026 PHERAN. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <nav class="mobile-nav"><div class="mobile-nav-inner">
+    <a class="mobile-nav-item" href="homepage.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg></span>Home</a>
+    <a class="mobile-nav-item" href="category.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"/></svg></span>Shop</a>
+    <a class="mobile-nav-item active" href="custom.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg></span>Custom</a>
+    <button class="mobile-nav-item" id="mobile-cart-btn"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 10.5V6a3.75 3.75 0 0 0-7.5 0v4.5M3.375 7.5h17.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125H3.375A1.125 1.125 0 0 1 2.25 19.875V8.625c0-.621.504-1.125 1.125-1.125Z"/></svg></span>Cart</button>
+    <a class="mobile-nav-item" href="account.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg></span>Account</a>
+  </div></nav>
+
+  <script src="icons.js"></script>
+  <script src="script.js"></script>
+  <script>
+    const prices = { dress:35000, blouse:22000, trousers:24000, skirt:19000, suit:65000, gown:85000 }
+    const fabricAdd = { silk:8000, linen:3000, cotton:2000, ankara:4000,'aso-oke':12000, wool:7000 }
+    let selectedType='dress', selectedFabric='silk', rushDelivery=false
+
+    function updateSummary(){
+      const base=prices[selectedType]||35000
+      const fab=fabricAdd[selectedFabric]||0
+      const rush=rushDelivery?15000:0
+      const total=base+fab+rush
+      document.getElementById('summary-price').textContent=new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(total)
+      const lines=document.getElementById('summary-lines')
+      const typeLabel=document.querySelector(`.config-option[data-type="${selectedType}"]`)?.textContent?.trim()||selectedType
+      const fabLabel=document.querySelector(`.config-option[data-fabric="${selectedFabric}"]`)?.textContent?.split('\n')[0]?.trim()||selectedFabric
+      if(lines) lines.innerHTML=`
+        <div class="summary-line"><span>Garment</span><span>${typeLabel}</span></div>
+        <div class="summary-line"><span>Fabric</span><span>${fabLabel}</span></div>
+        <div class="summary-line"><span>Base price</span><span>${new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(base)}</span></div>
+        <div class="summary-line"><span>Fabric premium</span><span>+${new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(fab)}</span></div>
+        ${rush?`<div class="summary-line"><span>Rush delivery</span><span>+${new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(rush)}</span></div>`:''}
+      `
+    }
+
+    document.querySelectorAll('#garment-grid .config-option').forEach(opt=>{
+      opt.addEventListener('click',()=>{
+        document.querySelectorAll('#garment-grid .config-option').forEach(o=>o.classList.remove('selected'))
+        opt.classList.add('selected'); selectedType=opt.dataset.type; updateSummary()
+      })
+    })
+    document.querySelectorAll('#fabric-grid .config-option').forEach(opt=>{
+      opt.addEventListener('click',()=>{
+        document.querySelectorAll('#fabric-grid .config-option').forEach(o=>o.classList.remove('selected'))
+        opt.classList.add('selected'); selectedFabric=opt.dataset.fabric; updateSummary()
+      })
+    })
+    document.querySelectorAll('input[name="custom-delivery"]').forEach(r=>{
+      r.addEventListener('change',()=>{rushDelivery=r.value==='rush';updateSummary()})
+    })
+
+    document.getElementById('submit-custom')?.addEventListener('click',()=>{
+      const bust=document.getElementById('m-bust')?.value
+      if(!bust){alert('Please enter at least your bust measurement to continue.');return}
+      // Add as a special custom item to cart
+      const price = prices[selectedType]+(fabricAdd[selectedFabric]||0)+(rushDelivery?15000:0)
+      const typeLabel=document.querySelector(`.config-option[data-type="${selectedType}"]`)?.textContent?.trim()?.split('\n')[0]||selectedType
+      const fabLabel=document.querySelector(`.config-option[data-fabric="${selectedFabric}"]`)?.textContent?.split('\n')[0]?.trim()||selectedFabric
+      const item={
+        key:'custom-'+Date.now(),
+        id:'custom',
+        title:`Custom ${typeLabel}`,
+        price,
+        image:'img-grey-linen-front.jpg',
+        size:'Custom',
+        color:document.getElementById('color-preference')?.value||'As specified',
+        qty:1
+      }
+      const cart=JSON.parse(localStorage.getItem('pheran_cart')||'[]')
+      cart.push(item)
+      localStorage.setItem('pheran_cart',JSON.stringify(cart))
+      window.location.href='cart.html'
+    })
+
+    updateSummary()
+  </script>
+
+  <script src="mobile-menu.js"></script>
+</body>
+</html>
+
+
+

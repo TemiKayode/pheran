@@ -1,0 +1,255 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PHERAN — Shop</title>
+  <meta name="description" content="Browse PHERAN's full collection — from elegant evening gowns to everyday linen co-ord sets. Filter by category, size, and colour.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="PHERAN">
+  <meta property="og:title" content="Shop — PHERAN">
+  <meta property="og:description" content="Browse PHERAN's full collection — from elegant evening gowns to everyday linen co-ord sets. Filter by category, size, and colour.">
+  <meta property="og:image" content="https://pheran.ng/mvp/img-wine-pinstripe.jpg">
+  <meta property="og:url" content="https://pheran.ng/mvp/category.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@pheranng">
+  <meta name="twitter:title" content="Shop — PHERAN">
+  <meta name="twitter:description" content="Browse PHERAN's full collection — from elegant evening gowns to everyday linen co-ord sets. Filter by category, size, and colour.">
+  <meta name="twitter:image" content="https://pheran.ng/mvp/img-wine-pinstripe.jpg">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="img-wine-pinstripe.jpg">
+  <link rel="canonical" href="https://pheran.ng/mvp/category.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles-upgrade.css">
+  <link rel="manifest" href="../manifest.json">
+</head>
+<body class="category-page">
+
+  <!-- Search overlay -->
+  <div id="search-overlay" class="search-overlay" role="dialog" aria-label="Search">
+    <div class="search-box">
+      <div class="search-input-wrap">
+        <span style="display:flex;align-items:center;color:var(--gray-400)"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg></span>
+        <input id="search-input" class="search-input" type="text" placeholder="Search for dresses, tops, fabric…" autocomplete="off" />
+        <button class="search-close" id="search-close" aria-label="Close search">✕</button>
+      </div>
+      <div id="search-results" class="search-results"></div>
+    </div>
+  </div>
+
+  <!-- Cart drawer -->
+  <div class="cart-overlay" id="cart-overlay"></div>
+  <aside class="cart-drawer" id="cart-drawer" aria-label="Shopping cart">
+    <div class="cart-drawer-header">
+      <h2>Your Cart (<span id="cart-drawer-count">0</span>)</h2>
+      <button class="cart-drawer-close" id="cart-drawer-close" aria-label="Close cart">✕</button>
+    </div>
+    <div class="cart-drawer-body" id="cart-drawer-body"></div>
+    <div class="cart-drawer-footer" id="cart-drawer-footer"></div>
+  </aside>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <button class="icon-btn" id="menu-btn" aria-label="Menu"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg></button>
+      <a class="logo" href="homepage.html"><img src="logo.jpeg" alt="PHERAN"></a>
+      <nav>
+        <a class="nav-link" href="category.html" style="color:var(--purple-main);font-weight:700">Shop</a>
+        <a class="nav-link" href="custom.html">Custom</a>
+        <a class="nav-link" href="gallery.html">Gallery</a>
+        <a class="nav-link" href="about.html">About</a>
+      </nav>
+      <div class="header-actions">
+        <button class="icon-btn" id="search-btn" aria-label="Search"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg></button>
+        <a class="icon-btn" href="account.html" aria-label="My account"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg></a>
+        <button class="icon-btn" id="cart-btn" aria-label="Open cart"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 10.5V6a3.75 3.75 0 0 0-7.5 0v4.5M3.375 7.5h17.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125H3.375A1.125 1.125 0 0 1 2.25 19.875V8.625c0-.621.504-1.125 1.125-1.125Z"/></svg><span class="cart-count" id="cart-count-badge">0</span></button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container category-page">
+
+    <!-- Category hero with storytelling -->
+    <section class="category-hero">
+      <div class="hero-copy">
+        <p class="eyebrow">The PHERAN Edit</p>
+        <h1 id="category-page-title">All Products</h1>
+        <p id="category-page-desc">Curated essentials crafted from premium fabrics. Filter by size, colour, and fabric to find your perfect fit.</p>
+      </div>
+      <div class="category-actions">
+        <button class="btn secondary" data-category="">All</button>
+        <button class="btn secondary" data-category="Dresses">Dresses</button>
+        <button class="btn secondary" data-category="Tops">Tops</button>
+        <button class="btn secondary" data-category="Bottoms">Bottoms</button>
+      </div>
+    </section>
+
+    <!-- Storytelling block -->
+    <div class="category-story">
+      <div>
+        <h3>Designed in Ibadan. Loved everywhere.</h3>
+        <p>Every PHERAN piece is thoughtfully designed in Ibadan, Nigeria and handcrafted by skilled Nigerian artisans using the finest local and imported fabrics.</p>
+      </div>
+      <div style="display:flex;gap:16px">
+        <div class="story-stat"><strong>500+</strong><span>Styles crafted</span></div>
+        <div class="story-stat"><strong>12k+</strong><span>Happy customers</span></div>
+      </div>
+    </div>
+
+    <!-- Lookbook banner -->
+    <div class="lookbook-banner">
+      <div class="lb-text">
+        <h3>New: The Harmattan Edit</h3>
+        <p>Lightweight layers and rich textures for the cooler season. Exclusively at PHERAN.</p>
+      </div>
+      <a class="lb-cta" href="gallery.html">View Lookbook →</a>
+    </div>
+
+    <div class="category-topbar">
+      <button id="open-filters" class="btn tertiary">Filters</button>
+      <select id="sort-select-mobile" aria-label="Sort products" class="sort-select-mobile">
+        <option value="popular">Sort: Most popular</option>
+        <option value="price_asc">Price: low to high</option>
+        <option value="price_desc">Price: high to low</option>
+        <option value="rating_desc">Top rated</option>
+      </select>
+      <div id="mobile-result-count" class="results-count mobile-count">Showing 0 results</div>
+    </div>
+
+    <aside class="filters">
+      <div class="filter-panel-header">
+        <h3>Filters</h3>
+        <button id="save-preset" class="btn secondary">Save Preset</button>
+      </div>
+      <div class="filter-group">
+        <label>Price (₦)</label>
+        <div class="price-range">
+          <input id="price-min" type="number" value="" placeholder="Min"> – <input id="price-max" type="number" value="" placeholder="Max">
+        </div>
+      </div>
+      <div class="filter-group">
+        <label>Size</label>
+        <div id="filter-sizes"></div>
+      </div>
+      <div class="filter-group">
+        <label>Color</label>
+        <div id="filter-colors"></div>
+      </div>
+      <div class="filter-group">
+        <label>Fabric</label>
+        <div id="filter-fabrics"></div>
+      </div>
+      <div class="filter-presets" style="margin-top:12px">
+        <label>Presets</label>
+        <div class="preset-buttons">
+          <button class="btn tertiary" data-preset="new_arrivals">New arrivals</button>
+          <button class="btn tertiary" data-preset="editor_pick">Editor's pick</button>
+        </div>
+        <div id="saved-presets" class="preset-list"></div>
+      </div>
+      <div id="recently-viewed" class="recently-viewed"></div>
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button id="apply-filters" class="btn primary" style="flex:1">Apply</button>
+        <button id="clear-filters" class="btn secondary">Clear</button>
+      </div>
+    </aside>
+
+    <section class="products">
+      <div class="products-header">
+        <div class="title-row">
+          <h2 id="category-title">All Products</h2>
+          <div class="category-badge" id="category-badge">All edit</div>
+        </div>
+        <div class="meta-row">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <div id="results-count" class="results-count">Showing 0 results</div>
+            <label for="sort-select" class="sr-only">Sort</label>
+            <select id="sort-select" aria-label="Sort products">
+              <option value="popular">Most popular</option>
+              <option value="price_asc">Price: low to high</option>
+              <option value="price_desc">Price: high to low</option>
+              <option value="rating_desc">Top rated</option>
+            </select>
+          </div>
+          <div id="active-pills" class="active-pills"></div>
+          <div id="loading-spinner" class="spinner" aria-hidden="true"></div>
+        </div>
+      </div>
+      <div id="product-grid" class="product-grid"></div>
+      <nav id="pagination" class="pagination" aria-label="Pagination"></nav>
+      <div class="load-more-wrap"><button id="load-more" class="btn secondary">Load More</button></div>
+    </section>
+  </main>
+
+  <footer class="footer-full">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <button class="icon-btn" id="menu-btn" aria-label="Menu"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg></button>
+      <a class="logo" href="homepage.html">PHERAN</a>
+          <p>Premium Nigerian fashion crafted with intention.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Shop</h4>
+          <a href="category.html">All Products</a>
+          <a href="custom.html">Custom-Made</a>
+          <a href="gallery.html">Gallery</a>
+        </div>
+        <div class="footer-col">
+          <h4>Help</h4>
+          <a href="support.html">FAQ</a>
+          <a href="policies.html">Shipping</a>
+          <a href="policies.html#returns">Returns</a>
+        </div>
+        <div class="footer-col">
+          <h4>Account</h4>
+          <a href="account.html">My Account</a>
+          <a href="account.html#orders">Orders</a>
+          <a href="cart.html">Cart</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 PHERAN. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Mobile navigation -->
+  <nav class="mobile-nav" aria-label="Mobile navigation">
+    <div class="mobile-nav-inner">
+      <a class="mobile-nav-item" href="homepage.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg></span>Home</a>
+      <a class="mobile-nav-item active" href="category.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"/></svg></span>Shop</a>
+      <a class="mobile-nav-item" href="gallery.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/></svg></span>Gallery</a>
+      <button class="mobile-nav-item" id="mobile-cart-btn"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 10.5V6a3.75 3.75 0 0 0-7.5 0v4.5M3.375 7.5h17.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125H3.375A1.125 1.125 0 0 1 2.25 19.875V8.625c0-.621.504-1.125 1.125-1.125Z"/></svg></span>Cart</button>
+      <a class="mobile-nav-item" href="account.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg></span>Account</a>
+    </div>
+  </nav>
+
+  <script src="icons.js"></script>
+  <script src="script.js"></script>
+  <script>
+    // Set category hero text based on selected category
+    const catTitles = {
+      '': { title: 'All Products', desc: 'Curated essentials crafted from premium fabrics. Filter by size, colour, and fabric to find your perfect fit.' },
+      'Dresses': { title: 'Dresses', desc: 'From silk wraps to linen slips — our dress edit spans every occasion with elegance.' },
+      'Tops': { title: 'Tops & Blouses', desc: 'Lightweight, refined, and endlessly versatile. Tops made for layering and living in.' },
+      'Bottoms': { title: 'Bottoms', desc: 'Tailored trousers to relaxed shorts — bottoms cut to flatter every silhouette.' }
+    }
+    document.querySelectorAll('.category-actions button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cat = btn.dataset.category
+        const info = catTitles[cat] || catTitles['']
+        document.getElementById('category-page-title').textContent = info.title
+        document.getElementById('category-page-desc').textContent = info.desc
+      })
+    })
+  </script>
+
+  <script src="mobile-menu.js"></script>
+</body>
+</html>
+
+
+

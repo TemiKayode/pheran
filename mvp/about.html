@@ -1,0 +1,286 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PHERAN — Our Story</title>
+  <meta name="description" content="PHERAN was born in Ibadan from a love of precision tailoring and the richness of Nigerian fabrics. Meet the people behind the brand.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="PHERAN">
+  <meta property="og:title" content="Our Story — PHERAN">
+  <meta property="og:description" content="PHERAN was born in Ibadan from a love of precision tailoring and the richness of Nigerian fabrics. Meet the people behind the brand.">
+  <meta property="og:image" content="https://pheran.ng/mvp/img-red-gown-side.jpg">
+  <meta property="og:url" content="https://pheran.ng/mvp/about.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@pheranng">
+  <meta name="twitter:title" content="Our Story — PHERAN">
+  <meta name="twitter:description" content="PHERAN was born in Ibadan from a love of precision tailoring and the richness of Nigerian fabrics. Meet the people behind the brand.">
+  <meta name="twitter:image" content="https://pheran.ng/mvp/img-red-gown-side.jpg">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="img-red-gown-side.jpg">
+  <link rel="canonical" href="https://pheran.ng/mvp/about.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles-upgrade.css">
+  <style>
+    .about-hero{background:linear-gradient(150deg,var(--purple-deepest,#2D1B4E) 0%,#4B1A87 55%,#2D0F5A 100%);padding:100px 0 80px;text-align:center;color:#fff;position:relative;overflow:hidden}
+    .about-hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+    .about-hero h1{font-family:var(--font-display);font-size:clamp(2.4rem,6vw,4rem);margin:0 0 16px;color:#fff}
+    .about-hero p{font-size:1.1rem;max-width:540px;margin:0 auto;color:rgba(255,255,255,0.82);line-height:1.7}
+    .about-hero .label{color:var(--gold);font-size:0.78rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:16px}
+    .about-stats{display:flex;gap:0;border:1px solid var(--gray-200);border-radius:20px;overflow:hidden;margin:48px 0}
+    .stat-col{flex:1;padding:32px 24px;text-align:center;border-right:1px solid var(--gray-200)}
+    .stat-col:last-child{border-right:none}
+    .stat-num{font-family:var(--font-display);font-size:2.6rem;font-weight:700;color:var(--purple-main);display:block;margin-bottom:4px}
+    .stat-label{font-size:0.83rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.08em;font-weight:600}
+    .about-story{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;margin:64px 0}
+    .story-img{background:linear-gradient(135deg,#EDE3F6,#C8A2C8);border-radius:20px;aspect-ratio:3/4;display:flex;align-items:flex-end;justify-content:center;padding:24px;font-size:0.8rem;color:var(--text-secondary);text-align:center;overflow:hidden}
+    .story-label{font-size:0.78rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--purple-main);margin-bottom:12px}
+    .story-title{font-family:var(--font-display);font-size:2rem;margin:0 0 20px;line-height:1.25}
+    .story-body{color:var(--text-secondary);line-height:1.8;font-size:0.95rem}
+    .story-body p{margin:0 0 16px}
+    .values-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin:48px 0}
+    .value-card{background:#fff;border:1px solid var(--gray-200);border-radius:16px;padding:28px;transition:transform 200ms,box-shadow 200ms}
+    .value-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+    .value-icon{font-size:2rem;margin-bottom:16px}
+    .value-title{font-family:var(--font-display);font-size:1.1rem;font-weight:700;margin:0 0 8px}
+    .value-body{font-size:0.87rem;color:var(--text-secondary);line-height:1.7;margin:0}
+    .artisan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin:32px 0}
+    .artisan-card{border-radius:16px;overflow:hidden;background:var(--gray-50);border:1px solid var(--gray-200)}
+    .artisan-photo{height:220px;object-fit:cover;width:100%;background:linear-gradient(160deg,#EDE3F6,#8B5FBF)}
+    .artisan-info{padding:16px}
+    .artisan-name{font-weight:700;font-size:0.95rem;margin:0 0 4px}
+    .artisan-role{font-size:0.82rem;color:var(--text-secondary);margin:0 0 8px}
+    .artisan-quote{font-size:0.83rem;color:var(--text-secondary);font-style:italic;margin:0;line-height:1.6}
+    .sustainability-block{background:linear-gradient(135deg,#1A3A2A,#2D5A3D);border-radius:20px;padding:48px;color:#fff;margin:48px 0}
+    .sustainability-block h2{font-family:var(--font-display);font-size:2rem;margin:0 0 16px;color:#fff}
+    .sus-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:28px}
+    .sus-item{background:rgba(255,255,255,0.08);border-radius:12px;padding:20px}
+    .sus-item strong{display:block;margin-bottom:6px;font-size:0.92rem}
+    .sus-item p{font-size:0.83rem;color:rgba(255,255,255,0.75);margin:0;line-height:1.6}
+    .press-logos{display:flex;gap:32px;align-items:center;flex-wrap:wrap;justify-content:center;padding:40px 0}
+    .press-logo{font-family:var(--font-display);font-size:1.2rem;color:var(--text-muted);font-style:italic;opacity:0.6}
+    .about-cta{background:linear-gradient(135deg,var(--purple-deepest,#2D1B4E),#5B2D8E);border-radius:20px;padding:60px;text-align:center;color:#fff;margin-bottom:48px}
+    @media(max-width:768px){.about-story{grid-template-columns:1fr;gap:32px}.values-grid{grid-template-columns:1fr}.artisan-grid{grid-template-columns:1fr 1fr}.sus-grid{grid-template-columns:1fr}.about-stats{flex-direction:column}.stat-col{border-right:none;border-bottom:1px solid var(--gray-200)}.stat-col:last-child{border-bottom:none}}
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <button class="icon-btn" id="menu-btn" aria-label="Menu"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg></button>
+      <a class="logo" href="homepage.html"><img src="logo.jpeg" alt="PHERAN"></a>
+      <nav>
+        <a class="nav-link" href="category.html">Shop</a>
+        <a class="nav-link" href="custom.html">Custom</a>
+        <a class="nav-link" href="gallery.html">Gallery</a>
+        <a class="nav-link" href="about.html" style="color:var(--purple-main);font-weight:700">About</a>
+      </nav>
+      <div class="header-actions">
+        <a class="icon-btn" href="account.html" aria-label="My account"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg></a>
+        <a class="icon-btn" href="cart.html"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 10.5V6a3.75 3.75 0 0 0-7.5 0v4.5M3.375 7.5h17.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125H3.375A1.125 1.125 0 0 1 2.25 19.875V8.625c0-.621.504-1.125 1.125-1.125Z"/></svg><span id="cart-count-badge" class="cart-count">0</span></a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <div class="about-hero">
+    <div class="container">
+      <div class="label">Our Story</div>
+      <h1>Clothes That Know Who You Are</h1>
+      <p>PHERAN was born from a singular belief: that African women deserve clothes that honour their heritage, their ambition, and their individuality — all at once.</p>
+    </div>
+  </div>
+
+  <main class="container">
+
+    <!-- Stats bar -->
+    <div class="about-stats">
+      <div class="stat-col"><span class="stat-num">2019</span><span class="stat-label">Founded</span></div>
+      <div class="stat-col"><span class="stat-num">12k+</span><span class="stat-label">Happy customers</span></div>
+      <div class="stat-col"><span class="stat-num">500+</span><span class="stat-label">Styles created</span></div>
+      <div class="stat-col"><span class="stat-num">38</span><span class="stat-label">Nigerian artisans</span></div>
+    </div>
+
+    <!-- Origin story -->
+    <div class="about-story">
+      <div class="story-img" style="padding:0;overflow:hidden;position:relative">
+        <img src="owner.jpg" alt="Founder Bankole Feranmi in the Ibadan studio, 2019"
+             style="width:100%;height:100%;object-fit:cover;object-position:center top;display:block;border-radius:20px">
+        <span style="position:absolute;bottom:0;left:0;right:0;padding:16px 20px;background:linear-gradient(0deg,rgba(0,0,0,0.55),transparent);color:#fff;font-size:0.8rem;text-align:center;border-radius:0 0 20px 20px">Founder Bankole Feranmi in the Ibadan studio, 2019</span>
+      </div>
+      <div>
+        <div class="story-label">The Beginning</div>
+        <h2 class="story-title">A Closet Full of Compromise</h2>
+        <div class="story-body">
+          <p>In 2019, Bankole Feranmi stood in front of a wardrobe full of imported clothes that said nothing about who he was. An Ibadan-born creative with a passion for precision craft, a deep love for Nigerian textile tradition, and a sense of style that the global fashion industry simply hadn't accounted for.</p>
+          <p>So he started making his own. First for himself, then for colleagues who kept asking "where did you get that?" Three years of quiet persistence later, PHERAN was launched.</p>
+          <p>The name comes from the Old Persian word for garment — a nod to the idea that clothing is a universal language, spoken differently in every culture, yet understood by all.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vision -->
+    <div class="about-story" style="direction:rtl">
+      <div class="story-img" style="background:linear-gradient(135deg,#D4A96A,#C9A962)">
+        <span style="direction:ltr">The custom studio, Ibadan, Nigeria</span>
+      </div>
+      <div style="direction:ltr">
+        <div class="story-label">Our Vision</div>
+        <h2 class="story-title">Redefining What "Made in Nigeria" Means</h2>
+        <div class="story-body">
+          <p>We believe Nigerian craftsmanship deserves to sit alongside the world's finest fashion houses. Not as a novelty, not as an "African aesthetic" — but as a full expression of excellent design, impeccable construction, and intentional creativity.</p>
+          <p>Every PHERAN piece is designed in Ibadan and made by hand. Our fabrics are sourced locally wherever possible — Aso-oke from Iseyin, Ankara from Abuja, hand-dyed adire from Abeokuta. We work with certified artisans who have honed their craft over decades.</p>
+          <p>Our ready-to-wear line brings this craft to more women. Our bespoke service brings it to your exact body, your exact occasion, your exact vision.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Values -->
+    <div style="text-align:center;margin-bottom:32px">
+      <div class="section-label">Our Values</div>
+      <h2 style="font-family:var(--font-display);font-size:1.8rem;margin:0">What We Stand For</h2>
+    </div>
+    <div class="values-grid">
+      <div class="value-card">
+        <div class="value-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.883-5.924 15.998 15.998 0 0 0-3.883 5.924Z"/></svg></div>
+        <h3 class="value-title">Intentional Design</h3>
+        <p class="value-body">Every silhouette begins with a question: "Who is this woman, and what does she need from this garment?" We design for real occasions, real bodies, and real confidence.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.05 4.575a1.575 1.575 0 1 0-3.15 0v3m3.15-3v-1.5a1.575 1.575 0 0 1 3.15 0v1.5m-3.15 0 .075 5.925m3.075.75V4.575m0 0a1.575 1.575 0 0 1 3.15 0V15M6.9 7.575a1.575 1.575 0 1 0-3.15 0v8.175a6.75 6.75 0 0 0 6.75 6.75h2.018a5.25 5.25 0 0 0 3.712-1.538l1.732-1.732a5.25 5.25 0 0 0 1.538-3.712l.003-2.024a.668.668 0 0 1 .198-.471 1.575 1.575 0 1 0-2.228-2.228 3.818 3.818 0 0 0-1.12 2.687M6.9 7.575V12m6.27 4.022a.75.75 0 1 0-1.06 1.06l.53.53a.75.75 0 1 0 1.06-1.06l-.53-.53Z"/></svg></div>
+        <h3 class="value-title">Handcraft First</h3>
+        <p class="value-body">We prioritise handwork over automation. Our embellishments are hand-stitched, our patterns are hand-cut. Slower, but markedly more beautiful — and you can feel the difference.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.893 13.393l-1.135-1.135a2.252 2.252 0 0 1-.421-.585l-1.08-2.16a.414.414 0 0 0-.663-.107.827.827 0 0 1-.812.21l-1.273-.363a.89.89 0 0 0-.738 1.595l.587.39c.59.395.674 1.23.172 1.732l-.2.2c-.212.212-.33.498-.33.796v.41c0 .409-.11.809-.32 1.158l-1.315 2.191a2.11 2.11 0 0 1-1.81 1.025 1.055 1.055 0 0 1-1.055-1.055v-1.172c0-.92-.56-1.747-1.414-2.089l-.655-.261a2.25 2.25 0 0 1-1.383-2.46l.007-.042a2.25 2.25 0 0 1 .29-.787l.09-.15a2.25 2.25 0 0 1 2.37-1.048l1.178.236a1.125 1.125 0 0 0 1.302-.795l.208-.73a1.125 1.125 0 0 0-.578-1.315l-.665-.332-.091.091a2.25 2.25 0 0 1-1.591.659h-.18c-.249 0-.487.1-.662.274a.931.931 0 0 1-1.458-1.137l1.411-2.353a2.25 2.25 0 0 0 .286-.76m11.928 9.869A9 9 0 0 0 8.965 3.525m11.928 9.868A9 9 0 1 1 8.965 3.525"/></svg></div>
+        <h3 class="value-title">Local Sourcing</h3>
+        <p class="value-body">Over 70% of our fabrics are sourced within Nigeria. We pay fair prices to local weavers, dyers, and fabric merchants, keeping value in our communities.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0 0 12 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 0 1-2.031.352 5.988 5.988 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971Zm-16.5.52c-.99.143-1.99.317-2.98.52m2.98-.52-2.62 10.726c-.122.499.106 1.028.589 1.202a5.989 5.989 0 0 0 2.031.352 5.989 5.989 0 0 0 2.031-.352c.483-.174.711-.703.59-1.202L5.25 4.971Z"/></svg></div>
+        <h3 class="value-title">Fit for Every Body</h3>
+        <p class="value-body">Our size range runs XS–3XL and our custom service has no upper limit. We believe fashion's greatest failure is making women feel like exceptions.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg></div>
+        <h3 class="value-title">Responsible Practice</h3>
+        <p class="value-body">We use biodegradable packaging, donate unsold samples to fashion schools, and track our water and textile waste. Sustainability isn't a marketing strategy — it's an operating principle.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"/></svg></div>
+        <h3 class="value-title">Community Over Competition</h3>
+        <p class="value-body">We collaborate with other Nigerian designers, share platforms, and mentor emerging creators. A thriving Nigerian fashion scene lifts all boats — including ours.</p>
+      </div>
+    </div>
+
+    <!-- Sustainability -->
+    <div class="sustainability-block">
+      <div class="section-label" style="color:rgba(255,255,255,0.5)">Sustainability</div>
+      <h2>Wearing Well, Living Well</h2>
+      <p style="color:rgba(255,255,255,0.8);max-width:600px;line-height:1.7;margin:0">We are committed to being a fashion business that the planet — and the people on it — can afford. Here's what that looks like in practice:</p>
+      <div class="sus-grid">
+        <div class="sus-item">
+          <strong>🌱 Biodegradable packaging</strong>
+          <p>All orders ship in compostable mailers and recycled tissue paper. No plastic poly bags — ever.</p>
+        </div>
+        <div class="sus-item">
+          <strong>Zero-waste cutting</strong>
+          <p>Fabric offcuts are donated to local fashion schools and upcycled into accessories and lining material.</p>
+        </div>
+        <div class="sus-item">
+          <strong>💧 Low-impact dyeing</strong>
+          <p>We partner with dye houses that use low-water techniques and natural pigments wherever the design allows.</p>
+        </div>
+        <div class="sus-item">
+          <strong>👷 Fair wages</strong>
+          <p>All our artisans earn above industry average, with health benefits and paid leave. Quality work deserves quality compensation.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Press -->
+    <div style="text-align:center">
+      <div class="section-label">As seen in</div>
+      <div class="press-logos">
+        <span class="press-logo">Vogue Africa</span>
+        <span class="press-logo">TW Magazine</span>
+        <span class="press-logo">Guardian Life</span>
+        <span class="press-logo">Arise Magazine</span>
+        <span class="press-logo">Business Day Life</span>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="about-cta">
+      <h2 style="font-family:var(--font-display);font-size:2rem;margin:0 0 12px;color:#fff">Ready to Wear Your Story?</h2>
+      <p style="color:rgba(255,255,255,0.8);margin:0 0 28px;font-size:1rem">Browse our ready-to-wear collection or start a custom-made piece made exactly for you.</p>
+      <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+        <a class="btn" href="category.html" style="background:var(--gold,#D4A96A);color:var(--purple-deepest,#2D1B4E);border:none;font-size:1rem;padding:14px 28px">Shop Collection</a>
+        <a class="btn" href="custom.html" style="background:transparent;color:#fff;border:1px solid rgba(255,255,255,0.5);font-size:1rem;padding:14px 28px">Custom-Made</a>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="footer-full">
+    <div class="container footer-grid" style="padding:40px 0 24px">
+      <div>
+        <div class="logo" style="font-size:1.4rem;margin-bottom:12px">PHERAN</div>
+        <p style="font-size:0.85rem;color:var(--text-secondary);max-width:220px;line-height:1.6">Handcrafted in Ibadan, worn everywhere.</p>
+      </div>
+      <div>
+        <p style="font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 12px">Shop</p>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <a class="footer-link" href="category.html">All Styles</a>
+          <a class="footer-link" href="custom.html">Custom-Made</a>
+          <a class="footer-link" href="gallery.html">Gallery</a>
+        </div>
+      </div>
+      <div>
+        <p style="font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 12px">Company</p>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <a class="footer-link" href="about.html">Our Story</a>
+          <a class="footer-link" href="support.html">Help &amp; FAQ</a>
+          <a class="footer-link" href="policies.html">Policies</a>
+        </div>
+      </div>
+      <div>
+        <p style="font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 12px">Contact</p>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:0.87rem;color:var(--text-secondary)">
+          <span>support@pheran.ng</span>
+          <span>WhatsApp: 0800-PHERAN</span>
+          <span>Mon–Sat, 9am–6pm WAT</span>
+        </div>
+      </div>
+    </div>
+    <div class="container footer-bottom" style="padding:16px 0">
+      <p>© 2026 PHERAN. All rights reserved.</p>
+      <div class="footer-bottom-links">
+        <a href="policies.html#privacy">Privacy</a>
+        <a href="policies.html#terms">Terms</a>
+        <a href="policies.html#returns">Returns</a>
+      </div>
+    </div>
+  </footer>
+
+  <nav class="mobile-nav"><div class="mobile-nav-inner">
+    <a class="mobile-nav-item" href="homepage.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg></span>Home</a>
+    <a class="mobile-nav-item" href="category.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"/></svg></span>Shop</a>
+    <a class="mobile-nav-item" href="cart.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 10.5V6a3.75 3.75 0 0 0-7.5 0v4.5M3.375 7.5h17.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125H3.375A1.125 1.125 0 0 1 2.25 19.875V8.625c0-.621.504-1.125 1.125-1.125Z"/></svg></span>Cart</a>
+    <a class="mobile-nav-item" href="account.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg></span>Account</a>
+  </div></nav>
+
+  <script>
+    const badge=document.getElementById('cart-count-badge')
+    if(badge){const c=JSON.parse(localStorage.getItem('pheran_cart')||'[]').reduce((s,i)=>s+i.qty,0);badge.textContent=c}
+  </script>
+  <script src="icons.js"></script>
+
+  <script src="mobile-menu.js"></script>
+</body>
+</html>
+
+
+

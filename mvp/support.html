@@ -1,0 +1,285 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PHERAN — Help &amp; Support</title>
+  <meta name="description" content="Get help with your PHERAN order — sizing guides, delivery information, returns, and care instructions. We respond within 24 hours.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="PHERAN">
+  <meta property="og:title" content="Help & Support — PHERAN">
+  <meta property="og:description" content="Get help with your PHERAN order — sizing guides, delivery information, returns, and care instructions. We respond within 24 hours.">
+  <meta property="og:image" content="https://pheran.ng/mvp/img-grey-linen-front.jpg">
+  <meta property="og:url" content="https://pheran.ng/mvp/support.html">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@pheranng">
+  <meta name="twitter:title" content="Help & Support — PHERAN">
+  <meta name="twitter:description" content="Get help with your PHERAN order — sizing guides, delivery information, returns, and care instructions. We respond within 24 hours.">
+  <meta name="twitter:image" content="https://pheran.ng/mvp/img-grey-linen-front.jpg">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="img-grey-linen-front.jpg">
+  <link rel="canonical" href="https://pheran.ng/mvp/support.html">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles-upgrade.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <button class="icon-btn" id="menu-btn" aria-label="Menu"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg></button>
+      <a class="logo" href="homepage.html"><img src="logo.jpeg" alt="PHERAN"></a>
+      <nav>
+        <a class="nav-link" href="category.html">Shop</a>
+        <a class="nav-link" href="custom.html">Custom</a>
+        <a class="nav-link" href="about.html">About</a>
+      </nav>
+      <div class="header-actions">
+        <a class="icon-btn" href="account.html" aria-label="My account"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg></a>
+        <a class="icon-btn" href="cart.html"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 10.5V6a3.75 3.75 0 0 0-7.5 0v4.5M3.375 7.5h17.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125H3.375A1.125 1.125 0 0 1 2.25 19.875V8.625c0-.621.504-1.125 1.125-1.125Z"/></svg><span id="cart-count-badge" class="cart-count">0</span></a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Support hero -->
+  <div class="support-hero">
+    <div class="container">
+      <h1>How Can We Help?</h1>
+      <p>Search our help centre or browse common questions below</p>
+      <div class="support-search">
+        <input type="text" id="support-search-input" placeholder="Search for sizing, shipping, returns…">
+        <button id="support-search-btn">Search</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="container">
+
+    <!-- Quick links -->
+    <div class="support-grid">
+      <div class="support-card" onclick="scrollToSection('faq-orders')">
+        <div class="sc-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.25 7.5l-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z"/></svg></div>
+        <h3>Orders &amp; Delivery</h3>
+        <p>Track your order, delivery times, and what to do if something goes wrong.</p>
+      </div>
+      <div class="support-card" onclick="scrollToSection('faq-returns')">
+        <div class="sc-icon">↩</div>
+        <h3>Returns &amp; Exchanges</h3>
+        <p>Our 30-day return policy explained step by step.</p>
+      </div>
+      <div class="support-card" onclick="scrollToSection('faq-sizing')">
+        <div class="sc-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0 0 12 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 0 1-2.031.352 5.988 5.988 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971Zm-16.5.52c-.99.143-1.99.317-2.98.52m2.98-.52-2.62 10.726c-.122.499.106 1.028.589 1.202a5.989 5.989 0 0 0 2.031.352 5.989 5.989 0 0 0 2.031-.352c.483-.174.711-.703.59-1.202L5.25 4.971Z"/></svg></div>
+        <h3>Sizing Guide</h3>
+        <p>Find your perfect fit with our comprehensive measurement guide.</p>
+      </div>
+      <div class="support-card" onclick="scrollToSection('faq-custom')">
+        <div class="sc-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg></div>
+        <h3>Custom-Made</h3>
+        <p>Everything you need to know about our bespoke service.</p>
+      </div>
+      <div class="support-card" onclick="scrollToSection('faq-payment')">
+        <div class="sc-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z"/></svg></div>
+        <h3>Payment</h3>
+        <p>Accepted payment methods, security, and billing questions.</p>
+      </div>
+      <div class="support-card" onclick="scrollToSection('contact')">
+        <div class="sc-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.625 9.75a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z"/></svg></div>
+        <h3>Contact Us</h3>
+        <p>Speak to our team via WhatsApp, email, or our contact form.</p>
+      </div>
+    </div>
+
+    <!-- FAQ sections -->
+    <div class="faq-section" id="faq-orders">
+      <h2>Orders &amp; Delivery</h2>
+      <div class="faq-item open">
+        <div class="faq-q" onclick="toggleFaq(this)">How long does delivery take? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Standard delivery takes 3–5 business days. Express delivery takes 1–2 business days. Custom-made pieces take 10–14 business days (or 5–7 with rush processing). Delivery is available across all states in Nigeria.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">How do I track my order? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Once your order is dispatched, you'll receive an SMS and email with a tracking link. You can also view your order status in your <a href="account.html#orders">account dashboard</a>.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">What if my order arrives damaged? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">We're so sorry if this happens. Please take photos of the damage and contact our team within 48 hours of delivery at support@pheran.ng or on WhatsApp. We'll arrange a replacement or full refund immediately.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Is there free delivery? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Yes! Orders over ₦15,000 qualify for free standard delivery. Express delivery is always ₦3,500 regardless of order value.</div>
+      </div>
+    </div>
+
+    <div class="faq-section" id="faq-returns">
+      <h2>Returns &amp; Exchanges</h2>
+      <div class="faq-item open">
+        <div class="faq-q" onclick="toggleFaq(this)">What is your return policy? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">We accept returns within 30 days of delivery for ready-to-wear items that are unworn, unwashed, and in their original packaging with tags attached. Simply initiate your return through your account or contact our team.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Can I return a custom-made piece? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Custom-made pieces are made specifically to your measurements and specifications, so we cannot offer returns unless there is a quality issue on our part. If you receive a garment that doesn't match your specifications, we will remake it at no charge.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">How do I start a return? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Go to your <a href="account.html#orders">Orders page</a> and select the order you'd like to return. Click "Request Return" and follow the steps. You'll receive a return label within 24 hours. Once we receive your item, we'll process your refund within 5 business days.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">How long do refunds take? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Refunds are processed within 5 business days of receiving your return. Funds typically appear in your account within 3–7 additional business days depending on your bank.</div>
+      </div>
+    </div>
+
+    <div class="faq-section" id="faq-sizing">
+      <h2>Sizing Guide</h2>
+      <div class="faq-item open">
+        <div class="faq-q" onclick="toggleFaq(this)">How do PHERAN sizes run? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">PHERAN sizing is true to standard UK/European sizing. If you are between sizes, we recommend sizing up for a more relaxed fit or sizing down for a more fitted silhouette.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">How do I measure myself? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Use a soft measuring tape. Measure your bust at its fullest point, your waist at the narrowest point (usually 2 inches above your belly button), and your hips at their widest point. For custom pieces, we also need your shoulder width and desired garment length.</div>
+      </div>
+      <p style="background:var(--gray-50);border:1px solid var(--gray-200);border-radius:12px;padding:20px;font-size:0.9rem;line-height:1.7">
+        <strong>Size chart (cm/inch):</strong><br>
+        XS — Bust 79–84cm (31–33"), Waist 61–66cm (24–26"), Hip 86–91cm (34–36")<br>
+        S — Bust 84–89cm (33–35"), Waist 66–71cm (26–28"), Hip 91–97cm (36–38")<br>
+        M — Bust 89–94cm (35–37"), Waist 71–76cm (28–30"), Hip 97–102cm (38–40")<br>
+        L — Bust 94–99cm (37–39"), Waist 76–81cm (30–32"), Hip 102–107cm (40–42")<br>
+        XL — Bust 99–104cm (39–41"), Waist 81–86cm (32–34"), Hip 107–112cm (42–44")
+      </p>
+    </div>
+
+    <div class="faq-section" id="faq-custom">
+      <h2>Custom-Made Service</h2>
+      <div class="faq-item open">
+        <div class="faq-q" onclick="toggleFaq(this)">How does the custom-made process work? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">You configure your piece (garment type, fabric, style details, measurements) using our <a href="custom.html">Custom Designer</a>. After placing your order, our team contacts you within 24 hours to confirm all details. Your piece is then handcrafted and delivered within 10–14 business days.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Can I see fabric samples before ordering? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Yes! We can send fabric swatches to your address for a small fee of ₦1,500 (refunded if you proceed with a custom order). Contact us to request swatches for any fabric shown in our configurator.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">What if the custom piece doesn't fit? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">We include one free alteration consultation with every custom piece. If the fit isn't right due to an error on our part, we'll fix it at no charge. For measurement errors on your end, we offer alterations at a nominal fee.</div>
+      </div>
+    </div>
+
+    <div class="faq-section" id="faq-payment">
+      <h2>Payment</h2>
+      <div class="faq-item open">
+        <div class="faq-q" onclick="toggleFaq(this)">What payment methods do you accept? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">We accept Visa, Mastercard, bank transfers, Paystack, and Flutterwave. All card payments are processed securely and your card details are never stored on our servers.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Is it safe to pay on PHERAN? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">Absolutely. All transactions are encrypted using industry-standard SSL/TLS. We partner with Paystack and Flutterwave — two of Nigeria's most trusted payment processors.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Do you offer instalment payments? <span class="faq-arrow">▼</span></div>
+        <div class="faq-a">We offer payment in two instalments for orders above ₦50,000. Pay 50% upfront and the remainder before delivery. Contact our team to set this up for your order.</div>
+      </div>
+    </div>
+
+    <!-- Contact section -->
+    <div class="contact-section" id="contact">
+      <h2>Still Need Help?</h2>
+      <p style="color:var(--text-secondary);margin:0 0 24px;font-size:0.9rem">Our customer care team is available Monday–Saturday, 9am–6pm WAT.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px">
+        <a href="https://wa.me/2348000000000" style="display:flex;align-items:center;gap:10px;padding:14px;background:#fff;border:1px solid var(--gray-200);border-radius:12px;text-decoration:none;color:var(--text-primary)">
+          <span style="display:inline-flex"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.625 9.75a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z"/></svg></span>
+          <div><strong style="display:block;margin-bottom:2px">WhatsApp</strong><span style="font-size:0.83rem;color:var(--text-secondary)">Fastest response</span></div>
+        </a>
+        <a href="mailto:support@pheran.ng" style="display:flex;align-items:center;gap:10px;padding:14px;background:#fff;border:1px solid var(--gray-200);border-radius:12px;text-decoration:none;color:var(--text-primary)">
+          <span style="font-size:1.5rem">📧</span>
+          <div><strong style="display:block;margin-bottom:2px">Email</strong><span style="font-size:0.83rem;color:var(--text-secondary)">support@pheran.ng</span></div>
+        </a>
+      </div>
+      <form id="contact-form">
+        <div class="field-row">
+          <div class="field-group">
+            <label for="c-name">Your name</label>
+            <input id="c-name" type="text" placeholder="Adaeze Okafor">
+          </div>
+          <div class="field-group">
+            <label for="c-email">Email</label>
+            <input id="c-email" type="email" placeholder="adaeze@email.com">
+          </div>
+        </div>
+        <div class="field-group" style="margin-bottom:14px">
+          <label for="c-subject">Subject</label>
+          <select id="c-subject" style="padding:12px 14px;border:1px solid var(--gray-200);border-radius:10px;font-family:var(--font-body);font-size:0.95rem">
+            <option>Order issue</option>
+            <option>Returns &amp; refunds</option>
+            <option>Custom-made enquiry</option>
+            <option>Sizing help</option>
+            <option>Payment question</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field-group" style="margin-bottom:16px">
+          <label for="c-message">Message</label>
+          <textarea id="c-message" rows="4" placeholder="Tell us how we can help…" style="width:100%;padding:12px 14px;border:1px solid var(--gray-200);border-radius:10px;font-family:var(--font-body);font-size:0.95rem;resize:vertical"></textarea>
+        </div>
+        <button class="btn primary" type="submit" style="padding:14px 28px">Send Message</button>
+        <div id="contact-success" style="display:none;margin-top:14px;padding:12px;background:#E6F9F0;border-radius:10px;color:var(--success);font-weight:600">
+          ✓ Message sent! We'll get back to you within 4 hours.
+        </div>
+      </form>
+    </div>
+
+  </main>
+
+  <footer class="footer-full">
+    <div class="container footer-bottom" style="padding:24px 0">
+      <p>© 2026 PHERAN. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <nav class="mobile-nav"><div class="mobile-nav-inner">
+    <a class="mobile-nav-item" href="homepage.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg></span>Home</a>
+    <a class="mobile-nav-item" href="category.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z"/></svg></span>Shop</a>
+    <a class="mobile-nav-item" href="cart.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 10.5V6a3.75 3.75 0 0 0-7.5 0v4.5M3.375 7.5h17.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125H3.375A1.125 1.125 0 0 1 2.25 19.875V8.625c0-.621.504-1.125 1.125-1.125Z"/></svg></span>Cart</a>
+    <a class="mobile-nav-item" href="account.html"><span class="mn-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg></span>Account</a>
+  </div></nav>
+
+  <script>
+    const badge=document.getElementById('cart-count-badge')
+    if(badge){const c=JSON.parse(localStorage.getItem('pheran_cart')||'[]').reduce((s,i)=>s+i.qty,0);badge.textContent=c}
+
+    function toggleFaq(el){
+      const item=el.parentElement
+      item.classList.toggle('open')
+    }
+    function scrollToSection(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'})}
+
+    document.getElementById('support-search-btn')?.addEventListener('click',()=>{
+      const q=(document.getElementById('support-search-input')?.value||'').toLowerCase()
+      if(!q) return
+      const faqs=document.querySelectorAll('.faq-item')
+      faqs.forEach(f=>{
+        const text=f.textContent.toLowerCase()
+        f.style.display=text.includes(q)?'block':'none'
+      })
+      document.getElementById('faq-orders')?.scrollIntoView({behavior:'smooth'})
+    })
+
+    document.getElementById('contact-form')?.addEventListener('submit',e=>{
+      e.preventDefault()
+      const name=document.getElementById('c-name')?.value?.trim()
+      const email=document.getElementById('c-email')?.value?.trim()
+      if(!name||!email){alert('Please enter your name and email.');return}
+      document.getElementById('contact-success').style.display='block'
+      e.target.reset()
+    })
+  </script>
+  <script src="icons.js"></script>
+
+  <script src="mobile-menu.js"></script>
+</body>
+</html>
+
+
+
