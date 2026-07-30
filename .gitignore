@@ -11,6 +11,11 @@ mvp/mock-server/session_events.json
 # User-uploaded files
 mvp/uploads/
 
+# Environment / secrets — never commit
+.env
+.env.local
+.env.production
+
 # OS
 .DS_Store
 Thumbs.db

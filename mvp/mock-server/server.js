@@ -1,7 +1,20 @@
+require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 const fs = require('fs')
 const path = require('path')
+
+// ─── Supabase client (optional — falls back to data.json if not configured) ──
+let supabase = null
+try {
+  const { createClient } = require('@supabase/supabase-js')
+  const SUPA_URL = process.env.SUPABASE_URL
+  const SUPA_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY
+  if (SUPA_URL && SUPA_KEY) {
+    supabase = createClient(SUPA_URL, SUPA_KEY)
+    console.log('[supabase] client ready →', SUPA_URL)
+  }
+} catch(e) { console.warn('[supabase] not available:', e.message) }
 
 const app = express()
 app.use(cors())
@@ -55,11 +68,19 @@ const DATA_PATH = path.join(__dirname, '..', 'data.json')
 let cached = null
 const COO_PATH = path.join(__dirname, 'cooccurrence.json')
 let cooc = null
+
 function saveProducts(products){
   const payload = { products }
   fs.writeFileSync(DATA_PATH, JSON.stringify(payload, null, 2), 'utf8')
   cached = products
   PRODUCT_CACHE.clear()
+  // Mirror write to Supabase when configured
+  if(supabase){
+    const rows = products.map(p=>({ ...p, old_price: p.oldPrice ?? null }))
+    supabase.from('products').upsert(rows).then(({error})=>{
+      if(error) console.warn('[supabase] write error:', error.message)
+    })
+  }
 }
 function loadCooc(){
   if(cooc) return cooc
@@ -72,6 +93,23 @@ function loadData(){
   const js = JSON.parse(raw)
   cached = js.products || []
   return cached
+}
+async function syncFromSupabase(){
+  if(!supabase) return
+  try{
+    const { data, error } = await supabase.from('products').select('*')
+    if(error){ console.warn('[supabase] read error:', error.message); return }
+    if(!data?.length){ console.log('[supabase] products table empty — using data.json'); return }
+    cached = data.map(p=>({
+      ...p,
+      oldPrice: p.old_price ?? undefined,
+      images:  Array.isArray(p.images)  ? p.images  : [],
+      sizes:   Array.isArray(p.sizes)   ? p.sizes   : [],
+      colors:  Array.isArray(p.colors)  ? p.colors  : [],
+    }))
+    PRODUCT_CACHE.clear()
+    console.log(`[supabase] loaded ${cached.length} products`)
+  }catch(e){ console.warn('[supabase] sync failed:', e.message) }
 }
 
 function computeFacets(list){
@@ -559,4 +597,6 @@ app.get('/api/health', (req,res)=>{
 })
 
 const PORT = process.env.PORT || 4000
-app.listen(PORT, ()=> console.log('PHERAN mock server running on port', PORT))
+syncFromSupabase().then(()=>{
+  app.listen(PORT, ()=> console.log('PHERAN mock server running on port', PORT))
+})
