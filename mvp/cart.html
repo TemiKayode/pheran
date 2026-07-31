@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>PHERAN — Your Cart</title>
-  <meta name="description" content="Review your PHERAN selections and proceed to secure checkout. Free delivery on orders over ₦15,000.">
+  <meta name="description" content="Review your PHERAN selections and proceed to secure checkout. Free delivery on orders over ₦100,000.">
   <meta name="robots" content="noindex,nofollow">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="apple-touch-icon" href="logo.jpeg">
@@ -178,12 +178,12 @@
       }))
 
       const total=cartTotal(cart)
-      const shipping=total>=15000?0:1500
+      const shipping=total>=100000?0:1500
       const lines=document.getElementById('cart-summary-lines')
       if(lines) lines.innerHTML=cart.map(i=>`
         <div class="cart-summary-row"><span>${esc(i.title)} ×${Number(i.qty)||1}</span><span>${formatCurr(i.price*i.qty)}</span></div>`).join('')+
         `<div class="cart-summary-row"><span>Shipping</span><span>${shipping===0?'<span style="color:var(--success)">Free</span>':formatCurr(shipping)}</span></div>`+
-        (total<15000?`<div style="font-size:0.8rem;color:var(--text-muted);margin:4px 0 8px">Add ${formatCurr(15000-total)} for free shipping</div>`:'')
+        (total<100000?`<div style="font-size:0.8rem;color:var(--text-muted);margin:4px 0 8px">Add ${formatCurr(100000-total)} for free shipping</div>`:'')
       const totalRow=document.getElementById('cart-total-row')
       if(totalRow) totalRow.innerHTML=`<span>Total</span><span style="font-size:1.1rem;font-weight:800">${formatCurr(total+shipping)}</span>`
 

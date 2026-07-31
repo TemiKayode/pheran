@@ -228,7 +228,7 @@
         </div>`).join('')
       const sub=cart.reduce((s,i)=>s+i.price*i.qty,0)
       const deliveryRadio=document.querySelector('input[name="delivery"]:checked')
-      const ship=deliveryRadio?.value==='express'?3500:(sub>=15000?0:1500)
+      const ship=deliveryRadio?.value==='express'?3500:(sub>=100000?0:1500)
       totals.innerHTML=`
         <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:0.9rem"><span>Subtotal</span><span>${fmt(sub)}</span></div>
         <div style="display:flex;justify-content:space-between;margin-bottom:10px;font-size:0.9rem"><span>Shipping</span><span>${ship===0?'Free':fmt(ship)}</span></div>
@@ -269,7 +269,7 @@
       const city=document.getElementById('city')?.value||''
       const state=document.getElementById('state')?.value||''
       const sub=cart.reduce((s,i)=>s+i.price*i.qty,0)
-      const ship=document.querySelector('input[name="delivery"]:checked')?.value==='express'?3500:(sub>=15000?0:1500)
+      const ship=document.querySelector('input[name="delivery"]:checked')?.value==='express'?3500:(sub>=100000?0:1500)
       if(rs) rs.innerHTML=`
         <h3>Review Your Order</h3>
         <div style="display:grid;gap:14px;margin-top:12px">
@@ -291,7 +291,7 @@
       // Save order to localStorage
       const cart=getCart()
       const sub=cart.reduce((s,i)=>s+i.price*i.qty,0)
-      const ship=document.querySelector('input[name="delivery"]:checked')?.value==='express'?3500:(sub>=15000?0:1500)
+      const ship=document.querySelector('input[name="delivery"]:checked')?.value==='express'?3500:(sub>=100000?0:1500)
       const order={
         id:'PH'+Date.now(),
         date:new Date().toISOString(),

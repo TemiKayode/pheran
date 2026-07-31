@@ -18,11 +18,57 @@ try {
 } catch(e) { console.warn('[supabase] not available:', e.message) }
 
 const app = express()
-app.use(cors())
-app.use(express.json({ limit: '50mb' }))
+
+// CORS — only allow known production origins and localhost for dev
+const _PROD_ORIGINS = ['https://pheran.ng', 'https://www.pheran.ng', 'https://admin.pheran.ng']
+const _EXTRA_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean)
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true) // same-origin / curl / server-to-server
+    if ([..._PROD_ORIGINS, ..._EXTRA_ORIGINS].includes(origin) ||
+        /^https?:\/\/localhost(:\d+)?$/.test(origin)) return cb(null, true)
+    cb(new Error('CORS: origin not allowed'))
+  },
+  credentials: true,
+}))
+app.use(express.json({ limit: '1mb' }))
+
+// Basic security headers
+app.use((_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN')
+  res.setHeader('X-XSS-Protection', '1; mode=block')
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+  next()
+})
+
+// Block direct HTTP access to server-side files exposed via express.static
+app.use((req, res, next) => {
+  const p = req.path.toLowerCase()
+  if (
+    p.includes('/mock-server/') ||
+    p.includes('/node_modules/') ||
+    p.includes('.env') ||
+    /\/users\.json($|\?)/.test(p)
+  ) return res.status(403).end()
+  next()
+})
+
+// Rate-limit auth endpoints — 20 attempts per IP per 15 minutes
+const _authRateMap = new Map()
+app.use('/api/auth', (req, res, next) => {
+  const key = req.ip || 'unknown'
+  const now = Date.now()
+  const rec = _authRateMap.get(key) || { n: 0, t: now }
+  if (now - rec.t > 900000) { rec.n = 0; rec.t = now }
+  rec.n++
+  _authRateMap.set(key, rec)
+  if (rec.n > 20) return res.status(429).set('Retry-After', '900').json({ ok: false, error: 'Too many requests — try again in 15 minutes' })
+  next()
+})
 
 // Rewrite requests from admin.pheran.ng so they hit /admin/* routes
-app.use((req, res, next) => {
+app.use((req, _res, next) => {
   const host = (req.headers.host || '').split(':')[0]
   if (host === 'admin.pheran.ng' && !req.path.startsWith('/admin')) {
     req.url = '/admin' + (req.url === '/' ? '/' : req.url)
@@ -30,7 +76,34 @@ app.use((req, res, next) => {
   next()
 })
 
-// serve static pages — mvp/ first for HTML/images, then Pheran root for css/ and videos/
+// ── Clean URL page routes ─────────────────────────────────────────────────
+// Registered BEFORE static so these routes take precedence over .html file serving.
+// Visitors always see clean paths like /shop, not /mvp/category.html
+const _MVR = path.join(__dirname, '..')
+const _PAGES = {
+  '/': 'homepage.html',
+  '/shop': 'category.html',
+  '/product': 'product.html',
+  '/cart': 'cart.html',
+  '/checkout': 'checkout.html',
+  '/order-confirmed': 'confirmation.html',
+  '/account': 'account.html',
+  '/policies': 'policies.html',
+  '/support': 'support.html',
+  '/gallery': 'gallery.html',
+  '/custom': 'custom.html',
+}
+for (const [route, file] of Object.entries(_PAGES)) {
+  app.get(route, (_req, res) => res.sendFile(path.join(_MVR, file)))
+  if ('/' + file !== route) {
+    // *.html → clean path (handles relative href links from other pages)
+    app.get('/' + file, (_req, res) => res.redirect(301, route))
+    // Legacy /mvp/filename.html → clean path
+    app.get('/mvp/' + file, (_req, res) => res.redirect(301, route))
+  }
+}
+
+// serve static assets — mvp/ for images/JS/CSS/SW, Pheran root for /css/ and /videos/
 app.use(express.static(path.join(__dirname, '..')))
 app.use(express.static(path.join(__dirname, '../..')))
 // Admin — protected by ADMIN_PIN env var (default: pheran2026)
@@ -64,8 +137,6 @@ app.use('/admin', (req, res, next) => {
 })
 app.use('/admin', express.static(path.join(__dirname, '..', 'admin')))
 
-// Root redirect → homepage
-app.get('/', (req, res) => res.redirect(301, '/mvp/homepage.html'))
 
 // Ensure uploads directory exists and serve it
 const UPLOADS_DIR = path.join(__dirname, '..', 'uploads')
@@ -143,7 +214,7 @@ function saveProducts(products){
   PRODUCT_CACHE.clear()
   // Mirror write to Supabase when configured
   if(supabase){
-    const rows = products.map(p=>({ ...p, old_price: p.oldPrice ?? null }))
+    const rows = products.map(p=>{ const{oldPrice,...rest}=p; return{...rest,old_price:oldPrice??null} })
     supabase.from('products').upsert(rows).then(({error})=>{
       if(error) console.warn('[supabase] write error:', error.message)
     })
@@ -355,7 +426,7 @@ app.delete('/api/products/admin', requireAdminAuth, (req, res)=>{
 })
 
 // cache metrics endpoints
-app.get('/api/cache-metrics', (req,res)=>{
+app.get('/api/cache-metrics', requireAdminAuth, (_req,res)=>{
   try{
     const keys = []
     for(const [k,v] of PRODUCT_CACHE.entries()){
@@ -366,11 +437,11 @@ app.get('/api/cache-metrics', (req,res)=>{
   }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
 })
 
-app.post('/api/cache/clear', (req,res)=>{
+app.post('/api/cache/clear', requireAdminAuth, (_req,res)=>{
   try{ PRODUCT_CACHE.clear(); CACHE_STATS.hits = CACHE_STATS.misses = CACHE_STATS.requests = CACHE_STATS.totalResponseBytes = 0; res.json({ ok:true }) }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
 })
 
-app.post('/api/cache/prune', (req,res)=>{
+app.post('/api/cache/prune', requireAdminAuth, (req,res)=>{
   try{
     const maxEntries = Number(req.body.maxEntries) || 200
     const maxAgeMs = Number(req.body.maxAgeMs) || CACHE_TTL
@@ -417,7 +488,7 @@ app.post('/api/session', (req,res)=>{
 })
 
 // admin endpoint to read session events (recent)
-app.get('/api/session-events', (req,res)=>{
+app.get('/api/session-events', requireAdminAuth, (_req,res)=>{
   try{
     const pathS = path.join(__dirname, 'session_events.json')
     const existing = fs.existsSync(pathS) ? JSON.parse(fs.readFileSync(pathS,'utf8')||'[]') : []
@@ -426,7 +497,7 @@ app.get('/api/session-events', (req,res)=>{
 })
 
 // admin endpoint to read co-occurrence counts
-app.get('/api/cooccurrence', (req,res)=>{
+app.get('/api/cooccurrence', requireAdminAuth, (_req,res)=>{
   try{
     const co = loadCooc()
     res.json({ ok:true, co })
@@ -539,7 +610,7 @@ app.post('/api/orders', (req,res)=>{
     const { userId='anonymous', items=[], shipping={}, payment={}, deliveryMethod='standard' } = req.body||{}
     if(!items.length) return res.status(400).json({ ok:false, error:'items required' })
     const subtotal = items.reduce((s,i)=>s+(Number(i.price||0)*Number(i.qty||1)),0)
-    const deliveryFee = deliveryMethod==='express' ? 3500 : (subtotal>=15000 ? 0 : 1500)
+    const deliveryFee = deliveryMethod==='express' ? 3500 : (subtotal>=100000 ? 0 : 1500)
     const order = {
       id: 'ORD-' + Date.now(),
       userId,
@@ -590,9 +661,10 @@ if(supabase){
   // ── Supabase Auth (primary) ──────────────────────────────────────────────
   console.log('[auth] using Supabase Auth')
 
-  function setSession(res, session){
-    res.cookie(COOKIE_ACCESS,  session.access_token,  {...COOKIE_BASE, maxAge:(session.expires_in||3600)*1000})
-    res.cookie(COOKIE_REFRESH, session.refresh_token, {...COOKIE_BASE, maxAge:30*24*60*60*1000})
+  function setSession(req, res, session){
+    const secure = req.headers['x-forwarded-proto'] === 'https' || req.secure
+    res.cookie(COOKIE_ACCESS,  session.access_token,  {...COOKIE_BASE, secure, maxAge:(session.expires_in||3600)*1000})
+    res.cookie(COOKIE_REFRESH, session.refresh_token, {...COOKIE_BASE, secure, maxAge:30*24*60*60*1000})
   }
   function clearSession(res){
     res.clearCookie(COOKIE_ACCESS,  {path:'/'})
@@ -612,7 +684,7 @@ if(supabase){
     // access token expired — try refresh
     if(refresh){
       const { data, error } = await supabase.auth.refreshSession({ refresh_token: refresh })
-      if(!error && data.session){ setSession(res, data.session); return data.user }
+      if(!error && data.session){ setSession(req, res, data.session); return data.user }
     }
     return null
   }
@@ -626,7 +698,7 @@ if(supabase){
       if(error) return res.status(400).json({ok:false,error:error.message})
       // Supabase may require email verification before issuing a session
       const needsVerification = !data.session
-      if(!needsVerification) setSession(res, data.session)
+      if(!needsVerification) setSession(req, res, data.session)
       res.status(201).json({
         ok:true,
         requiresVerification: needsVerification,
@@ -642,7 +714,7 @@ if(supabase){
       if(!email||!password) return res.status(400).json({ok:false,error:'Email and password are required'})
       const{data,error}=await supabase.auth.signInWithPassword({email,password})
       if(error) return res.status(401).json({ok:false,error:error.message})
-      setSession(res, data.session)
+      setSession(req, res, data.session)
       res.json({ok:true, user:fmtUser(data.user)})
     }catch(e){ res.status(500).json({ok:false,error:String(e)}) }
   })
@@ -725,7 +797,7 @@ if(supabase){
         res.json({ok:true,user:safe(user)})
       }catch(e){ res.status(500).json({ok:false,error:String(e)}) }
     })
-    app.post('/api/auth/logout',(req,res)=>{ res.clearCookie(COOKIE_ACCESS,{path:'/'}); res.json({ok:true}) })
+    app.post('/api/auth/logout',(_req,res)=>{ res.clearCookie(COOKIE_ACCESS,{path:'/'}); res.json({ok:true}) })
     app.patch('/api/auth/profile',(req,res)=>{
       try{
         const p=verify(req.cookies?.[COOKIE_ACCESS])

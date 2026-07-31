@@ -27,12 +27,15 @@ CREATE TABLE IF NOT EXISTS products (
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Public can read products" ON products;
-CREATE POLICY "Public can read products"
-  ON products FOR SELECT USING (true);
-
+DROP POLICY IF EXISTS "products_anon_read"   ON products;
+DROP POLICY IF EXISTS "products_auth_read"   ON products;
+DROP POLICY IF EXISTS "products_service_all" ON products;
 DROP POLICY IF EXISTS "Service role full access" ON products;
-CREATE POLICY "Service role full access"
-  ON products FOR ALL USING (auth.role() = 'service_role');
+
+-- Storefront: anyone can read; only the server (service_role) can write
+CREATE POLICY "products_anon_read"    ON products FOR SELECT TO anon        USING (true);
+CREATE POLICY "products_auth_read"    ON products FOR SELECT TO authenticated USING (true);
+CREATE POLICY "products_service_all"  ON products FOR ALL    TO service_role  USING (true) WITH CHECK (true);
 
 -- 3. Orders table
 CREATE TABLE IF NOT EXISTS orders (
@@ -52,13 +55,18 @@ CREATE TABLE IF NOT EXISTS orders (
 
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "Users see own orders" ON orders;
-CREATE POLICY "Users see own orders"
-  ON orders FOR SELECT USING (auth.uid() = user_id);
-
+DROP POLICY IF EXISTS "Users see own orders"           ON orders;
+DROP POLICY IF EXISTS "orders_anon_deny"               ON orders;
+DROP POLICY IF EXISTS "orders_auth_select"             ON orders;
+DROP POLICY IF EXISTS "orders_auth_insert"             ON orders;
+DROP POLICY IF EXISTS "orders_service_all"             ON orders;
 DROP POLICY IF EXISTS "Service role full access orders" ON orders;
-CREATE POLICY "Service role full access orders"
-  ON orders FOR ALL USING (auth.role() = 'service_role');
+
+-- Anon: no access; authenticated: own rows only (SELECT auth.uid() avoids per-row re-init)
+CREATE POLICY "orders_anon_deny"    ON orders FOR ALL     TO anon          USING (false);
+CREATE POLICY "orders_auth_select"  ON orders FOR SELECT  TO authenticated USING ((SELECT auth.uid()) = user_id);
+CREATE POLICY "orders_auth_insert"  ON orders FOR INSERT  TO authenticated WITH CHECK ((SELECT auth.uid()) = user_id);
+CREATE POLICY "orders_service_all"  ON orders FOR ALL     TO service_role  USING (true) WITH CHECK (true);
 
 -- 4. Seed initial products
 INSERT INTO products (id, title, category, price, old_price, rating, count, fabric, availability, description, images, sizes, colors, video)
