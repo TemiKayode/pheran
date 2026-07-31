@@ -7,7 +7,7 @@
   <meta name="description" content="Manage your PHERAN account, track your orders, and access your saved wishlist.">
   <meta name="robots" content="noindex,nofollow">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="apple-touch-icon" href="img-grey-linen-front.jpg">
+  <link rel="apple-touch-icon" href="logo.jpeg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/variables.css">
@@ -85,6 +85,7 @@
             By creating an account you agree to our <a href="policies.html">Terms</a> and <a href="policies.html">Privacy Policy</a>.
           </div>
           <button class="auth-submit" id="signup-btn">Create Account</button>
+          <div id="signup-msg" style="margin-top:10px;text-align:center;font-size:0.85rem"></div>
         </div>
 
         <div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid var(--gray-200)">
@@ -364,7 +365,7 @@
       const em=document.getElementById('su-email')?.value?.trim()
       const ph=document.getElementById('su-phone')?.value?.trim()
       const pw=document.getElementById('su-password')?.value
-      if(!fn||!em||!pw){alert('Please fill in first name, email, and password.');return}
+      if(!fn||!em||!pw){setMsg('signup-msg','Please fill in first name, email, and password.',true);return}
       setBtnState('signup-btn',true,'Create Account')
       try{
         const r=await fetch('/api/auth/register',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({firstName:fn,lastName:ln,email:em,phone:ph,password:pw})})
@@ -387,8 +388,8 @@
           } else {
             currentUserId=d.user.id; showDashboard(d.user)
           }
-        } else alert(d.error||'Registration failed.')
-      }catch(e){ alert('Connection error. Is the server running?') }
+        } else setMsg('signup-msg', d.error==='offline'?'Server is offline — please start the server and try again.':d.error||'Registration failed.', true)
+      }catch(e){ setMsg('signup-msg','Could not connect to server.',true) }
       setBtnState('signup-btn',false,'Create Account')
     })
 

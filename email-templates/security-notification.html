@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Security Notice — PHERAN</title>
+</head>
+<body style="margin:0;padding:0;background:#F7F4F0;font-family:'DM Sans',Arial,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F7F4F0;padding:40px 16px">
+  <tr><td align="center">
+    <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(45,27,78,0.08)">
+
+      <!-- Header -->
+      <tr>
+        <td style="background:#2D1B4E;padding:32px 40px;text-align:center">
+          <span style="font-family:Georgia,serif;font-size:28px;font-weight:700;color:#D4A96A;letter-spacing:4px">PHERAN</span>
+          <div style="color:#D4A96A;font-size:10px;letter-spacing:3px;margin-top:4px;opacity:0.7">PREMIUM FASHION</div>
+        </td>
+      </tr>
+
+      <!-- Alert bar -->
+      <tr><td style="background:#FEF3CD;padding:12px 40px;text-align:center">
+        <span style="color:#7A5A00;font-size:12px;font-weight:600;letter-spacing:1px">🔔 SECURITY NOTIFICATION</span>
+      </td></tr>
+
+      <!-- Body -->
+      <tr>
+        <td style="padding:36px 40px 32px">
+
+          <!-- Password changed -->
+          <!-- USE THIS BLOCK FOR: Password Changed -->
+          <h1 style="font-family:Georgia,serif;font-size:22px;color:#2D1B4E;margin:0 0 16px;font-weight:700">Your Password Was Changed</h1>
+          <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px">
+            The password for your PHERAN account associated with <strong>{{ .Email }}</strong> was successfully changed.
+          </p>
+          <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px">
+            If you made this change, no further action is required.
+          </p>
+          <div style="background:#FEE2E2;border-radius:10px;padding:14px 18px;margin-bottom:24px">
+            <p style="color:#991B1B;font-size:13px;margin:0;line-height:1.6">
+              <strong>Didn't change your password?</strong> Your account may be compromised.
+              <a href="{{ .SiteURL }}/mvp/account.html" style="color:#7F1D1D;font-weight:700">Sign in immediately</a> and reset your password.
+            </p>
+          </div>
+
+          <div style="text-align:center">
+            <a href="{{ .SiteURL }}/mvp/account.html" style="display:inline-block;background:#2D1B4E;color:#D4A96A;text-decoration:none;font-size:13px;font-weight:600;letter-spacing:2px;padding:14px 32px;border-radius:50px">
+              GO TO MY ACCOUNT
+            </a>
+          </div>
+        </td>
+      </tr>
+
+      <tr><td style="padding:0 40px"><div style="height:1px;background:#E8E2D9"></div></td></tr>
+      <tr>
+        <td style="padding:24px 40px;text-align:center">
+          <p style="color:#999;font-size:12px;margin:0 0 6px">PHERAN — Premium Nigerian Fashion</p>
+          <p style="color:#bbb;font-size:11px;margin:0">This is an automated security alert. Please do not reply to this email.</p>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>
+
+<!--
+====================================================
+INSTRUCTIONS FOR SUPABASE EMAIL TEMPLATES
+====================================================
+
+For each template in Supabase → Authentication → Emails,
+use the matching block below and paste the full HTML above,
+replacing the h1 and body text as noted.
+
+PASSWORD CHANGED → Use file as-is (h1: "Your Password Was Changed")
+
+EMAIL ADDRESS CHANGED → Change h1 to: "Your Email Address Was Changed"
+  Body: "The email address on your PHERAN account has been updated to {{ .Email }}."
+
+PHONE NUMBER CHANGED → Change h1 to: "Your Phone Number Was Updated"
+  Body: "The phone number on your PHERAN account has been changed."
+
+SIGN-IN METHOD LINKED → Change h1 to: "A New Sign-In Method Was Added"
+  Body: "A new sign-in method has been linked to your PHERAN account."
+  Remove the red warning box; use yellow box only.
+
+SIGN-IN METHOD REMOVED → Change h1 to: "A Sign-In Method Was Removed"
+  Body: "A sign-in method has been removed from your PHERAN account."
+
+MFA METHOD ADDED → Change h1 to: "Two-Factor Authentication Enabled"
+  Body: "A new multi-factor authentication method has been added to your account. Your account is now more secure."
+  Remove the red warning box entirely.
+
+MFA METHOD REMOVED → Change h1 to: "Two-Factor Authentication Removed"
+  Body: "A multi-factor authentication method has been removed from your PHERAN account."
+====================================================
+-->
