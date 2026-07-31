@@ -183,9 +183,11 @@ app.use((req, res, next) => {
   next()
 })
 
-// Rate-limit auth endpoints — 20 attempts per IP per 15 minutes
+// Rate-limit auth endpoints — 20 attempts per IP per 15 minutes.
+// Also covers /api/admin/login — the PIN gate for the whole admin panel had no
+// brute-force protection at all before this, since it isn't under /api/auth.
 const _authRateMap = new Map()
-app.use('/api/auth', (req, res, next) => {
+function authRateLimit(req, res, next) {
   const key = req.ip || 'unknown'
   const now = Date.now()
   const rec = _authRateMap.get(key) || { n: 0, t: now }
@@ -194,7 +196,9 @@ app.use('/api/auth', (req, res, next) => {
   _authRateMap.set(key, rec)
   if (rec.n > 20) return res.status(429).set('Retry-After', '900').json({ ok: false, error: 'Too many requests — try again in 15 minutes' })
   next()
-})
+}
+app.use('/api/auth', authRateLimit)
+app.use('/api/admin/login', authRateLimit)
 
 // Rewrite requests from admin.pheran.ng so they hit /admin/* routes
 app.use((req, _res, next) => {
@@ -222,13 +226,20 @@ const _PAGES = {
   '/gallery': 'gallery.html',
   '/custom': 'custom.html',
 }
+// Preserves ?id=... etc. when redirecting legacy .html links to their clean path —
+// dropping the query string here sent every /product.html?id=X click to a bare
+// /product with no id, which always fell back to showing the first product.
+function withQuery(base, req) {
+  const qIdx = req.url.indexOf('?')
+  return qIdx === -1 ? base : base + req.url.slice(qIdx)
+}
 for (const [route, file] of Object.entries(_PAGES)) {
   app.get(route, (_req, res) => res.sendFile(path.join(_MVR, file)))
   if ('/' + file !== route) {
     // *.html → clean path (handles relative href links from other pages)
-    app.get('/' + file, (_req, res) => res.redirect(301, route))
+    app.get('/' + file, (req, res) => res.redirect(301, withQuery(route, req)))
     // Legacy /mvp/filename.html → clean path
-    app.get('/mvp/' + file, (_req, res) => res.redirect(301, route))
+    app.get('/mvp/' + file, (req, res) => res.redirect(301, withQuery(route, req)))
   }
 }
 
@@ -658,12 +669,19 @@ app.post('/api/products/admin', requireAdminAuth, (req, res)=>{
   }
 })
 
-app.delete('/api/products/admin', requireAdminAuth, (req, res)=>{
+app.delete('/api/products/admin', requireAdminAuth, async (req, res)=>{
   try{
     const { id } = req.body || {}
     if(!id) return res.status(400).json({ ok:false, error:'missing id' })
     const products = loadData().filter(p => p.id !== id)
     saveProducts(products)
+    // saveProducts() only upserts the remaining rows — it never deletes, so the row
+    // must be removed from Supabase explicitly or syncFromSupabase() resurrects it
+    // on the next server restart/deploy.
+    if(supabase){
+      const { error } = await supabase.from('products').delete().eq('id', id)
+      if(error) console.warn('[supabase] delete error:', error.message)
+    }
     res.json({ ok:true, message:'Product deleted' })
   } catch(e){
     res.status(500).json({ ok:false, error: String(e) })
@@ -936,22 +954,6 @@ app.post('/api/orders', mutationRateLimit, async(req,res)=>{
   }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
 })
 
-app.patch('/api/orders/:orderId/status', (req,res)=>{
-  try{
-    const userId = req.query.userId || 'anonymous'
-    const { status } = req.body||{}
-    const valid = ['pending_payment','confirmed','processing','dispatched','delivered','cancelled']
-    if(!valid.includes(status)) return res.status(400).json({ ok:false, error:'invalid status' })
-    const orders = ORDERS_STORE.get(userId) || []
-    const order = orders.find(o=>o.id===req.params.orderId)
-    if(!order) return res.status(404).json({ ok:false, error:'Order not found' })
-    order.status = status
-    order.updatedAt = new Date().toISOString()
-    ORDERS_STORE.set(userId, orders)
-    res.json({ ok:true, order })
-  }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
-})
-
 // ─── Admin orders management ───────────────────────────────────────────────────
 app.get('/api/admin/orders', requireAdminAuth, async(req,res)=>{
   try{
@@ -996,7 +998,14 @@ app.get('/api/admin/orders/export', requireAdminAuth, async(req,res)=>{
       for(const [,o] of ORDERS_STORE) orders.push(...o)
       orders.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt))
     }
-    const csvCell = v => { const s=String(v??''); return (s.includes(',')||s.includes('"')||s.includes('\n'))?`"${s.replace(/"/g,'""')}"`:s }
+    // Neutralize formula injection — a customer-supplied shipping name/address starting
+    // with =, +, -, or @ would otherwise execute as a formula when the admin opens this
+    // CSV in Excel/Sheets.
+    const csvCell = v => {
+      let s = String(v??'')
+      if (/^[=+\-@]/.test(s)) s = `'${s}`
+      return (s.includes(',')||s.includes('"')||s.includes('\n'))?`"${s.replace(/"/g,'""')}"`:s
+    }
     const headers = ['Order ID','Date','Status','Customer Name','Email','Phone','Address','City','State','Delivery','Items','Subtotal','Delivery Fee','Total']
     const rows = orders.map(o=>{
       const s=o.shipping||{}
@@ -1184,9 +1193,9 @@ if(supabase){
       if(!user) return res.status(401).json({ok:false,error:'Not authenticated'})
       const{firstName,lastName,phone}=req.body||{}
       const meta={...user.user_metadata}
-      if(firstName!==undefined) meta.firstName=firstName
-      if(lastName!==undefined)  meta.lastName=lastName
-      if(phone!==undefined)     meta.phone=phone
+      if(firstName!==undefined) meta.firstName=String(firstName).slice(0,50)
+      if(lastName!==undefined)  meta.lastName=String(lastName).slice(0,50)
+      if(phone!==undefined)     meta.phone=String(phone).slice(0,20)
       const{data,error}=await supabase.auth.admin.updateUserById(user.id,{user_metadata:meta})
       if(error) return res.status(500).json({ok:false,error:error.message})
       res.json({ok:true, user:fmtUser(data.user)})
@@ -1197,6 +1206,7 @@ if(supabase){
   // ── Fallback: bcrypt + users.json ────────────────────────────────────────
   console.log('[auth] Supabase not configured — using local users.json')
   const USERS_PATH = path.join(__dirname,'..','users.json')
+  if (!process.env.JWT_SECRET) console.warn('[auth] WARNING: JWT_SECRET not set — using a public default. Anyone can forge session tokens. Set JWT_SECRET in the environment.')
   const JWT_SECRET = process.env.JWT_SECRET || 'pheran-dev-secret-change-in-production'
   function loadUsers(){ try{ return JSON.parse(fs.readFileSync(USERS_PATH,'utf8')||'[]') }catch(e){ return [] } }
   function saveUsersList(u){ fs.writeFileSync(USERS_PATH,JSON.stringify(u,null,2),'utf8') }
@@ -1248,7 +1258,8 @@ if(supabase){
         if(!p) return res.status(401).json({ok:false,error:'Not authenticated'})
         const users=loadUsers(), idx=users.findIndex(u=>u.id===p.id)
         if(idx<0) return res.status(404).json({ok:false,error:'User not found'})
-        ;['firstName','lastName','phone'].forEach(k=>{ if(req.body[k]!==undefined) users[idx][k]=req.body[k] })
+        const _lens={firstName:50,lastName:50,phone:20}
+        ;['firstName','lastName','phone'].forEach(k=>{ if(req.body[k]!==undefined) users[idx][k]=String(req.body[k]).slice(0,_lens[k]) })
         saveUsersList(users)
         res.json({ok:true,user:safe(users[idx])})
       }catch(e){ res.status(500).json({ok:false,error:String(e)}) }

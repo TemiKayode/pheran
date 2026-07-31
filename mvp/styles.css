@@ -104,6 +104,18 @@ body{font-family:var(--font-body);color:var(--text-primary);margin:0;background:
 .preset-delete{border:none;background:transparent;color:var(--gray-600);cursor:pointer;padding:4px 8px;border-radius:6px}
 .preset-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
 
+/* Recently viewed — was unstyled, letting the thumbnail render at its full
+   natural size and blow out the fixed-width sidebar column into the grid. */
+.recently-viewed{margin-top:16px}
+.recently-viewed h3{font-size:0.95rem;margin:0 0 10px;color:var(--text-primary)}
+.recently-viewed .text-muted{font-size:0.85rem;color:var(--text-secondary)}
+.recent-list{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.recent-item{display:flex;flex-direction:column;gap:6px;padding:0;border:1px solid var(--gray-200);border-radius:8px;background:var(--white-pure);cursor:pointer;text-align:left;overflow:hidden;min-width:0}
+.recent-item img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
+.recent-item .meta{padding:6px 8px 8px;min-width:0}
+.recent-item .meta strong{display:block;font-size:0.8rem;font-weight:600;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.recent-item .meta div{font-size:0.78rem;color:var(--purple-main);margin-top:2px}
+
 .meta-row{display:flex;align-items:center;gap:12px;justify-content:space-between}
 .results-count{font-size:0.95rem;color:var(--gray-700)}
 .active-pills{display:flex;gap:8px;flex-wrap:wrap}
