@@ -23,6 +23,18 @@ app.use(express.json({ limit: '50mb' }))
 // serve static pages — mvp/ first for HTML/images, then Pheran root for css/ and videos/
 app.use(express.static(path.join(__dirname, '..')))
 app.use(express.static(path.join(__dirname, '../..')))
+// Admin — protected by ADMIN_PIN env var (default: pheran2026)
+const ADMIN_PIN = process.env.ADMIN_PIN || 'pheran2026'
+app.use('/admin', (req, res, next) => {
+  const auth = req.headers['authorization'] || ''
+  const [, b64] = auth.split(' ')
+  if (b64) {
+    const [, pass] = Buffer.from(b64, 'base64').toString().split(':')
+    if (pass === ADMIN_PIN) return next()
+  }
+  res.set('WWW-Authenticate', 'Basic realm="PHERAN Admin"')
+  res.status(401).send('Access denied')
+})
 app.use('/admin', express.static(path.join(__dirname, '..', 'admin')))
 
 // Root redirect → homepage
