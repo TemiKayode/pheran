@@ -20,6 +20,15 @@ const app = express()
 app.use(cors())
 app.use(express.json({ limit: '50mb' }))
 
+// Rewrite requests from admin.pheran.ng so they hit /admin/* routes
+app.use((req, res, next) => {
+  const host = (req.headers.host || '').split(':')[0]
+  if (host === 'admin.pheran.ng' && !req.path.startsWith('/admin')) {
+    req.url = '/admin' + (req.url === '/' ? '/' : req.url)
+  }
+  next()
+})
+
 // serve static pages — mvp/ first for HTML/images, then Pheran root for css/ and videos/
 app.use(express.static(path.join(__dirname, '..')))
 app.use(express.static(path.join(__dirname, '../..')))
