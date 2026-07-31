@@ -228,19 +228,34 @@
         <h1 class="page-title">Orders</h1>
         <span class="product-count" id="orders-count-badge">…</span>
         <div class="header-actions">
-          <select id="orders-filter" onchange="renderOrders()" style="padding:7px 12px;border:1px solid var(--gray-200);border-radius:9px;font-size:.85rem;font-family:inherit;color:var(--text);outline:none;background:#fff">
-            <option value="all">All Orders</option>
-            <option value="pending_payment">Awaiting Payment</option>
-            <option value="confirmed">Payment Confirmed</option>
-            <option value="processing">Processing</option>
-            <option value="dispatched">Dispatched</option>
-            <option value="delivered">Delivered</option>
-          </select>
+          <button class="btn btn-ghost" onclick="exportOrdersCSV()" title="Download all orders as CSV">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+            Export CSV
+          </button>
           <button class="btn btn-ghost" onclick="loadOrders()">
             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
             Refresh
           </button>
         </div>
+      </div>
+      <!-- Search & filter bar -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;align-items:center">
+        <div class="search-wrap" style="flex:1;min-width:200px">
+          <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input id="orders-search" type="search" placeholder="Search by email or name…" oninput="debounceLoadOrders()" style="width:100%">
+        </div>
+        <select id="orders-status-filter" onchange="loadOrders()" style="padding:7px 12px;border:1px solid var(--gray-200);border-radius:9px;font-size:.85rem;font-family:inherit;color:var(--text);outline:none;background:#fff;height:38px">
+          <option value="all">All Statuses</option>
+          <option value="pending_payment">Awaiting Payment</option>
+          <option value="confirmed">Payment Confirmed</option>
+          <option value="processing">Processing</option>
+          <option value="dispatched">Dispatched</option>
+          <option value="delivered">Delivered</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <input id="orders-from" type="date" onchange="loadOrders()" title="From date" style="padding:7px 10px;border:1px solid var(--gray-200);border-radius:9px;font-size:.85rem;font-family:inherit;color:var(--text);outline:none;background:#fff;height:38px">
+        <input id="orders-to" type="date" onchange="loadOrders()" title="To date" style="padding:7px 10px;border:1px solid var(--gray-200);border-radius:9px;font-size:.85rem;font-family:inherit;color:var(--text);outline:none;background:#fff;height:38px">
+        <button class="btn btn-ghost btn-sm" onclick="clearOrderFilters()" title="Clear filters" style="height:38px">✕</button>
       </div>
 
       <div id="orders-empty" style="display:none;text-align:center;padding:60px 20px;color:var(--text-2)">
@@ -739,10 +754,41 @@ function showSection(name) {
 
 /* ── Orders ────────────────────────────────────────────────────────── */
 let allOrders = []
+let _ordersDebounce = null
+
+function debounceLoadOrders() {
+  clearTimeout(_ordersDebounce)
+  _ordersDebounce = setTimeout(loadOrders, 350)
+}
+
+function clearOrderFilters() {
+  const s = document.getElementById('orders-search')
+  const f = document.getElementById('orders-status-filter')
+  const fr= document.getElementById('orders-from')
+  const to= document.getElementById('orders-to')
+  if(s) s.value = ''
+  if(f) f.value = 'all'
+  if(fr) fr.value = ''
+  if(to) to.value = ''
+  loadOrders()
+}
+
+function exportOrdersCSV() {
+  window.location.href = '/api/admin/orders/export'
+}
 
 async function loadOrders() {
   try {
-    const r = await fetch('/api/admin/orders', { credentials: 'include' })
+    const status = document.getElementById('orders-status-filter')?.value || 'all'
+    const from   = document.getElementById('orders-from')?.value || ''
+    const to     = document.getElementById('orders-to')?.value || ''
+    const q      = (document.getElementById('orders-search')?.value || '').trim()
+    const params = new URLSearchParams({ limit: 100 })
+    if (status && status !== 'all') params.set('status', status)
+    if (from) params.set('from', from)
+    if (to)   params.set('to', to)
+    if (q)    params.set('q', q)
+    const r = await fetch('/api/admin/orders?' + params, { credentials: 'include' })
     const d = await r.json()
     if (!d.ok) { toast('Could not load orders: ' + d.error, 'error'); return }
     allOrders = d.orders || []
@@ -750,14 +796,13 @@ async function loadOrders() {
     const badge = document.getElementById('orders-badge')
     if (pending > 0) { badge.textContent = pending; badge.style.display = '' }
     else badge.style.display = 'none'
-    document.getElementById('orders-count-badge').textContent = allOrders.length
+    document.getElementById('orders-count-badge').textContent = d.total ?? allOrders.length
     renderOrders()
   } catch(e) { toast('Network error loading orders', 'error') }
 }
 
 function renderOrders() {
-  const filter = document.getElementById('orders-filter')?.value || 'all'
-  const orders = filter === 'all' ? allOrders : allOrders.filter(o => o.status === filter)
+  const orders = allOrders
   const list = document.getElementById('orders-list')
   const empty = document.getElementById('orders-empty')
   if (!orders.length) { list.innerHTML = ''; empty.style.display = ''; return }

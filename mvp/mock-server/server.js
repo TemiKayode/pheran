@@ -10,11 +10,105 @@ function timingSafeEqual(a, b) {
   if (typeof a !== 'string' || typeof b !== 'string') return false
   const ba = Buffer.from(a), bb = Buffer.from(b)
   if (ba.length !== bb.length) {
-    // Still run the comparison so time doesn't vary with length (pad with a dummy)
     crypto.timingSafeEqual(ba, Buffer.alloc(ba.length))
     return false
   }
   return crypto.timingSafeEqual(ba, bb)
+}
+
+// Safe HTML escaper for server-generated email bodies
+function escHtml(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+}
+
+// Send order confirmation email via Resend (https://resend.com).
+// Silently skips if RESEND_API_KEY is not configured — no order is blocked.
+async function sendOrderEmail(order) {
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) return
+  const shipping = order.shipping || {}
+  const email = order.user_email || order.userEmail || shipping.email
+  if (!email) return
+  const firstName = escHtml(shipping.firstName || 'Customer')
+  const bankName    = process.env.PHERAN_BANK_NAME       || 'Zenith Bank'
+  const accountNum  = process.env.PHERAN_ACCOUNT_NUMBER  || '—'
+  const accountName = process.env.PHERAN_ACCOUNT_NAME    || 'PHERAN FASHION LIMITED'
+  const items = Array.isArray(order.items) ? order.items : []
+  const itemsHtml = items.map(i => `
+    <tr>
+      <td style="padding:10px 0;border-bottom:1px solid #f0ebe4;font-size:14px;color:#333">${escHtml(i.title||'Item')}${i.color?` · ${escHtml(i.color)}`:''}${i.size?` · ${escHtml(i.size)}`:''}</td>
+      <td style="padding:10px 0;border-bottom:1px solid #f0ebe4;text-align:center;font-size:14px;color:#333">${Number(i.qty)||1}</td>
+      <td style="padding:10px 0;border-bottom:1px solid #f0ebe4;text-align:right;font-size:14px;color:#333">₦${Number(i.price||0).toLocaleString('en-NG')}</td>
+    </tr>`).join('')
+  const address = escHtml([shipping.address,shipping.city,shipping.state].filter(Boolean).join(', ') || '—')
+  const total   = Number(order.total||0).toLocaleString('en-NG')
+  const fee     = Number(order.deliveryFee||order.delivery_fee||0).toLocaleString('en-NG')
+  const sub     = Number(order.subtotal||0).toLocaleString('en-NG')
+  const year    = new Date().getFullYear()
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#F7F4F0;font-family:Arial,Helvetica,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F7F4F0;padding:40px 16px"><tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:10px;overflow:hidden;max-width:600px;box-shadow:0 2px 16px rgba(0,0,0,.06)">
+  <tr><td style="background:#2D1B4E;padding:32px;text-align:center">
+    <div style="font-family:Georgia,serif;font-size:26px;font-weight:700;letter-spacing:8px;color:#fff">PHERAN</div>
+  </td></tr>
+  <tr><td style="padding:36px 32px">
+    <h2 style="margin:0 0 6px;color:#2D1B4E;font-size:21px;font-weight:700">Order Received</h2>
+    <p style="margin:0 0 24px;color:#666;font-size:15px;line-height:1.6">Hi ${firstName}, thank you for shopping with PHERAN. We've received your order and will process it as soon as we confirm your bank transfer.</p>
+    <div style="background:#F7F4F0;border-radius:8px;padding:16px 20px;margin-bottom:28px">
+      <div style="font-size:11px;color:#999;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">Order Reference</div>
+      <div style="font-size:20px;font-weight:700;color:#2D1B4E;font-family:monospace">${escHtml(order.id)}</div>
+    </div>
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px">
+      <tr>
+        <th style="text-align:left;padding:0 0 10px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#999;border-bottom:2px solid #f0ebe4;font-weight:700">Item</th>
+        <th style="text-align:center;padding:0 0 10px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#999;border-bottom:2px solid #f0ebe4;font-weight:700">Qty</th>
+        <th style="text-align:right;padding:0 0 10px;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#999;border-bottom:2px solid #f0ebe4;font-weight:700">Price</th>
+      </tr>
+      ${itemsHtml}
+    </table>
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px">
+      <tr><td style="padding:4px 0;color:#666;font-size:14px">Subtotal</td><td style="padding:4px 0;text-align:right;color:#333;font-size:14px">₦${sub}</td></tr>
+      <tr><td style="padding:4px 0;color:#666;font-size:14px">Delivery</td><td style="padding:4px 0;text-align:right;color:#333;font-size:14px">₦${fee}</td></tr>
+      <tr><td style="padding:10px 0 0;font-weight:700;color:#2D1B4E;font-size:17px;border-top:2px solid #f0ebe4">Total</td><td style="padding:10px 0 0;text-align:right;font-weight:700;color:#2D1B4E;font-size:17px;border-top:2px solid #f0ebe4">₦${total}</td></tr>
+    </table>
+    <div style="background:#fffbf0;border:1px solid #f5d87a;border-radius:8px;padding:18px 20px;margin-bottom:28px">
+      <div style="font-weight:700;color:#92640c;margin-bottom:10px;font-size:14px">Bank Transfer Details</div>
+      <div style="color:#555;font-size:14px;line-height:1.8">
+        Transfer <strong style="color:#2D1B4E">₦${total}</strong> to:<br>
+        Bank: <strong>${escHtml(bankName)}</strong><br>
+        Account: <strong>${escHtml(accountNum)}</strong><br>
+        Name: <strong>${escHtml(accountName)}</strong><br>
+        Reference: <strong style="font-family:monospace">${escHtml(order.id)}</strong>
+      </div>
+    </div>
+    <div style="margin-bottom:24px">
+      <div style="font-size:11px;color:#999;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Delivery Address</div>
+      <div style="color:#333;font-size:14px;line-height:1.6">${address}</div>
+    </div>
+    <p style="color:#888;font-size:13px;line-height:1.6;margin:0">Questions? Email us at <a href="mailto:support@pheran.ng" style="color:#2D1B4E;font-weight:600">support@pheran.ng</a> and quote your order reference.</p>
+  </td></tr>
+  <tr><td style="background:#F7F4F0;padding:24px;text-align:center">
+    <div style="font-family:Georgia,serif;font-size:13px;letter-spacing:5px;color:#2D1B4E;margin-bottom:6px">PHERAN</div>
+    <div style="font-size:11px;color:#aaa">© ${year} PHERAN Fashion Limited · Nigeria</div>
+  </td></tr>
+</table>
+</td></tr></table>
+</body></html>`
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: `PHERAN <orders@pheran.ng>`,
+        to: [email],
+        subject: `Your PHERAN order ${order.id} is confirmed`,
+        html,
+      }),
+    })
+    if (!res.ok) console.warn('[email] Resend error:', res.status, await res.text().catch(()=>''))
+    else console.log('[email] Order confirmation sent to', email)
+  } catch(e) { console.warn('[email] Failed to send order confirmation:', e.message) }
 }
 
 // ─── Supabase client (optional — falls back to data.json if not configured) ──
@@ -204,7 +298,7 @@ setInterval(() => {
 // serve static assets with caching headers
 // HTML: no-cache so updates deploy immediately; CSS/JS/images: 1 day cache with revalidation
 const _staticOpts = { etag: true, lastModified: true }
-const _staticOptsAssets = { ...(_staticOpts), maxAge: '1d', immutable: false }
+// (cache options are set per-extension in setHeaders below)
 app.use(express.static(path.join(__dirname, '..'), {
   ..._staticOpts,
   setHeaders(res, filePath) {
@@ -811,6 +905,8 @@ app.post('/api/orders', mutationRateLimit, async(req,res)=>{
     orders.unshift(order)
     ORDERS_STORE.set(userId, orders)
     CART_STORE.set(userId, [])
+    // Fire-and-forget — never delays the response
+    sendOrderEmail(order).catch(()=>{})
     res.status(201).json({ ok:true, order })
   }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
 })
@@ -834,19 +930,73 @@ app.patch('/api/orders/:orderId/status', (req,res)=>{
 // ─── Admin orders management ───────────────────────────────────────────────────
 app.get('/api/admin/orders', requireAdminAuth, async(req,res)=>{
   try{
-    const page = Math.max(0, parseInt(req.query.page)||0)
-    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit)||50))
+    const page   = Math.max(0, parseInt(req.query.page)||0)
+    const limit  = Math.min(100, Math.max(1, parseInt(req.query.limit)||50))
     const offset = page * limit
+    const { status, from, to, q } = req.query
     if(supabase){
-      const { data, error, count } = await supabase.from('orders').select('*',{count:'exact'}).order('created_at',{ascending:false}).range(offset, offset+limit-1)
+      let query = supabase.from('orders').select('*',{count:'exact'})
+      if(status && status !== 'all') query = query.eq('status', status)
+      if(from) query = query.gte('created_at', from)
+      if(to)   query = query.lte('created_at', to + 'T23:59:59.999Z')
+      if(q){
+        const safe = q.replace(/[%_\\]/g, '\\$&')
+        query = query.or(`user_email.ilike.%${safe}%`)
+      }
+      const { data, error, count } = await query.order('created_at',{ascending:false}).range(offset, offset+limit-1)
       if(error) return res.status(500).json({ok:false,error:error.message})
       return res.json({ok:true, orders: data, total: count, page, limit})
     }
     // In-memory fallback
-    const all = []
+    let all = []
     for(const [,orders] of ORDERS_STORE) all.push(...orders)
     all.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt))
+    if(status && status !== 'all') all = all.filter(o=>o.status===status)
+    if(from) all = all.filter(o=>new Date(o.createdAt)>=new Date(from))
+    if(to)   all = all.filter(o=>new Date(o.createdAt)<=new Date(to+'T23:59:59.999Z'))
+    if(q){ const ql=q.toLowerCase(); all=all.filter(o=>(o.userEmail||'').toLowerCase().includes(ql)||(`${o.shipping?.firstName||''} ${o.shipping?.lastName||''}`).toLowerCase().includes(ql)) }
     res.json({ok:true, orders: all.slice(offset, offset+limit), total: all.length, page, limit})
+  }catch(e){ res.status(500).json({ok:false,error:String(e)}) }
+})
+
+// CSV export — must be before /:orderId routes so "export" isn't matched as an ID
+app.get('/api/admin/orders/export', requireAdminAuth, async(req,res)=>{
+  try{
+    let orders = []
+    if(supabase){
+      const { data, error } = await supabase.from('orders').select('*').order('created_at',{ascending:false}).limit(5000)
+      if(error) return res.status(500).json({ok:false,error:error.message})
+      orders = data || []
+    } else {
+      for(const [,o] of ORDERS_STORE) orders.push(...o)
+      orders.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt))
+    }
+    const csvCell = v => { const s=String(v??''); return (s.includes(',')||s.includes('"')||s.includes('\n'))?`"${s.replace(/"/g,'""')}"`:s }
+    const headers = ['Order ID','Date','Status','Customer Name','Email','Phone','Address','City','State','Delivery','Items','Subtotal','Delivery Fee','Total']
+    const rows = orders.map(o=>{
+      const s=o.shipping||{}
+      return [
+        o.id,
+        o.created_at||o.createdAt||'',
+        o.status||'',
+        `${s.firstName||''} ${s.lastName||''}`.trim(),
+        o.user_email||o.userEmail||s.email||'',
+        s.phone||'',
+        s.address||'',
+        s.city||'',
+        s.state||'',
+        o.delivery_method||o.deliveryMethod||'standard',
+        (Array.isArray(o.items)?o.items:[]).map(i=>`${i.title||'?'} x${i.qty||1}`).join(' | '),
+        o.subtotal||0,
+        o.delivery_fee||o.deliveryFee||0,
+        o.total||0,
+      ].map(csvCell).join(',')
+    })
+    const csv = [headers.join(','), ...rows].join('\r\n')
+    const filename = `pheran-orders-${new Date().toISOString().slice(0,10)}.csv`
+    res.setHeader('Content-Type','text/csv; charset=utf-8')
+    res.setHeader('Content-Disposition',`attachment; filename="${filename}"`)
+    res.send('﻿'+csv) // BOM so Excel opens UTF-8 correctly
   }catch(e){ res.status(500).json({ok:false,error:String(e)}) }
 })
 
@@ -935,7 +1085,13 @@ if(supabase){
       if(!/[A-Z]/.test(password)||!/[0-9]/.test(password)) return res.status(400).json({ok:false,error:'Password must contain at least one uppercase letter and one number'})
       if(typeof email!=='string'||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ok:false,error:'Invalid email address'})
       const{data,error}=await supabase.auth.signUp({ email: email.toLowerCase().trim(), password, options:{data:{firstName:String(firstName).slice(0,50),lastName:String(lastName).slice(0,50),phone:String(phone).slice(0,20)}} })
-      if(error) return res.status(400).json({ok:false,error:error.message})
+      if(error){
+        // Anti-enumeration: "User already registered" returns identical success response
+        // so attackers cannot discover which emails are registered
+        const alreadyExists = error.status === 422 || /already registered/i.test(error.message||'')
+        if(alreadyExists) return res.status(201).json({ ok:true, requiresVerification:true, message:'Check your email to verify your account before signing in.' })
+        return res.status(400).json({ok:false,error:error.message})
+      }
       // Supabase may require email verification before issuing a session
       const needsVerification = !data.session
       if(!needsVerification) setSession(req, res, data.session)
@@ -968,14 +1124,27 @@ if(supabase){
   })
 
   // Exchange access+refresh tokens (from email confirmation hash) for httpOnly cookies.
-  // Frontend calls this when it detects #access_token=... in the URL after email confirmation.
+  // Uses setSession which validates and rotates the refresh token (prevents replay).
   app.post('/api/auth/exchange', async(req,res)=>{
     const { access_token, refresh_token } = req.body || {}
     if(!access_token || !refresh_token) return res.status(400).json({ok:false,error:'Missing tokens'})
     try{
-      const { data, error } = await supabase.auth.getUser(access_token)
-      if(error || !data?.user) return res.status(401).json({ok:false,error:'Invalid or expired token'})
-      setSession(req, res, { access_token, refresh_token, expires_in: 3600 })
+      const { data, error } = await supabase.auth.setSession({ access_token, refresh_token })
+      if(error || !data?.session) return res.status(401).json({ok:false,error:'Invalid or expired token'})
+      setSession(req, res, data.session)
+      res.json({ok:true, user:fmtUser(data.user)})
+    }catch(e){ res.status(500).json({ok:false,error:String(e)}) }
+  })
+
+  // Silent refresh — called by client pages to renew access token using the httpOnly refresh cookie.
+  // Rotates the refresh token on each use so stolen refresh tokens expire after one use.
+  app.post('/api/auth/refresh', async(req,res)=>{
+    const refresh = req.cookies?.[COOKIE_REFRESH]
+    if(!refresh) return res.status(401).json({ok:false,error:'No refresh token'})
+    try{
+      const { data, error } = await supabase.auth.refreshSession({ refresh_token: refresh })
+      if(error || !data?.session){ clearSession(res); return res.status(401).json({ok:false,error:'Session expired — please log in again'}) }
+      setSession(req, res, data.session)
       res.json({ok:true, user:fmtUser(data.user)})
     }catch(e){ res.status(500).json({ok:false,error:String(e)}) }
   })
