@@ -337,18 +337,34 @@ function requireAdminAuth(req, res, next) {
   res.status(401).json({ ok: false, error: 'Unauthorized — admin access only' })
 }
 
-app.use('/admin', (req, res, next) => {
-  // Allow if valid session cookie already set
-  if (req.cookies?.admin_auth && timingSafeEqual(req.cookies.admin_auth, ADMIN_TOKEN)) return next()
-  const [, b64] = (req.headers['authorization'] || '').split(' ')
-  if (b64) {
-    const decoded = Buffer.from(b64, 'base64').toString()
-    const colonIdx = decoded.indexOf(':')
-    const pass = colonIdx >= 0 ? decoded.slice(colonIdx + 1) : ''
-    if (pass && timingSafeEqual(pass, ADMIN_PIN)) { setAdminCookie(req, res); return next() }
+// Admin login page — served before the auth guard so unauthenticated users can reach it
+app.get('/admin/login', (_req, res) => res.sendFile(path.join(__dirname, '..', 'admin', 'login.html')))
+
+// Admin login API — validates PIN, issues httpOnly session cookie
+app.post('/api/admin/login', (req, res) => {
+  const pin = String(req.body?.pin || '')
+  if (!pin || !timingSafeEqual(pin, ADMIN_PIN)) {
+    return res.status(401).json({ ok: false, error: 'Incorrect PIN' })
   }
-  res.set('WWW-Authenticate', 'Basic realm="PHERAN Admin"')
-  res.status(401).send('Access denied')
+  setAdminCookie(req, res)
+  res.json({ ok: true })
+})
+
+// Admin logout — clears session cookie and redirects to login
+app.post('/api/admin/logout', (req, res) => {
+  res.clearCookie('admin_auth', { path: '/' })
+  res.json({ ok: true })
+})
+
+app.use('/admin', (req, res, next) => {
+  // Login page is public — skip auth check
+  if (req.path === '/login' || req.path === '/login.html') return next()
+  // Valid session cookie → allow through
+  if (req.cookies?.admin_auth && timingSafeEqual(req.cookies.admin_auth, ADMIN_TOKEN)) return next()
+  // HTML page request → redirect to login (no browser Basic Auth dialog)
+  if (req.headers.accept?.includes('text/html')) return res.redirect(302, '/admin/login')
+  // API / asset request → 401
+  res.status(401).json({ ok: false, error: 'Unauthorized — admin access only' })
 })
 app.use('/admin', express.static(path.join(__dirname, '..', 'admin')))
 

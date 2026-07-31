@@ -176,7 +176,11 @@
   <a class="topbar-logo" href="#">PHERAN</a>
   <span class="topbar-badge">Admin</span>
   <div class="topbar-spacer"></div>
-  <a href="../homepage.html" target="_blank" class="topbar-btn">View Site ↗</a>
+  <a href="/" target="_blank" class="topbar-btn">View Site ↗</a>
+  <button class="topbar-btn" id="logout-btn" style="display:flex;align-items:center;gap:6px;background:rgba(220,38,38,0.15);border-color:rgba(220,38,38,0.35);color:#fca5a5" onclick="adminLogout()">
+    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75"/></svg>
+    Log out
+  </button>
 </header>
 
 <div class="shell">
@@ -896,6 +900,13 @@ async function updateOrderStatus(orderId, status) {
 }
 
 loadProducts()
+
+async function adminLogout() {
+  const btn = document.getElementById('logout-btn')
+  if (btn) { btn.disabled = true; btn.textContent = 'Logging out…' }
+  try { await fetch('/api/admin/logout', { method: 'POST', credentials: 'include' }) } catch(e) {}
+  window.location.href = '/admin/login'
+}
 </script>
 </body>
 </html>
