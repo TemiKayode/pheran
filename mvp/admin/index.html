@@ -289,11 +289,20 @@
 
     <div class="ep-section">Video (optional)</div>
 
-    <div class="field">
-      <label>Video path or URL</label>
-      <input id="ep-video" placeholder="e.g. ../videos/filename.mp4">
-      <div class="field-hint">Used on the product page as a 360° spin or look video</div>
+    <div id="video-preview-wrap" style="display:none;margin-bottom:10px;position:relative;border-radius:10px;overflow:hidden;background:#000">
+      <video id="video-preview" controls style="width:100%;max-height:220px;display:block"></video>
+      <button onclick="removeVideo()" style="position:absolute;top:8px;right:8px;background:rgba(220,38,38,0.9);border:none;color:#fff;border-radius:6px;padding:4px 10px;font-size:0.78rem;font-weight:600;cursor:pointer">Remove</button>
     </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <label class="img-upload-btn" for="hidden-video" id="video-upload-label" style="width:auto;height:auto;flex-direction:row;padding:9px 16px;font-size:0.82rem;gap:6px">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9A2.25 2.25 0 0 0 13.5 5.25h-9A2.25 2.25 0 0 0 3 7.5v9A2.25 2.25 0 0 0 4.5 18.75Z"/></svg>
+        Upload Video
+      </label>
+      <input type="file" id="hidden-video" accept="video/mp4,video/webm,video/quicktime" onchange="handleVideoUpload(event)" style="display:none">
+      <span style="color:var(--text-2);font-size:0.8rem">or paste URL:</span>
+      <input id="ep-video" placeholder="https://supabase.co/… or ../videos/…" oninput="updateVideoPreview(this.value)" style="flex:1;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:0.83rem;font-family:inherit;color:var(--text);outline:none">
+    </div>
+    <div class="field-hint" style="margin-top:4px">MP4 / WebM / MOV · max 80 MB · shown as a lookbook video on the product page</div>
   </div>
 
   <div class="ep-footer">
@@ -435,6 +444,7 @@ function openEdit(id) {
   document.getElementById('ep-count').value = p.count || ''
   document.getElementById('ep-desc').value = p.description || ''
   document.getElementById('ep-video').value = p.video || ''
+  updateVideoPreview(p.video || '')
   tagState.sizes = [...(p.sizes || [])]
   tagState.colors = [...(p.colors || [])]
   renderTags('sizes')
@@ -453,6 +463,7 @@ function clearForm() {
   tagState = { sizes: [], colors: [] }
   renderTags('sizes'); renderTags('colors')
   currentImages = []; renderImagePreviews()
+  updateVideoPreview('')
 }
 
 /* ── Tags ──────────────────────────────────── */
@@ -486,28 +497,75 @@ async function handleFileUpload(e) {
   const files = Array.from(e.target.files || [])
   if (!files.length) return
   e.target.value = ''
+  const label = document.querySelector('label[for="hidden-file"]')
+  const origHTML = label.innerHTML
+  label.innerHTML = '<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>Uploading…'
+  label.style.pointerEvents = 'none'
   try {
     const fd = new FormData()
-    files.forEach(f => fd.append('images', f))
+    files.forEach(f => fd.append('files', f))
     const res = await fetch('/api/upload', { method: 'POST', body: fd })
+    if (res.status === 401) { toast('Session expired — refresh and log in again', 'error'); return }
     const json = await res.json()
-    if (json.ok && json.paths) {
+    if (json.ok && json.paths?.length) {
       json.paths.forEach(p => currentImages.push(p))
       renderImagePreviews()
-      toast(`${json.paths.length} image(s) saved to server`, 'success')
-      return
+      toast(`${json.paths.length} image(s) saved to Supabase`, 'success')
+    } else {
+      toast(json.error || 'Upload failed — check file type (JPEG/PNG/WebP/GIF)', 'error')
     }
-  } catch (_) {}
-  // Fallback: embed as base64
-  let done = 0
-  files.forEach(file => {
-    const reader = new FileReader()
-    reader.onload = ev => {
-      currentImages.push(ev.target.result)
-      if (++done === files.length) { renderImagePreviews(); toast(`${done} image(s) added (embedded)`) }
+  } catch (err) {
+    toast('Upload error: ' + err.message, 'error')
+  } finally {
+    label.innerHTML = origHTML
+    label.style.pointerEvents = ''
+  }
+}
+
+/* ── Video ─────────────────────────────────── */
+async function handleVideoUpload(e) {
+  const file = e.target.files?.[0]
+  e.target.value = ''
+  if (!file) return
+  const label = document.getElementById('video-upload-label')
+  const origHTML = label.innerHTML
+  label.innerHTML = '<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>Uploading…'
+  label.style.pointerEvents = 'none'
+  try {
+    const fd = new FormData()
+    fd.append('files', file)
+    const res = await fetch('/api/upload', { method: 'POST', body: fd })
+    if (res.status === 401) { toast('Session expired — refresh and log in again', 'error'); return }
+    const json = await res.json()
+    if (json.ok && json.results?.[0]) {
+      const { url } = json.results[0]
+      document.getElementById('ep-video').value = url
+      updateVideoPreview(url)
+      toast('Video saved to Supabase', 'success')
+    } else {
+      toast(json.error || 'Video upload failed — check file type (MP4/WebM/MOV)', 'error')
     }
-    reader.readAsDataURL(file)
-  })
+  } catch (err) {
+    toast('Upload error: ' + err.message, 'error')
+  } finally {
+    label.innerHTML = origHTML
+    label.style.pointerEvents = ''
+  }
+}
+function updateVideoPreview(url) {
+  const wrap = document.getElementById('video-preview-wrap')
+  const vid = document.getElementById('video-preview')
+  if (url && url.trim()) {
+    vid.src = url
+    wrap.style.display = 'block'
+  } else {
+    vid.src = ''
+    wrap.style.display = 'none'
+  }
+}
+function removeVideo() {
+  document.getElementById('ep-video').value = ''
+  updateVideoPreview('')
 }
 function addImageUrl() {
   const inp = document.getElementById('img-url-input')
@@ -555,6 +613,7 @@ async function saveProduct() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     })
+    if (res.status === 401) { toast('Session expired — refresh and log in again', 'error'); return }
     const json = await res.json()
     if (json.ok) {
       toast(json.message || 'Saved!', 'success')
@@ -576,6 +635,7 @@ async function deleteProduct() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id })
     })
+    if (res.status === 401) { toast('Session expired — refresh and log in again', 'error'); return }
     const json = await res.json()
     if (json.ok) { toast('Product deleted', 'success'); closePanel(); await loadProducts() }
     else toast(json.error || 'Delete failed', 'error')

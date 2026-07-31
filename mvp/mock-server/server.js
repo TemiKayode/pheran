@@ -3,6 +3,7 @@ const express = require('express')
 const cors = require('cors')
 const fs = require('fs')
 const path = require('path')
+const crypto = require('crypto')
 
 // ─── Supabase client (optional — falls back to data.json if not configured) ──
 let supabase = null
@@ -34,12 +35,29 @@ app.use(express.static(path.join(__dirname, '..')))
 app.use(express.static(path.join(__dirname, '../..')))
 // Admin — protected by ADMIN_PIN env var (default: pheran2026)
 const ADMIN_PIN = process.env.ADMIN_PIN || 'pheran2026'
-app.use('/admin', (req, res, next) => {
-  const auth = req.headers['authorization'] || ''
-  const [, b64] = auth.split(' ')
+const ADMIN_TOKEN = crypto.createHash('sha256').update(ADMIN_PIN + 'pheran-admin-2026').digest('hex')
+
+function setAdminCookie(req, res) {
+  const secure = req.headers['x-forwarded-proto'] === 'https' || req.secure
+  res.cookie('admin_auth', ADMIN_TOKEN, { httpOnly: true, sameSite: 'lax', path: '/', maxAge: 8 * 60 * 60 * 1000, secure })
+}
+
+// requireAdminAuth — accepts session cookie (set after first Basic Auth) or Basic Auth header directly
+function requireAdminAuth(req, res, next) {
+  if (req.cookies?.admin_auth === ADMIN_TOKEN) return next()
+  const [, b64] = (req.headers['authorization'] || '').split(' ')
   if (b64) {
     const [, pass] = Buffer.from(b64, 'base64').toString().split(':')
-    if (pass === ADMIN_PIN) return next()
+    if (pass === ADMIN_PIN) { setAdminCookie(req, res); return next() }
+  }
+  res.status(401).json({ ok: false, error: 'Unauthorized — admin access only' })
+}
+
+app.use('/admin', (req, res, next) => {
+  const [, b64] = (req.headers['authorization'] || '').split(' ')
+  if (b64) {
+    const [, pass] = Buffer.from(b64, 'base64').toString().split(':')
+    if (pass === ADMIN_PIN) { setAdminCookie(req, res); return next() }
   }
   res.set('WWW-Authenticate', 'Basic realm="PHERAN Admin"')
   res.status(401).send('Access denied')
@@ -54,16 +72,29 @@ const UPLOADS_DIR = path.join(__dirname, '..', 'uploads')
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true })
 app.use('/uploads', express.static(UPLOADS_DIR))
 
-// File upload endpoint — uploads to Supabase Storage (persistent) with local disk fallback
+// Allowed MIME types for uploads — images and videos only
+const UPLOAD_MIME = {
+  'image/jpeg': '.jpg', 'image/jpg': '.jpg', 'image/png': '.png',
+  'image/webp': '.webp', 'image/gif': '.gif',
+  'video/mp4': '.mp4', 'video/webm': '.webm', 'video/quicktime': '.mov',
+}
+
+// File upload — admin only, images + videos → Supabase Storage, local disk fallback
 try {
   const multer = require('multer')
-  const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } })
-  app.post('/api/upload', upload.array('images', 20), async (req, res) => {
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 80 * 1024 * 1024 }, // 80 MB covers product videos
+    fileFilter: (_req, file, cb) => cb(null, !!UPLOAD_MIME[file.mimetype])
+  })
+  app.post('/api/upload', requireAdminAuth, upload.any(), async (req, res) => {
     if (!req.files || !req.files.length) return res.status(400).json({ ok: false, error: 'No files received' })
-    const paths = []
+    const results = []
     for (const file of req.files) {
-      const ext = path.extname(file.originalname).toLowerCase() || '.jpg'
-      const filename = `img-${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`
+      const isVideo = file.mimetype.startsWith('video/')
+      const ext = UPLOAD_MIME[file.mimetype] || path.extname(file.originalname).toLowerCase() || (isVideo ? '.mp4' : '.jpg')
+      const prefix = isVideo ? 'videos/' : ''
+      const filename = `${prefix}${isVideo ? 'vid' : 'img'}-${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`
       if (supabase) {
         try {
           const { error } = await supabase.storage
@@ -71,20 +102,20 @@ try {
             .upload(filename, file.buffer, { contentType: file.mimetype, upsert: true })
           if (error) throw error
           const { data } = supabase.storage.from('product-images').getPublicUrl(filename)
-          paths.push(data.publicUrl)
+          results.push({ url: data.publicUrl, type: isVideo ? 'video' : 'image', name: file.originalname })
           continue
         } catch (storageErr) {
           console.warn('[upload] Supabase Storage error:', storageErr.message, '— falling back to disk')
         }
       }
       fs.writeFileSync(path.join(UPLOADS_DIR, filename), file.buffer)
-      paths.push(`/uploads/${filename}`)
+      results.push({ url: `/uploads/${filename}`, type: isVideo ? 'video' : 'image', name: file.originalname })
     }
-    res.json({ ok: true, paths })
+    res.json({ ok: true, results, paths: results.map(r => r.url) })
   })
 } catch (e) {
-  app.post('/api/upload', (req, res) => {
-    res.status(501).json({ ok: false, error: 'Multer not installed. Run: npm install multer' })
+  app.post('/api/upload', (_req, res) => {
+    res.status(501).json({ ok: false, error: 'Multer not installed — run npm install in mock-server/' })
   })
 }
 
@@ -278,7 +309,7 @@ app.get('/api/products', (req, res)=>{
   res.json(resp)
 })
 
-app.post('/api/products/admin', (req, res)=>{
+app.post('/api/products/admin', requireAdminAuth, (req, res)=>{
   try{
     const body = req.body || {}
     const products = loadData()
@@ -311,7 +342,7 @@ app.post('/api/products/admin', (req, res)=>{
   }
 })
 
-app.delete('/api/products/admin', (req, res)=>{
+app.delete('/api/products/admin', requireAdminAuth, (req, res)=>{
   try{
     const { id } = req.body || {}
     if(!id) return res.status(400).json({ ok:false, error:'missing id' })
