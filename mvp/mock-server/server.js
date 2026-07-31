@@ -103,22 +103,24 @@ async function syncFromSupabase(){
     cached = data.map(p=>({
       ...p,
       oldPrice: p.old_price ?? undefined,
-      images:  Array.isArray(p.images)  ? p.images  : [],
-      sizes:   Array.isArray(p.sizes)   ? p.sizes   : [],
-      colors:  Array.isArray(p.colors)  ? p.colors  : [],
+      images: toArr(p.images),
+      sizes:  toArr(p.sizes),
+      colors: toArr(p.colors),
     }))
     PRODUCT_CACHE.clear()
     console.log(`[supabase] loaded ${cached.length} products`)
   }catch(e){ console.warn('[supabase] sync failed:', e.message) }
 }
 
+function toArr(v){ return Array.isArray(v)?v:(typeof v==='string'?JSON.parse(v||'[]'):[]) }
+
 function computeFacets(list){
   const sizes = {}
   const colors = {}
   const fabrics = {}
   list.forEach(p=>{
-    (p.sizes||[]).forEach(s=> sizes[s] = (sizes[s]||0)+1)
-    (p.colors||[]).forEach(c=> colors[c] = (colors[c]||0)+1)
+    toArr(p.sizes).forEach(s=> sizes[s] = (sizes[s]||0)+1)
+    toArr(p.colors).forEach(c=> colors[c] = (colors[c]||0)+1)
     if(p.fabric) fabrics[p.fabric] = (fabrics[p.fabric]||0)+1
   })
   return { sizes, colors, fabrics }
@@ -132,8 +134,8 @@ function applyFilters(list, params){
     const cats = (params.category || params.cat).split(',')
     out = out.filter(p=> cats.includes(p.category))
   }
-  if(params.size){ const sizes = params.size.split(','); out = out.filter(p=> (p.sizes||[]).some(s=> sizes.includes(s))) }
-  if(params.color){ const cols = params.color.split(','); out = out.filter(p=> (p.colors||[]).some(c=> cols.includes(c))) }
+  if(params.size){ const sizes = params.size.split(','); out = out.filter(p=> toArr(p.sizes).some(s=> sizes.includes(s))) }
+  if(params.color){ const cols = params.color.split(','); out = out.filter(p=> toArr(p.colors).some(c=> cols.includes(c))) }
   if(params.fabric){ const fac = params.fabric.split(','); out = out.filter(p=> fac.includes(p.fabric)) }
   return out
 }
@@ -546,8 +548,15 @@ if(supabase){
       if(password.length<8) return res.status(400).json({ok:false,error:'Password must be at least 8 characters'})
       const{data,error}=await supabase.auth.signUp({ email, password, options:{data:{firstName,lastName,phone}} })
       if(error) return res.status(400).json({ok:false,error:error.message})
-      if(data.session) setSession(res, data.session)
-      res.status(201).json({ok:true, user:fmtUser(data.user)})
+      // Supabase may require email verification before issuing a session
+      const needsVerification = !data.session
+      if(!needsVerification) setSession(res, data.session)
+      res.status(201).json({
+        ok:true,
+        requiresVerification: needsVerification,
+        message: needsVerification ? 'Check your email to verify your account before signing in.' : undefined,
+        user: fmtUser(data.user)
+      })
     }catch(e){ res.status(500).json({ok:false,error:String(e)}) }
   })
 

@@ -369,8 +369,25 @@
       try{
         const r=await fetch('/api/auth/register',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({firstName:fn,lastName:ln,email:em,phone:ph,password:pw})})
         const d=await r.json()
-        if(d.ok){ currentUserId=d.user.id; showDashboard(d.user) }
-        else alert(d.error||'Registration failed.')
+        if(d.ok){
+          if(d.requiresVerification){
+            // Show verification message instead of dashboard
+            document.getElementById('form-signup').innerHTML=`
+              <div style="text-align:center;padding:24px 0">
+                <div style="font-size:2.5rem;margin-bottom:16px">📧</div>
+                <h3 style="font-family:var(--font-display);margin:0 0 12px">Check your email</h3>
+                <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.6">
+                  We sent a verification link to<br><strong>${em}</strong>
+                </p>
+                <p style="color:var(--text-muted);font-size:0.82rem;margin-top:12px">
+                  Click the link in the email to activate your account, then come back here to sign in.
+                </p>
+                <button class="auth-submit" style="margin-top:20px" onclick="showTab('signin')">Go to Sign In</button>
+              </div>`
+          } else {
+            currentUserId=d.user.id; showDashboard(d.user)
+          }
+        } else alert(d.error||'Registration failed.')
       }catch(e){ alert('Connection error. Is the server running?') }
       setBtnState('signup-btn',false,'Create Account')
     })
