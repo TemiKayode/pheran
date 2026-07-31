@@ -743,6 +743,19 @@ if(supabase){
     }catch(e){ res.status(500).json({ok:false,error:String(e)}) }
   })
 
+  // Exchange access+refresh tokens (from email confirmation hash) for httpOnly cookies.
+  // Frontend calls this when it detects #access_token=... in the URL after email confirmation.
+  app.post('/api/auth/exchange', async(req,res)=>{
+    const { access_token, refresh_token } = req.body || {}
+    if(!access_token || !refresh_token) return res.status(400).json({ok:false,error:'Missing tokens'})
+    try{
+      const { data, error } = await supabase.auth.getUser(access_token)
+      if(error || !data?.user) return res.status(401).json({ok:false,error:'Invalid or expired token'})
+      setSession(req, res, { access_token, refresh_token, expires_in: 3600 })
+      res.json({ok:true, user:fmtUser(data.user)})
+    }catch(e){ res.status(500).json({ok:false,error:String(e)}) }
+  })
+
   app.post('/api/auth/logout', async(req,res)=>{
     const access = req.cookies?.[COOKIE_ACCESS]
     if(access){ try{ await supabase.auth.admin.signOut(access,'local') }catch(e){} }

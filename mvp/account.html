@@ -96,6 +96,14 @@
 
     <!-- Dashboard (shown when signed in) -->
     <div id="dashboard-screen" style="display:none;padding:32px 0 60px">
+      <!-- Email-confirmed banner — shown only after clicking the verification link -->
+      <div id="email-confirmed-banner" style="display:none;background:#f0faf4;border:1px solid #b2dfcc;border-radius:12px;padding:14px 20px;margin-bottom:24px;display:none;align-items:center;gap:12px">
+        <span style="color:#1a7a4a;font-size:1.2rem">✓</span>
+        <div>
+          <strong style="color:#1a7a4a;font-size:0.95rem">Email confirmed!</strong>
+          <p style="margin:2px 0 0;font-size:0.85rem;color:#2d6a4f">You're now signed in to your PHERAN account.</p>
+        </div>
+      </div>
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap;gap:12px">
         <div>
           <div class="section-label">My Account</div>
@@ -344,6 +352,27 @@
     let currentUserId = null
 
     async function apiCheckSession(){
+      // Detect email confirmation redirect: Supabase appends #access_token=... to the URL
+      const _hp = new URLSearchParams(window.location.hash.slice(1))
+      const _at = _hp.get('access_token')
+      const _rt = _hp.get('refresh_token')
+      const _type = _hp.get('type')
+      if(_at && _rt){
+        try{
+          const r=await fetch('/api/auth/exchange',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({access_token:_at,refresh_token:_rt})})
+          const d=await r.json()
+          if(d.ok){
+            history.replaceState(null,'',window.location.pathname)
+            currentUserId=d.user.id
+            showDashboard(d.user)
+            if(_type==='signup'||_type==='email_change'){
+              const banner=document.getElementById('email-confirmed-banner')
+              if(banner){ banner.style.display='flex'; setTimeout(()=>{ banner.style.display='none' },8000) }
+            }
+            return
+          }
+        }catch(e){}
+      }
       try{
         const r=await fetch('/api/auth/me',{credentials:'include'})
         if(r.ok){ const d=await r.json(); if(d.ok&&d.user){ currentUserId=d.user.id; showDashboard(d.user); return } }
