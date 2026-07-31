@@ -204,10 +204,10 @@
             <div style="flex:1"><strong>Standard — 10–14 business days</strong><div style="font-size:0.83rem;color:var(--text-secondary)">Our recommended timeframe for exceptional quality</div></div>
             <span style="font-weight:700;color:var(--purple-main)">Included</span>
           </label>
-          <label style="display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--gray-200);border-radius:12px;cursor:pointer">
+          <label style="display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--gray-200);border-radius:12px;cursor:pointer" id="rush-label">
             <input type="radio" name="custom-delivery" value="rush" style="accent-color:var(--purple-main)">
             <div style="flex:1"><strong>Rush — 5–7 business days</strong><div style="font-size:0.83rem;color:var(--text-secondary)">Priority handling by our lead tailors</div></div>
-            <span style="font-weight:700">+₦15,000</span>
+            <span style="font-weight:700" id="rush-fee-label">+₦—</span>
           </label>
         </div>
         <div class="field-group" style="margin-top:14px">
@@ -217,6 +217,7 @@
         <div class="field-group" style="margin-top:14px">
           <label for="event-date">Event date (optional)</label>
           <input id="event-date" type="date" style="padding:10px 12px;border:1px solid var(--gray-200);border-radius:8px;font-family:var(--font-body);font-size:0.9rem">
+          <div id="date-warning" style="display:none;margin-top:10px;padding:12px 14px;border-radius:8px;font-size:.83rem;line-height:1.5;border-left:4px solid"></div>
         </div>
       </div>
 
@@ -233,7 +234,7 @@
           <div class="sp-label">Estimated price</div>
           <div class="sp-amount" id="summary-price">₦43,000</div>
         </div>
-        <div class="delivery-note">
+        <div class="delivery-note" id="delivery-note">
           📅 Your piece will be ready in <strong>10–14 business days</strong> and delivered to your door.
         </div>
         <div style="border-top:1px solid rgba(255,255,255,0.2);padding-top:14px;margin-top:4px;font-size:0.82rem;color:rgba(255,255,255,0.7);line-height:1.6">
@@ -293,65 +294,126 @@
   <script src="icons.js"></script>
   <script src="script.js"></script>
   <script>
-    const prices = { dress:35000, blouse:22000, trousers:24000, skirt:19000, suit:65000, gown:85000 }
+    const prices    = { dress:35000, blouse:22000, trousers:24000, skirt:19000, suit:65000, gown:85000 }
     const fabricAdd = { silk:8000, linen:3000, cotton:2000, ankara:4000,'aso-oke':12000, wool:7000 }
     let selectedType='dress', selectedFabric='silk', rushDelivery=false
+    const fmt = v => new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(Number(v||0))
+
+    function getRushFee() {
+      // Rush is 40% of (garment base + fabric premium)
+      return Math.round(((prices[selectedType]||35000) + (fabricAdd[selectedFabric]||0)) * 0.4)
+    }
 
     function updateSummary(){
-      const base=prices[selectedType]||35000
-      const fab=fabricAdd[selectedFabric]||0
-      const rush=rushDelivery?15000:0
-      const total=base+fab+rush
-      document.getElementById('summary-price').textContent=new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(total)
-      const lines=document.getElementById('summary-lines')
-      const typeLabel=document.querySelector(`.config-option[data-type="${selectedType}"]`)?.textContent?.trim()||selectedType
-      const fabLabel=document.querySelector(`.config-option[data-fabric="${selectedFabric}"]`)?.textContent?.split('\n')[0]?.trim()||selectedFabric
-      if(lines) lines.innerHTML=`
+      const base = prices[selectedType] || 35000
+      const fab  = fabricAdd[selectedFabric] || 0
+      const rushFee = getRushFee()
+      const rush = rushDelivery ? rushFee : 0
+      const total = base + fab + rush
+
+      // Update rush option label dynamically
+      const rushLbl = document.getElementById('rush-fee-label')
+      if(rushLbl) rushLbl.textContent = '+' + fmt(rushFee)
+
+      // Update delivery note in summary panel
+      const dn = document.getElementById('delivery-note')
+      if(dn) dn.innerHTML = rushDelivery
+        ? '⚡ Your piece will be ready in <strong>5–7 business days</strong> and delivered to your door.'
+        : '📅 Your piece will be ready in <strong>10–14 business days</strong> and delivered to your door.'
+
+      document.getElementById('summary-price').textContent = fmt(total)
+      const lines = document.getElementById('summary-lines')
+      const typeLabel = document.querySelector(`.config-option[data-type="${selectedType}"]`)?.textContent?.trim() || selectedType
+      const fabLabel  = document.querySelector(`.config-option[data-fabric="${selectedFabric}"]`)?.textContent?.split('\n')[0]?.trim() || selectedFabric
+      if(lines) lines.innerHTML = `
         <div class="summary-line"><span>Garment</span><span>${typeLabel}</span></div>
         <div class="summary-line"><span>Fabric</span><span>${fabLabel}</span></div>
-        <div class="summary-line"><span>Base price</span><span>${new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(base)}</span></div>
-        <div class="summary-line"><span>Fabric premium</span><span>+${new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(fab)}</span></div>
-        ${rush?`<div class="summary-line"><span>Rush delivery</span><span>+${new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(rush)}</span></div>`:''}
+        <div class="summary-line"><span>Base price</span><span>${fmt(base)}</span></div>
+        <div class="summary-line"><span>Fabric premium</span><span>+${fmt(fab)}</span></div>
+        ${rush ? `<div class="summary-line" style="color:#b45309"><span>Rush delivery (40%)</span><span>+${fmt(rush)}</span></div>` : ''}
       `
+    }
+
+    // Returns the date that is `n` business days (Mon–Fri) from today
+    function addBusinessDays(n) {
+      const d = new Date(); d.setHours(0,0,0,0)
+      let added = 0
+      while (added < n) {
+        d.setDate(d.getDate() + 1)
+        if (d.getDay() !== 0 && d.getDay() !== 6) added++
+      }
+      return d
+    }
+
+    function checkEventDate() {
+      const input   = document.getElementById('event-date')
+      const warning = document.getElementById('date-warning')
+      if(!input || !warning || !input.value) { warning.style.display = 'none'; return }
+
+      const eventDate    = new Date(input.value + 'T00:00:00')
+      const rushMinDate  = addBusinessDays(5)   // earliest rush can deliver
+      const rushCutDate  = addBusinessDays(7)   // last day rush is comfortably achievable
+      const stdCutDate   = addBusinessDays(10)  // if event < 10 bd away, switch to rush
+
+      if (eventDate < rushMinDate) {
+        // Fewer than 5 business days — impossible even with rush
+        warning.style.cssText = 'display:block;padding:12px 14px;border-radius:8px;font-size:.83rem;line-height:1.5;border-left:4px solid #dc2626;background:#FEF2F2;color:#991b1b'
+        warning.innerHTML = '<strong>⚠ Date is too soon</strong><br>Your event is less than 5 business days away — this may be unachievable even with Rush delivery. Please <a href="https://wa.me/2347013046873" target="_blank" style="color:#991b1b;font-weight:700">contact us on WhatsApp</a> to check availability before ordering.'
+      } else if (eventDate <= stdCutDate) {
+        // 5–10 business days away — auto-select rush
+        const rushRadio = document.querySelector('input[name="custom-delivery"][value="rush"]')
+        if (rushRadio && !rushRadio.checked) {
+          rushRadio.checked = true
+          rushDelivery = true
+          updateSummary()
+        }
+        warning.style.cssText = 'display:block;padding:12px 14px;border-radius:8px;font-size:.83rem;line-height:1.5;border-left:4px solid #D97706;background:#FFFBEB;color:#92400E'
+        warning.innerHTML = '<strong>⚡ Rush delivery selected</strong><br>Your event is within 10 business days. We\'ve switched you to Rush (5–7 business days) to give you the best chance of receiving your piece in time.'
+      } else {
+        // Date is fine for standard
+        warning.style.display = 'none'
+      }
     }
 
     document.querySelectorAll('#garment-grid .config-option').forEach(opt=>{
       opt.addEventListener('click',()=>{
         document.querySelectorAll('#garment-grid .config-option').forEach(o=>o.classList.remove('selected'))
-        opt.classList.add('selected'); selectedType=opt.dataset.type; updateSummary()
+        opt.classList.add('selected'); selectedType=opt.dataset.type; updateSummary(); checkEventDate()
       })
     })
     document.querySelectorAll('#fabric-grid .config-option').forEach(opt=>{
       opt.addEventListener('click',()=>{
         document.querySelectorAll('#fabric-grid .config-option').forEach(o=>o.classList.remove('selected'))
-        opt.classList.add('selected'); selectedFabric=opt.dataset.fabric; updateSummary()
+        opt.classList.add('selected'); selectedFabric=opt.dataset.fabric; updateSummary(); checkEventDate()
       })
     })
     document.querySelectorAll('input[name="custom-delivery"]').forEach(r=>{
-      r.addEventListener('change',()=>{rushDelivery=r.value==='rush';updateSummary()})
+      r.addEventListener('change',()=>{ rushDelivery=r.value==='rush'; updateSummary(); checkEventDate() })
     })
+    document.getElementById('event-date')?.addEventListener('change', checkEventDate)
 
     document.getElementById('submit-custom')?.addEventListener('click',()=>{
-      const bust=document.getElementById('m-bust')?.value
-      if(!bust){alert('Please enter at least your bust measurement to continue.');return}
-      // Add as a special custom item to cart
-      const price = prices[selectedType]+(fabricAdd[selectedFabric]||0)+(rushDelivery?15000:0)
-      const typeLabel=document.querySelector(`.config-option[data-type="${selectedType}"]`)?.textContent?.trim()?.split('\n')[0]||selectedType
-      const fabLabel=document.querySelector(`.config-option[data-fabric="${selectedFabric}"]`)?.textContent?.split('\n')[0]?.trim()||selectedFabric
-      const item={
-        key:'custom-'+Date.now(),
-        id:'custom',
-        title:`Custom ${typeLabel}`,
+      const bust = document.getElementById('m-bust')?.value
+      if(!bust){ alert('Please enter at least your bust measurement to continue.'); return }
+      const base    = prices[selectedType]||35000
+      const fab     = fabricAdd[selectedFabric]||0
+      const price   = base + fab + (rushDelivery ? getRushFee() : 0)
+      const typeLabel = document.querySelector(`.config-option[data-type="${selectedType}"]`)?.textContent?.trim()?.split('\n')[0] || selectedType
+      const fabLabel  = document.querySelector(`.config-option[data-fabric="${selectedFabric}"]`)?.textContent?.split('\n')[0]?.trim() || selectedFabric
+      const item = {
+        key:   'custom-' + Date.now(),
+        id:    'custom',
+        title: `Custom ${typeLabel}`,
         price,
-        image:'img-grey-linen-front.jpg',
-        size:'Custom',
-        color:document.getElementById('color-preference')?.value||'As specified',
-        qty:1
+        image: 'img-grey-linen-front.jpg',
+        size:  'Custom' + (rushDelivery ? ' (Rush)' : ''),
+        color: document.getElementById('color-preference')?.value || 'As specified',
+        qty:   1
       }
-      const cart=JSON.parse(localStorage.getItem('pheran_cart')||'[]')
+      const cart = JSON.parse(localStorage.getItem('pheran_cart')||'[]')
       cart.push(item)
-      localStorage.setItem('pheran_cart',JSON.stringify(cart))
-      window.location.href='cart.html'
+      localStorage.setItem('pheran_cart', JSON.stringify(cart))
+      window.location.href = 'cart.html'
     })
 
     updateSummary()

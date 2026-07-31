@@ -319,14 +319,16 @@
     // ── Bank details ──────────────────────────────────────────────────────────
     let bankDetails={}
     fetch('/api/bank-details').then(r=>r.json()).then(d=>{
-      if(d.ok){
-        bankDetails=d
-        ;['bank','account','name','s-bank','s-account','s-name'].forEach(id=>{
-          const key=id.replace('s-','')
-          const el=document.getElementById(id)
-          if(el) el.textContent=d[key]||''
-        })
-      }
+      if(!d.ok) return
+      bankDetails=d
+      // Step-2 bank card
+      document.getElementById('bd-bank').textContent    = d.bank    || ''
+      document.getElementById('bd-account').textContent = d.account || ''
+      document.getElementById('bd-name').textContent    = d.name    || ''
+      // Success-state bank card (pre-populated so it's ready immediately after order)
+      document.getElementById('s-bank').textContent    = d.bank    || ''
+      document.getElementById('s-account').textContent = d.account || ''
+      document.getElementById('s-name').textContent    = d.name    || ''
     }).catch(()=>{})
 
     function makeCopy(btnId,getText){
