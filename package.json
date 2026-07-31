@@ -1,0 +1,12 @@
+{
+  "name": "pheran",
+  "version": "1.0.0",
+  "description": "PHERAN — Premium Nigerian Fashion Storefront",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "postinstall": "cd mvp/mock-server && npm install",
+    "start": "node mvp/mock-server/server.js"
+  }
+}
