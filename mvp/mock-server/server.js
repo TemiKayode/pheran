@@ -500,38 +500,54 @@ app.patch('/api/orders/:orderId/status', (req,res)=>{
   }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
 })
 
-// ─── Production Auth ─────────────────────────────────────────────────────────
-const USERS_PATH = path.join(__dirname, '..', 'users.json')
-const JWT_SECRET = process.env.JWT_SECRET || 'pheran-dev-secret-change-in-production'
-const COOKIE_NAME = 'pheran_token'
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+const COOKIE_ACCESS  = 'pheran_token'
+const COOKIE_REFRESH = 'pheran_refresh'
+const COOKIE_BASE    = { httpOnly:true, sameSite:'lax', path:'/' }
 
-function loadUsers(){ try{ return JSON.parse(fs.readFileSync(USERS_PATH,'utf8')||'[]') }catch(e){ return [] } }
-function saveUsersList(u){ fs.writeFileSync(USERS_PATH, JSON.stringify(u,null,2),'utf8') }
+// cookie-parser is always needed
+try{ app.use(require('cookie-parser')()) }catch(e){ console.warn('cookie-parser missing') }
 
-try{
-  const bcrypt = require('bcryptjs')
-  const jwt    = require('jsonwebtoken')
-  const cp     = require('cookie-parser')
-  app.use(cp())
+if(supabase){
+  // ── Supabase Auth (primary) ──────────────────────────────────────────────
+  console.log('[auth] using Supabase Auth')
 
-  function signToken(u){ return jwt.sign({id:u.id,email:u.email},JWT_SECRET,{expiresIn:'30d'}) }
-  function verifyToken(t){ try{ return jwt.verify(t,JWT_SECRET) }catch(e){ return null } }
-  function cookieOpts(){ return {httpOnly:true,sameSite:'lax',maxAge:30*24*60*60*1000,path:'/'} }
-  function safe(u){ const {passwordHash,...rest}=u; return rest }
+  function setSession(res, session){
+    res.cookie(COOKIE_ACCESS,  session.access_token,  {...COOKIE_BASE, maxAge:(session.expires_in||3600)*1000})
+    res.cookie(COOKIE_REFRESH, session.refresh_token, {...COOKIE_BASE, maxAge:30*24*60*60*1000})
+  }
+  function clearSession(res){
+    res.clearCookie(COOKIE_ACCESS,  {path:'/'})
+    res.clearCookie(COOKIE_REFRESH, {path:'/'})
+  }
+  function fmtUser(u){
+    const m = u.user_metadata||{}
+    return { id:u.id, email:u.email, firstName:m.firstName||'', lastName:m.lastName||'', phone:m.phone||'' }
+  }
+  async function resolveUser(req, res){
+    const access  = req.cookies?.[COOKIE_ACCESS]
+    const refresh = req.cookies?.[COOKIE_REFRESH]
+    if(access){
+      const { data, error } = await supabase.auth.getUser(access)
+      if(!error && data.user) return data.user
+    }
+    // access token expired — try refresh
+    if(refresh){
+      const { data, error } = await supabase.auth.refreshSession({ refresh_token: refresh })
+      if(!error && data.session){ setSession(res, data.session); return data.user }
+    }
+    return null
+  }
 
   app.post('/api/auth/register', async(req,res)=>{
     try{
       const{firstName,lastName='',email,phone='',password}=req.body||{}
       if(!firstName||!email||!password) return res.status(400).json({ok:false,error:'firstName, email and password are required'})
       if(password.length<8) return res.status(400).json({ok:false,error:'Password must be at least 8 characters'})
-      const users=loadUsers()
-      if(users.find(u=>u.email===email)) return res.status(409).json({ok:false,error:'An account with that email already exists'})
-      const passwordHash=await bcrypt.hash(password,12)
-      const user={id:'usr_'+Date.now(),firstName,lastName,email,phone,passwordHash,createdAt:new Date().toISOString()}
-      users.push(user)
-      saveUsersList(users)
-      res.cookie(COOKIE_NAME,signToken(user),cookieOpts())
-      res.status(201).json({ok:true,user:safe(user)})
+      const{data,error}=await supabase.auth.signUp({ email, password, options:{data:{firstName,lastName,phone}} })
+      if(error) return res.status(400).json({ok:false,error:error.message})
+      if(data.session) setSession(res, data.session)
+      res.status(201).json({ok:true, user:fmtUser(data.user)})
     }catch(e){ res.status(500).json({ok:false,error:String(e)}) }
   })
 
@@ -539,53 +555,108 @@ try{
     try{
       const{email,password}=req.body||{}
       if(!email||!password) return res.status(400).json({ok:false,error:'Email and password are required'})
-      const users=loadUsers()
-      const user=users.find(u=>u.email===email)
-      if(!user) return res.status(401).json({ok:false,error:'No account found with that email'})
-      if(!(await bcrypt.compare(password,user.passwordHash))) return res.status(401).json({ok:false,error:'Incorrect password'})
-      res.cookie(COOKIE_NAME,signToken(user),cookieOpts())
-      res.json({ok:true,user:safe(user)})
+      const{data,error}=await supabase.auth.signInWithPassword({email,password})
+      if(error) return res.status(401).json({ok:false,error:error.message})
+      setSession(res, data.session)
+      res.json({ok:true, user:fmtUser(data.user)})
     }catch(e){ res.status(500).json({ok:false,error:String(e)}) }
   })
 
-  app.get('/api/auth/me',(req,res)=>{
+  app.get('/api/auth/me', async(req,res)=>{
     try{
-      const token=req.cookies?.[COOKIE_NAME]
-      if(!token) return res.status(401).json({ok:false,error:'Not authenticated'})
-      const payload=verifyToken(token)
-      if(!payload) return res.status(401).json({ok:false,error:'Session expired — please sign in again'})
-      const user=loadUsers().find(u=>u.id===payload.id)
-      if(!user) return res.status(401).json({ok:false,error:'Account not found'})
-      res.json({ok:true,user:safe(user)})
+      const user = await resolveUser(req,res)
+      if(!user) return res.status(401).json({ok:false,error:'Not authenticated'})
+      res.json({ok:true, user:fmtUser(user)})
     }catch(e){ res.status(500).json({ok:false,error:String(e)}) }
   })
 
-  app.post('/api/auth/logout',(req,res)=>{
-    res.clearCookie(COOKIE_NAME,{path:'/'})
+  app.post('/api/auth/logout', async(req,res)=>{
+    const access = req.cookies?.[COOKIE_ACCESS]
+    if(access){ try{ await supabase.auth.admin.signOut(access,'local') }catch(e){} }
+    clearSession(res)
     res.json({ok:true})
   })
 
-  app.patch('/api/auth/profile',(req,res)=>{
+  app.patch('/api/auth/profile', async(req,res)=>{
     try{
-      const token=req.cookies?.[COOKIE_NAME]
-      if(!token) return res.status(401).json({ok:false,error:'Not authenticated'})
-      const payload=verifyToken(token)
-      if(!payload) return res.status(401).json({ok:false,error:'Session expired'})
-      const users=loadUsers()
-      const idx=users.findIndex(u=>u.id===payload.id)
-      if(idx<0) return res.status(404).json({ok:false,error:'User not found'})
-      ;['firstName','lastName','phone'].forEach(k=>{ if(req.body[k]!==undefined) users[idx][k]=req.body[k] })
-      users[idx].updatedAt=new Date().toISOString()
-      saveUsersList(users)
-      res.json({ok:true,user:safe(users[idx])})
+      const user = await resolveUser(req,res)
+      if(!user) return res.status(401).json({ok:false,error:'Not authenticated'})
+      const{firstName,lastName,phone}=req.body||{}
+      const meta={...user.user_metadata}
+      if(firstName!==undefined) meta.firstName=firstName
+      if(lastName!==undefined)  meta.lastName=lastName
+      if(phone!==undefined)     meta.phone=phone
+      const{data,error}=await supabase.auth.admin.updateUserById(user.id,{user_metadata:meta})
+      if(error) return res.status(500).json({ok:false,error:error.message})
+      res.json({ok:true, user:fmtUser(data.user)})
     }catch(e){ res.status(500).json({ok:false,error:String(e)}) }
   })
 
-}catch(e){
-  const authErr=(_,res)=>res.status(501).json({ok:false,error:'Auth packages not installed. Run: npm install bcryptjs jsonwebtoken cookie-parser'})
-  ;['/api/auth/register','/api/auth/login','/api/auth/logout'].forEach(r=>app.post(r,authErr))
-  app.get('/api/auth/me',authErr)
-  app.patch('/api/auth/profile',authErr)
+} else {
+  // ── Fallback: bcrypt + users.json ────────────────────────────────────────
+  console.log('[auth] Supabase not configured — using local users.json')
+  const USERS_PATH = path.join(__dirname,'..','users.json')
+  const JWT_SECRET = process.env.JWT_SECRET || 'pheran-dev-secret-change-in-production'
+  function loadUsers(){ try{ return JSON.parse(fs.readFileSync(USERS_PATH,'utf8')||'[]') }catch(e){ return [] } }
+  function saveUsersList(u){ fs.writeFileSync(USERS_PATH,JSON.stringify(u,null,2),'utf8') }
+
+  try{
+    const bcrypt=require('bcryptjs'), jwt=require('jsonwebtoken')
+    const sign=(u)=>jwt.sign({id:u.id,email:u.email},JWT_SECRET,{expiresIn:'30d'})
+    const verify=(t)=>{ try{ return jwt.verify(t,JWT_SECRET) }catch(e){ return null } }
+    const co={...COOKIE_BASE, maxAge:30*24*60*60*1000}
+    const safe=(u)=>{ const{passwordHash,...r}=u; return r }
+
+    app.post('/api/auth/register', async(req,res)=>{
+      try{
+        const{firstName,lastName='',email,phone='',password}=req.body||{}
+        if(!firstName||!email||!password) return res.status(400).json({ok:false,error:'firstName, email and password are required'})
+        if(password.length<8) return res.status(400).json({ok:false,error:'Password must be at least 8 characters'})
+        const users=loadUsers()
+        if(users.find(u=>u.email===email)) return res.status(409).json({ok:false,error:'An account with that email already exists'})
+        const user={id:'usr_'+Date.now(),firstName,lastName,email,phone,passwordHash:await bcrypt.hash(password,12),createdAt:new Date().toISOString()}
+        saveUsersList([...users,user])
+        res.cookie(COOKIE_ACCESS,sign(user),co)
+        res.status(201).json({ok:true,user:safe(user)})
+      }catch(e){ res.status(500).json({ok:false,error:String(e)}) }
+    })
+    app.post('/api/auth/login', async(req,res)=>{
+      try{
+        const{email,password}=req.body||{}
+        if(!email||!password) return res.status(400).json({ok:false,error:'Email and password are required'})
+        const user=loadUsers().find(u=>u.email===email)
+        if(!user) return res.status(401).json({ok:false,error:'No account found with that email'})
+        if(!(await bcrypt.compare(password,user.passwordHash))) return res.status(401).json({ok:false,error:'Incorrect password'})
+        res.cookie(COOKIE_ACCESS,sign(user),co)
+        res.json({ok:true,user:safe(user)})
+      }catch(e){ res.status(500).json({ok:false,error:String(e)}) }
+    })
+    app.get('/api/auth/me',(req,res)=>{
+      try{
+        const p=verify(req.cookies?.[COOKIE_ACCESS])
+        if(!p) return res.status(401).json({ok:false,error:'Not authenticated'})
+        const user=loadUsers().find(u=>u.id===p.id)
+        if(!user) return res.status(401).json({ok:false,error:'Account not found'})
+        res.json({ok:true,user:safe(user)})
+      }catch(e){ res.status(500).json({ok:false,error:String(e)}) }
+    })
+    app.post('/api/auth/logout',(req,res)=>{ res.clearCookie(COOKIE_ACCESS,{path:'/'}); res.json({ok:true}) })
+    app.patch('/api/auth/profile',(req,res)=>{
+      try{
+        const p=verify(req.cookies?.[COOKIE_ACCESS])
+        if(!p) return res.status(401).json({ok:false,error:'Not authenticated'})
+        const users=loadUsers(), idx=users.findIndex(u=>u.id===p.id)
+        if(idx<0) return res.status(404).json({ok:false,error:'User not found'})
+        ;['firstName','lastName','phone'].forEach(k=>{ if(req.body[k]!==undefined) users[idx][k]=req.body[k] })
+        saveUsersList(users)
+        res.json({ok:true,user:safe(users[idx])})
+      }catch(e){ res.status(500).json({ok:false,error:String(e)}) }
+    })
+  }catch(e){
+    const err=(_,res)=>res.status(501).json({ok:false,error:'Auth unavailable'})
+    ;['/api/auth/register','/api/auth/login','/api/auth/logout'].forEach(r=>app.post(r,err))
+    app.get('/api/auth/me',err); app.patch('/api/auth/profile',err)
+  }
 }
 
 // Health check
