@@ -236,10 +236,13 @@ function withQuery(base, req) {
 for (const [route, file] of Object.entries(_PAGES)) {
   app.get(route, (_req, res) => res.sendFile(path.join(_MVR, file)))
   if ('/' + file !== route) {
+    // 302, not 301: a 301 gets cached by the browser near-permanently, so any
+    // future bug in this redirect (like the query-string one above) would stay
+    // stuck in visitors' caches even after the server-side fix ships.
     // *.html → clean path (handles relative href links from other pages)
-    app.get('/' + file, (req, res) => res.redirect(301, withQuery(route, req)))
+    app.get('/' + file, (req, res) => res.redirect(302, withQuery(route, req)))
     // Legacy /mvp/filename.html → clean path
-    app.get('/mvp/' + file, (req, res) => res.redirect(301, withQuery(route, req)))
+    app.get('/mvp/' + file, (req, res) => res.redirect(302, withQuery(route, req)))
   }
 }
 

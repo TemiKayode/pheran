@@ -429,7 +429,7 @@
       const cart = JSON.parse(localStorage.getItem('pheran_cart')||'[]')
       cart.push(item)
       localStorage.setItem('pheran_cart', JSON.stringify(cart))
-      window.location.href = 'cart.html'
+      window.location.href = '/cart'
     })
 
     updateSummary()

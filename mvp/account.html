@@ -335,7 +335,7 @@
       fetch('data.json').then(r=>r.json()).then(data=>{
         const saved=(data.products||[]).filter(p=>wishlist.includes(p.id))
         grid.innerHTML=saved.map(p=>`<div class="recommendation-card" data-product-id="${esc(p.id)}" style="cursor:pointer"><img src="${esc(p.images[0])}" alt="${esc(p.title)}" loading="lazy"><h3>${esc(p.title)}</h3><div class="price">${fmt(p.price)}</div></div>`).join('')
-        grid.querySelectorAll('.recommendation-card').forEach(el=>el.addEventListener('click',()=>{window.location.href='product.html?id='+el.dataset.productId}))
+        grid.querySelectorAll('.recommendation-card').forEach(el=>el.addEventListener('click',()=>{window.location.href='/product?id='+el.dataset.productId}))
       }).catch(()=>{grid.innerHTML='<p style="color:var(--text-muted)">Could not load saved items.</p>'})
     }
 

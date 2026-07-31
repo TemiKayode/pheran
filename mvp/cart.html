@@ -204,7 +204,7 @@
           <div class="price">${formatCurr(p.price)}</div>
         </div>`).join('')
       grid.querySelectorAll('.recommendation-card').forEach(el=>{
-        el.addEventListener('click',()=>{window.location.href='product.html?id='+el.dataset.productId})
+        el.addEventListener('click',()=>{window.location.href='/product?id='+el.dataset.productId})
       })
     }
 

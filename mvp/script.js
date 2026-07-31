@@ -235,7 +235,7 @@ function initSearch(products){
         </div>`).join('') +
         `<a class="search-see-all" href="category.html">See all products →</a>`
       resultsEl.querySelectorAll('.search-result-item').forEach(el=>{
-        const go=()=>{closeSearch();window.location.href='product.html?id='+el.dataset.id}
+        const go=()=>{closeSearch();window.location.href='/product?id='+el.dataset.id}
         el.addEventListener('click',go)
         el.addEventListener('keydown',e=>{if(e.key==='Enter') go()})
       })
@@ -298,7 +298,7 @@ function renderBestsellers(products){
       btn.innerHTML = nowSaved?heartFilled:heartOutline
       btn.classList.toggle('active',nowSaved)
     })
-    card.addEventListener('click',()=>{sendSessionEvent([p.id]);window.location.href='product.html?id='+p.id})
+    card.addEventListener('click',()=>{sendSessionEvent([p.id]);window.location.href='/product?id='+p.id})
     container.appendChild(card)
   })
 }
@@ -628,7 +628,7 @@ function renderProductDetail(products){
   buyNowBtn?.addEventListener('click',()=>{
     doAddToCart(Number(qtyInput?.value)||1)
     sendSessionEvent([{id:product.id,type:'buy-now',ts:Date.now()}])
-    window.location.href='checkout.html'
+    window.location.href='/checkout'
   })
 
   // Wishlist
@@ -700,7 +700,7 @@ function renderProductDetail(products){
         <div class="price">${formatCurrency(p.price)}</div>`
       card.addEventListener('click',()=>{
         sendSessionEvent([{id:p.id,type:'recommendation-click',ts:Date.now()}])
-        window.location.href='product.html?id='+p.id
+        window.location.href='/product?id='+p.id
       })
       recommendationGrid.appendChild(card)
     })
@@ -869,7 +869,7 @@ function renderCategory(products){
       return`<button type="button" class="recent-item" data-id="${esc(p.id)}"><img src="${esc(p.images[0])}" alt="${esc(p.title)}" loading="lazy"><div class="meta"><strong>${esc(p.title)}</strong><div>${formatCurrency(p.price)}</div></div></button>`
     }).join('')
     recentlyViewedWrap.innerHTML=`<h3>Recently viewed</h3><div class="recent-list">${cards}</div>`
-    recentlyViewedWrap.querySelectorAll('.recent-item').forEach(btn=>btn.addEventListener('click',()=>window.location.href='product.html?id='+btn.dataset.id))
+    recentlyViewedWrap.querySelectorAll('.recent-item').forEach(btn=>btn.addEventListener('click',()=>window.location.href='/product?id='+btn.dataset.id))
   }
 
   function renderGrid(list){
@@ -920,7 +920,7 @@ function renderCategory(products){
         const nowSaved=toggleWishlist(p.id)
         btn.textContent=nowSaved?'♥':'♡';btn.classList.toggle('active',nowSaved)
       })
-      card.addEventListener('click',()=>{trackRecentlyViewed(p.id);sendSessionEvent([p.id]);window.location.href='product.html?id='+p.id})
+      card.addEventListener('click',()=>{trackRecentlyViewed(p.id);sendSessionEvent([p.id]);window.location.href='/product?id='+p.id})
       grid.appendChild(card)
     })
   }
