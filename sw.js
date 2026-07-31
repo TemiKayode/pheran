@@ -1,17 +1,16 @@
-const CACHE_NAME = 'pheran-v1';
+const CACHE_NAME = 'pheran-v2';
 const STATIC_ASSETS = [
-  '/mvp/homepage.html',
-  '/mvp/category.html',
-  '/mvp/product.html',
-  '/mvp/cart.html',
-  '/mvp/checkout.html',
-  '/mvp/confirmation.html',
-  '/mvp/custom.html',
-  '/mvp/account.html',
-  '/mvp/gallery.html',
-  '/mvp/support.html',
-  '/mvp/about.html',
-  '/mvp/policies.html',
+  '/',
+  '/shop',
+  '/product',
+  '/cart',
+  '/checkout',
+  '/order-confirmed',
+  '/custom',
+  '/account',
+  '/gallery',
+  '/support',
+  '/policies',
   '/mvp/styles.css',
   '/mvp/script.js',
   '/css/variables.css',
@@ -26,7 +25,7 @@ self.addEventListener('install', event => {
   );
 });
 
-// Activate: remove old caches
+// Activate: remove old caches (including pheran-v1 with stale /mvp/*.html entries)
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -79,16 +78,14 @@ self.addEventListener('fetch', event => {
     caches.match(request).then(cached => {
       if (cached) return cached;
       return fetch(request).then(res => {
-        // Cache successful responses for same-origin requests
         if (res.ok && url.origin === self.location.origin) {
           const clone = res.clone();
           caches.open(CACHE_NAME).then(c => c.put(request, clone));
         }
         return res;
       }).catch(() => {
-        // Offline fallback for navigation requests
         if (request.mode === 'navigate') {
-          return caches.match('/mvp/homepage.html');
+          return caches.match('/');
         }
       });
     })
@@ -108,7 +105,7 @@ self.addEventListener('sync', event => {
   }
 });
 
-// Push notifications (future)
+// Push notifications
 self.addEventListener('push', event => {
   if (!event.data) return;
   const data = event.data.json();
@@ -117,7 +114,7 @@ self.addEventListener('push', event => {
       body: data.body || 'You have a new update',
       icon: '/assets/icon-192.png',
       badge: '/assets/icon-192.png',
-      data: { url: data.url || '/mvp/homepage.html' }
+      data: { url: data.url || '/' }
     })
   );
 });
@@ -125,6 +122,6 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil(
-    clients.openWindow(event.notification.data?.url || '/mvp/homepage.html')
+    clients.openWindow(event.notification.data?.url || '/')
   );
 });
