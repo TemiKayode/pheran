@@ -552,7 +552,13 @@ function renderTags(type) {
   tagState[type].forEach(val => {
     const tag = document.createElement('span')
     tag.className = 'tag'
-    tag.innerHTML = `${esc(val)} <button onclick="removeTag('${type}','${esc(val)}')" type="button">×</button>`
+    const tagText = document.createTextNode(val + ' ')
+    const removeBtn = document.createElement('button')
+    removeBtn.type = 'button'
+    removeBtn.textContent = '×'
+    removeBtn.addEventListener('click', () => removeTag(type, val))
+    tag.appendChild(tagText)
+    tag.appendChild(removeBtn)
     wrap.insertBefore(tag, input)
   })
 }

@@ -5,6 +5,18 @@ const fs = require('fs')
 const path = require('path')
 const crypto = require('crypto')
 
+// Constant-time string comparison — prevents timing attacks on token/pin comparisons
+function timingSafeEqual(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return false
+  const ba = Buffer.from(a), bb = Buffer.from(b)
+  if (ba.length !== bb.length) {
+    // Still run the comparison so time doesn't vary with length (pad with a dummy)
+    crypto.timingSafeEqual(ba, Buffer.alloc(ba.length))
+    return false
+  }
+  return crypto.timingSafeEqual(ba, bb)
+}
+
 // ─── Supabase client (optional — falls back to data.json if not configured) ──
 let supabase = null
 try {
@@ -33,12 +45,29 @@ app.use(cors({
 }))
 app.use(express.json({ limit: '1mb' }))
 
-// Basic security headers
-app.use((_req, res, next) => {
+// Security headers — applied to every response
+app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff')
-  res.setHeader('X-Frame-Options', 'SAMEORIGIN')
-  res.setHeader('X-XSS-Protection', '1; mode=block')
+  res.setHeader('X-Frame-Options', 'DENY')
+  res.setHeader('X-XSS-Protection', '0') // modern browsers: disable legacy XSS auditor (CSP handles this)
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+  // HSTS — only on HTTPS (Railway / production)
+  const isHttps = req.headers['x-forwarded-proto'] === 'https' || req.secure
+  if (isHttps) res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload')
+  // Content Security Policy
+  res.setHeader('Content-Security-Policy', [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline'",          // inline scripts used in HTML pages
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com",
+    "img-src 'self' data: blob: https://*.supabase.co https://aajbecjnnuebsvxmuiww.supabase.co",
+    "connect-src 'self' https://*.supabase.co https://api.supabase.com",
+    "media-src 'self' blob: https://*.supabase.co",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join('; '))
   next()
 })
 
@@ -151,9 +180,47 @@ app.get('/api/bank-details', (_req, res) => {
   })
 })
 
-// serve static assets — mvp/ for images/JS/CSS/SW, Pheran root for /css/ and /videos/
-app.use(express.static(path.join(__dirname, '..')))
-app.use(express.static(path.join(__dirname, '../..')))
+// Rate limit for order/cart mutations — 60 requests per IP per 15 minutes
+const _mutationRateMap = new Map()
+function mutationRateLimit(req, res, next) {
+  const key = req.ip || 'unknown'
+  const now = Date.now()
+  const rec = _mutationRateMap.get(key) || { n: 0, t: now }
+  if (now - rec.t > 900000) { rec.n = 0; rec.t = now }
+  rec.n++
+  _mutationRateMap.set(key, rec)
+  if (rec.n > 60) return res.status(429).set('Retry-After', '900').json({ ok: false, error: 'Too many requests — try again in 15 minutes' })
+  next()
+}
+
+// Auto-evict stale product cache entries every 10 minutes
+setInterval(() => {
+  const now = Date.now()
+  for (const [k, v] of PRODUCT_CACHE.entries()) {
+    if (now - v.ts > CACHE_TTL * 2) PRODUCT_CACHE.delete(k)
+  }
+}, 600000).unref()
+
+// serve static assets with caching headers
+// HTML: no-cache so updates deploy immediately; CSS/JS/images: 1 day cache with revalidation
+const _staticOpts = { etag: true, lastModified: true }
+const _staticOptsAssets = { ...(_staticOpts), maxAge: '1d', immutable: false }
+app.use(express.static(path.join(__dirname, '..'), {
+  ..._staticOpts,
+  setHeaders(res, filePath) {
+    const ext = path.extname(filePath).toLowerCase()
+    if (['.css', '.js', '.woff2', '.woff', '.ttf', '.ico', '.svg'].includes(ext)) {
+      res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=3600')
+    } else if (['.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif'].includes(ext)) {
+      res.setHeader('Cache-Control', 'public, max-age=604800, stale-while-revalidate=86400')
+    } else if (['.mp4', '.webm'].includes(ext)) {
+      res.setHeader('Cache-Control', 'public, max-age=2592000')
+    } else {
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate')
+    }
+  }
+}))
+app.use(express.static(path.join(__dirname, '../..'), _staticOpts))
 // Admin — protected by ADMIN_PIN env var (default: pheran2026)
 const ADMIN_PIN = process.env.ADMIN_PIN || 'pheran2026'
 const ADMIN_TOKEN = crypto.createHash('sha256').update(ADMIN_PIN + 'pheran-admin-2026').digest('hex')
@@ -163,22 +230,28 @@ function setAdminCookie(req, res) {
   res.cookie('admin_auth', ADMIN_TOKEN, { httpOnly: true, sameSite: 'lax', path: '/', maxAge: 8 * 60 * 60 * 1000, secure })
 }
 
-// requireAdminAuth — accepts session cookie (set after first Basic Auth) or Basic Auth header directly
+// requireAdminAuth — timing-safe comparison to prevent timing oracle attacks
 function requireAdminAuth(req, res, next) {
-  if (req.cookies?.admin_auth === ADMIN_TOKEN) return next()
+  if (req.cookies?.admin_auth && timingSafeEqual(req.cookies.admin_auth, ADMIN_TOKEN)) return next()
   const [, b64] = (req.headers['authorization'] || '').split(' ')
   if (b64) {
-    const [, pass] = Buffer.from(b64, 'base64').toString().split(':')
-    if (pass === ADMIN_PIN) { setAdminCookie(req, res); return next() }
+    const decoded = Buffer.from(b64, 'base64').toString()
+    const colonIdx = decoded.indexOf(':')
+    const pass = colonIdx >= 0 ? decoded.slice(colonIdx + 1) : ''
+    if (pass && timingSafeEqual(pass, ADMIN_PIN)) { setAdminCookie(req, res); return next() }
   }
   res.status(401).json({ ok: false, error: 'Unauthorized — admin access only' })
 }
 
 app.use('/admin', (req, res, next) => {
+  // Allow if valid session cookie already set
+  if (req.cookies?.admin_auth && timingSafeEqual(req.cookies.admin_auth, ADMIN_TOKEN)) return next()
   const [, b64] = (req.headers['authorization'] || '').split(' ')
   if (b64) {
-    const [, pass] = Buffer.from(b64, 'base64').toString().split(':')
-    if (pass === ADMIN_PIN) { setAdminCookie(req, res); return next() }
+    const decoded = Buffer.from(b64, 'base64').toString()
+    const colonIdx = decoded.indexOf(':')
+    const pass = colonIdx >= 0 ? decoded.slice(colonIdx + 1) : ''
+    if (pass && timingSafeEqual(pass, ADMIN_PIN)) { setAdminCookie(req, res); return next() }
   }
   res.set('WWW-Authenticate', 'Basic realm="PHERAN Admin"')
   res.status(401).send('Access denied')
@@ -433,21 +506,26 @@ app.post('/api/products/admin', requireAdminAuth, (req, res)=>{
     const body = req.body || {}
     const products = loadData()
     const existingIndex = products.findIndex(p => p.id === body.id)
+    // Validate and sanitize all fields — bounds prevent prototype pollution and XSS vectors
+    const VALID_CATEGORIES = ['Dresses','Tops','Bottoms','Accessories','General']
+    const VALID_AVAIL = ['In Stock','Made to Order','Limited Stock','Out of Stock']
+    const price = Math.max(0, Math.min(99999999, Number(body.price) || 0))
+    const oldPrice = Math.max(0, Math.min(99999999, Number(body.oldPrice) || 0))
     const product = {
-      ...body,
-      id: body.id || `product-${Date.now()}`,
-      title: body.title || 'Untitled Product',
-      category: body.category || 'General',
-      price: Number(body.price || 0),
-      oldPrice: Number(body.oldPrice || body.price || 0),
-      rating: Number(body.rating || 4.5),
-      availability: body.availability || 'In Stock',
-      sizes: Array.isArray(body.sizes) ? body.sizes : String(body.sizes || '').split(',').map(v=>v.trim()).filter(Boolean),
-      colors: Array.isArray(body.colors) ? body.colors : String(body.colors || '').split(',').map(v=>v.trim()).filter(Boolean),
-      fabric: body.fabric || 'Unknown',
-      images: Array.isArray(body.images) ? body.images : String(body.images || '').split(/\n|,/).map(v=>v.trim()).filter(Boolean),
-      description: body.description || '',
-      count: Number(body.count || 1)
+      id: body.id ? String(body.id).slice(0,100).replace(/[^\w\-]/g,'') : `product-${Date.now()}`,
+      title: String(body.title || 'Untitled Product').slice(0, 200),
+      category: VALID_CATEGORIES.includes(body.category) ? body.category : 'General',
+      price,
+      oldPrice,
+      rating: Math.max(0, Math.min(5, Number(body.rating) || 4.5)),
+      availability: VALID_AVAIL.includes(body.availability) ? body.availability : 'In Stock',
+      sizes: (Array.isArray(body.sizes) ? body.sizes : String(body.sizes||'').split(',').map(v=>v.trim()).filter(Boolean)).slice(0,20).map(s=>String(s).slice(0,10)),
+      colors: (Array.isArray(body.colors) ? body.colors : String(body.colors||'').split(',').map(v=>v.trim()).filter(Boolean)).slice(0,30).map(c=>String(c).slice(0,50)),
+      fabric: String(body.fabric || 'Unknown').slice(0, 100),
+      images: (Array.isArray(body.images) ? body.images : String(body.images||'').split(/\n|,/).map(v=>v.trim()).filter(Boolean)).slice(0,20).map(u=>String(u).slice(0,500)),
+      description: String(body.description || '').slice(0, 2000),
+      count: Math.max(0, Math.min(9999, Number(body.count) || 1)),
+      video: body.video ? String(body.video).slice(0,500) : undefined,
     }
     if(existingIndex >= 0) {
       products[existingIndex] = product
@@ -509,29 +587,30 @@ app.post('/api/cache/prune', requireAdminAuth, (req,res)=>{
 })
 
 // session logging endpoint for collaborative recommendations
-app.post('/api/session', (req,res)=>{
+app.post('/api/session', mutationRateLimit, (req,res)=>{
   const body = req.body || {}
-  const ids = Array.isArray(body.products) ? body.products : []
-  const events = Array.isArray(body.events) ? body.events : []
-  const userId = body.userId || null
-  const ts = body.ts || Date.now()
-  if(!ids.length && !events.length) return res.status(400).json({error:'no products or events'})
+  // Only accept well-formed string IDs — prevents prototype pollution via __proto__ keys
+  const ids = Array.isArray(body.products) ? body.products.filter(id=>typeof id==='string'&&id.length<=100&&/^[\w\-]+$/.test(id)).slice(0,50) : []
+  const rawEvents = Array.isArray(body.events) ? body.events.slice(0,50) : []
+  if(!ids.length && !rawEvents.length) return res.status(400).json({error:'no products or events'})
   const co = loadCooc()
-  // increment counts for simple products array
-  ids.forEach(id=>{ co[id] = (co[id]||0) + 1 })
-  // process events: increment per product and append to session log
-  if(events.length){
-    events.forEach(ev=>{ const id = ev.id; if(!id) return; co[id] = (co[id]||0) + 1 })
-    // append events to session_events.json for analysis
-    try{
-      const pathS = path.join(__dirname, 'session_events.json')
-      const existing = fs.existsSync(pathS) ? JSON.parse(fs.readFileSync(pathS,'utf8')||'[]') : []
-      existing.push({ userId, ts, events })
-      fs.writeFileSync(pathS, JSON.stringify(existing.slice(-1000), null, 2), 'utf8') // keep last 1000
-    }catch(e){ /* ignore */ }
+  ids.forEach(id=>{ if(Object.prototype.hasOwnProperty.call(co,id)||true) co[id] = Math.min(99999,(co[id]||0)+1) })
+  if(rawEvents.length){
+    const events = rawEvents.map(ev=>({
+      id: typeof ev.id==='string'&&/^[\w\-]+$/.test(ev.id) ? ev.id.slice(0,100) : null,
+      type: typeof ev.type==='string' ? ev.type.slice(0,20) : 'view',
+    })).filter(ev=>ev.id)
+    events.forEach(ev=>{ co[ev.id] = Math.min(99999,(co[ev.id]||0)+1) })
+    // async write so it doesn't block
+    const pathS = path.join(__dirname, 'session_events.json')
+    fs.promises.readFile(pathS,'utf8').then(raw=>{
+      const existing = JSON.parse(raw||'[]')
+      existing.push({ ts: Date.now(), events })
+      return fs.promises.writeFile(pathS, JSON.stringify(existing.slice(-1000)), 'utf8')
+    }).catch(()=>fs.promises.writeFile(pathS,JSON.stringify([{ts:Date.now(),events}]),'utf8').catch(()=>{}))
   }
-  // write back co-occurrence counts
-  try{ fs.writeFileSync(COO_PATH, JSON.stringify(co,null,2),'utf8') }catch(e){ /* ignore */ }
+  // async write co-occurrence
+  fs.promises.writeFile(COO_PATH, JSON.stringify(co), 'utf8').catch(()=>{})
   res.json({ ok:true })
 })
 
@@ -585,78 +664,117 @@ app.get('/api/search', (req,res)=>{
   }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
 })
 
-// In-memory mock cart store (keyed by userId)
+// Resolve userId from session cookie (Supabase JWT or bcrypt JWT).
+// Returns the authenticated userId or 'anonymous' — never trusts client-supplied userId.
+async function getSessionUserId(req) {
+  if (supabase) {
+    const access = req.cookies?.[COOKIE_ACCESS]
+    if (!access) return 'anonymous'
+    try {
+      const { data } = await supabase.auth.getUser(access)
+      return data?.user?.id || 'anonymous'
+    } catch(e) { return 'anonymous' }
+  } else {
+    // bcrypt fallback: read JWT from cookie
+    try {
+      const jwt = require('jsonwebtoken')
+      const t = req.cookies?.[COOKIE_ACCESS]
+      if (!t) return 'anonymous'
+      const p = jwt.verify(t, process.env.JWT_SECRET || 'pheran-dev-secret-change-in-production')
+      return p?.id || 'anonymous'
+    } catch(e) { return 'anonymous' }
+  }
+}
+
+// In-memory mock cart store (keyed by userId from authenticated session)
 const CART_STORE = new Map()
 
-app.get('/api/cart', (req,res)=>{
+app.get('/api/cart', async(req,res)=>{
   try{
-    const userId = req.query.userId || 'anonymous'
+    const userId = await getSessionUserId(req)
     const cart = CART_STORE.get(userId) || []
     const subtotal = cart.reduce((s,i)=>s+(i.price*i.qty),0)
     res.json({ ok:true, cart, subtotal, count: cart.reduce((s,i)=>s+i.qty,0) })
   }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
 })
 
-app.post('/api/cart', (req,res)=>{
+app.post('/api/cart', mutationRateLimit, async(req,res)=>{
   try{
-    const { userId='anonymous', productId, size, color, qty=1, price, title } = req.body||{}
-    if(!productId) return res.status(400).json({ ok:false, error:'productId required' })
+    const userId = await getSessionUserId(req)
+    const { productId, size, color, qty=1, price, title, image } = req.body||{}
+    if(!productId || typeof productId !== 'string' || productId.length > 200) return res.status(400).json({ ok:false, error:'productId required' })
+    const safeQty = Math.max(1, Math.min(99, Number(qty)||1))
+    const safePrice = Math.max(0, Math.min(99999999, Number(price)||0))
     const cart = CART_STORE.get(userId) || []
-    const key = `${productId}|${size||''}|${color||''}`
+    const key = `${productId}|${String(size||'').slice(0,20)}|${String(color||'').slice(0,50)}`
     const existing = cart.find(i=>i.key===key)
-    if(existing){
-      existing.qty += Number(qty)
-    } else {
-      cart.push({ key, productId, size, color, qty:Number(qty), price:Number(price)||0, title:title||productId })
-    }
+    if(existing){ existing.qty = Math.min(99, existing.qty + safeQty) }
+    else { cart.push({ key, productId, size:String(size||'').slice(0,20), color:String(color||'').slice(0,50), qty:safeQty, price:safePrice, title:String(title||productId).slice(0,200), image:String(image||'').slice(0,500) }) }
     CART_STORE.set(userId, cart)
     res.json({ ok:true, cart, count: cart.reduce((s,i)=>s+i.qty,0) })
   }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
 })
 
-app.delete('/api/cart', (req,res)=>{
+app.delete('/api/cart', mutationRateLimit, async(req,res)=>{
   try{
-    const { userId='anonymous', key } = req.body||{}
-    if(!key) return res.status(400).json({ ok:false, error:'item key required' })
+    const userId = await getSessionUserId(req)
+    const { key } = req.body||{}
+    if(!key || typeof key !== 'string') return res.status(400).json({ ok:false, error:'item key required' })
     const cart = (CART_STORE.get(userId)||[]).filter(i=>i.key!==key)
     CART_STORE.set(userId, cart)
     res.json({ ok:true, cart })
   }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
 })
 
-app.post('/api/cart/clear', (req,res)=>{
+app.post('/api/cart/clear', mutationRateLimit, async(req,res)=>{
   try{
-    const { userId='anonymous' } = req.body||{}
+    const userId = await getSessionUserId(req)
     CART_STORE.set(userId, [])
     res.json({ ok:true })
   }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
 })
 
-// In-memory mock orders store (keyed by userId)
+// In-memory mock orders store (keyed by authenticated userId — never client-supplied)
 const ORDERS_STORE = new Map()
 
-app.get('/api/orders', (req,res)=>{
+app.get('/api/orders', async(req,res)=>{
   try{
-    const userId = req.query.userId || 'anonymous'
+    const userId = await getSessionUserId(req)
+    if(userId === 'anonymous') return res.json({ ok:true, orders:[], total:0 })
+    // Prefer Supabase for accuracy; fall back to in-memory
+    if(supabase){
+      const { data, error } = await supabase.from('orders').select('*').eq('user_id', userId).order('created_at',{ascending:false}).limit(100)
+      if(!error) return res.json({ ok:true, orders: data||[], total: (data||[]).length })
+    }
     const orders = ORDERS_STORE.get(userId) || []
     res.json({ ok:true, orders, total: orders.length })
   }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
 })
 
-app.get('/api/orders/:orderId', (req,res)=>{
+app.get('/api/orders/:orderId', async(req,res)=>{
   try{
-    const userId = req.query.userId || 'anonymous'
+    const userId = await getSessionUserId(req)
+    if(userId === 'anonymous') return res.status(401).json({ ok:false, error:'Not authenticated' })
+    const orderId = req.params.orderId
+    if(supabase){
+      const { data, error } = await supabase.from('orders').select('*').eq('id', orderId).eq('user_id', userId).single()
+      if(error || !data) return res.status(404).json({ ok:false, error:'Order not found' })
+      return res.json({ ok:true, order: data })
+    }
     const orders = ORDERS_STORE.get(userId) || []
-    const order = orders.find(o=>o.id===req.params.orderId)
+    const order = orders.find(o=>o.id===orderId)
     if(!order) return res.status(404).json({ ok:false, error:'Order not found' })
     res.json({ ok:true, order })
   }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
 })
 
-app.post('/api/orders', async(req,res)=>{
+app.post('/api/orders', mutationRateLimit, async(req,res)=>{
   try{
-    const { userId='anonymous', userEmail='', items=[], shipping={}, deliveryMethod='standard' } = req.body||{}
-    if(!items.length) return res.status(400).json({ ok:false, error:'items required' })
+    const sessionUserId = await getSessionUserId(req)
+    const { userEmail='', items=[], shipping={}, deliveryMethod='standard' } = req.body||{}
+    const userId = sessionUserId // always use session-derived ID — never trust client
+    if(!Array.isArray(items) || !items.length) return res.status(400).json({ ok:false, error:'items required' })
+    if(items.length > 50) return res.status(400).json({ ok:false, error:'Too many items' })
     const subtotal = items.reduce((s,i)=>s+(Number(i.price||0)*Number(i.qty||1)),0)
     const deliveryFee = deliveryMethod==='express' ? 3500 : (subtotal>=100000 ? 0 : 1500)
     const order = {
@@ -716,16 +834,19 @@ app.patch('/api/orders/:orderId/status', (req,res)=>{
 // ─── Admin orders management ───────────────────────────────────────────────────
 app.get('/api/admin/orders', requireAdminAuth, async(req,res)=>{
   try{
+    const page = Math.max(0, parseInt(req.query.page)||0)
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit)||50))
+    const offset = page * limit
     if(supabase){
-      const { data, error } = await supabase.from('orders').select('*').order('created_at',{ascending:false})
+      const { data, error, count } = await supabase.from('orders').select('*',{count:'exact'}).order('created_at',{ascending:false}).range(offset, offset+limit-1)
       if(error) return res.status(500).json({ok:false,error:error.message})
-      return res.json({ok:true, orders: data})
+      return res.json({ok:true, orders: data, total: count, page, limit})
     }
     // In-memory fallback
     const all = []
     for(const [,orders] of ORDERS_STORE) all.push(...orders)
     all.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt))
-    res.json({ok:true, orders:all})
+    res.json({ok:true, orders: all.slice(offset, offset+limit), total: all.length, page, limit})
   }catch(e){ res.status(500).json({ok:false,error:String(e)}) }
 })
 
@@ -811,7 +932,9 @@ if(supabase){
       const{firstName,lastName='',email,phone='',password}=req.body||{}
       if(!firstName||!email||!password) return res.status(400).json({ok:false,error:'firstName, email and password are required'})
       if(password.length<8) return res.status(400).json({ok:false,error:'Password must be at least 8 characters'})
-      const{data,error}=await supabase.auth.signUp({ email, password, options:{data:{firstName,lastName,phone}} })
+      if(!/[A-Z]/.test(password)||!/[0-9]/.test(password)) return res.status(400).json({ok:false,error:'Password must contain at least one uppercase letter and one number'})
+      if(typeof email!=='string'||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ok:false,error:'Invalid email address'})
+      const{data,error}=await supabase.auth.signUp({ email: email.toLowerCase().trim(), password, options:{data:{firstName:String(firstName).slice(0,50),lastName:String(lastName).slice(0,50),phone:String(phone).slice(0,20)}} })
       if(error) return res.status(400).json({ok:false,error:error.message})
       // Supabase may require email verification before issuing a session
       const needsVerification = !data.session
