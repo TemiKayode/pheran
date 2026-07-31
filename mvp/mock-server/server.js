@@ -103,6 +103,22 @@ for (const [route, file] of Object.entries(_PAGES)) {
   }
 }
 
+// Auth verification proxy — hides the Supabase project URL from email links.
+// Email links point to pheran.ng/verify?token_hash=...&type=...
+// This route validates the params then redirects to Supabase internally.
+const _VALID_VERIFY_TYPES = new Set(['signup','recovery','magiclink','invite','email_change','reauthentication'])
+const _SUPA_URL = process.env.SUPABASE_URL || ''
+app.get('/verify', (req, res) => {
+  const { token_hash, type } = req.query
+  if (!token_hash || !type || !_VALID_VERIFY_TYPES.has(type)) {
+    return res.status(400).send('Invalid or expired verification link.')
+  }
+  // Redirect back to account page after confirmation
+  const redirectTo = encodeURIComponent('https://pheran.ng/account')
+  const target = `${_SUPA_URL}/auth/v1/verify?token_hash=${encodeURIComponent(token_hash)}&type=${encodeURIComponent(type)}&redirect_to=${redirectTo}`
+  res.redirect(302, target)
+})
+
 // serve static assets — mvp/ for images/JS/CSS/SW, Pheran root for /css/ and /videos/
 app.use(express.static(path.join(__dirname, '..')))
 app.use(express.static(path.join(__dirname, '../..')))
