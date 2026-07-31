@@ -133,11 +133,17 @@ app.use(cors({
     if (!origin) return cb(null, true) // same-origin / curl / server-to-server
     if ([..._PROD_ORIGINS, ..._EXTRA_ORIGINS].includes(origin) ||
         /^https?:\/\/localhost(:\d+)?$/.test(origin)) return cb(null, true)
-    cb(new Error('CORS: origin not allowed'))
+    // Not a recognized cross-origin caller — decline to add CORS headers rather than
+    // throwing. Genuine same-origin requests (e.g. the site's own domain when it isn't
+    // yet listed in ALLOWED_ORIGINS) still succeed since browsers don't require CORS
+    // headers for same-origin calls; only real cross-origin reads get blocked.
+    cb(null, false)
   },
   credentials: true,
 }))
 app.use(express.json({ limit: '1mb' }))
+// cookie-parser must run before any middleware/route reads req.cookies (admin auth, etc.)
+try { app.use(require('cookie-parser')()) } catch (e) { console.warn('cookie-parser missing') }
 
 // Security headers — applied to every response
 app.use((req, res, next) => {
@@ -295,27 +301,10 @@ setInterval(() => {
   }
 }, 600000).unref()
 
-// serve static assets with caching headers
-// HTML: no-cache so updates deploy immediately; CSS/JS/images: 1 day cache with revalidation
-const _staticOpts = { etag: true, lastModified: true }
-// (cache options are set per-extension in setHeaders below)
-app.use(express.static(path.join(__dirname, '..'), {
-  ..._staticOpts,
-  setHeaders(res, filePath) {
-    const ext = path.extname(filePath).toLowerCase()
-    if (['.css', '.js', '.woff2', '.woff', '.ttf', '.ico', '.svg'].includes(ext)) {
-      res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=3600')
-    } else if (['.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif'].includes(ext)) {
-      res.setHeader('Cache-Control', 'public, max-age=604800, stale-while-revalidate=86400')
-    } else if (['.mp4', '.webm'].includes(ext)) {
-      res.setHeader('Cache-Control', 'public, max-age=2592000')
-    } else {
-      res.setHeader('Cache-Control', 'no-cache, must-revalidate')
-    }
-  }
-}))
-app.use(express.static(path.join(__dirname, '../..'), _staticOpts))
 // Admin — protected by ADMIN_PIN env var (default: pheran2026)
+// Registered BEFORE the generic static middlewares below so unauthenticated requests
+// for /admin/*.html can never be served directly by express.static — they must pass
+// through the auth-check middleware first.
 const ADMIN_PIN = process.env.ADMIN_PIN || 'pheran2026'
 const ADMIN_TOKEN = crypto.createHash('sha256').update(ADMIN_PIN + 'pheran-admin-2026').digest('hex')
 
@@ -368,6 +357,26 @@ app.use('/admin', (req, res, next) => {
 })
 app.use('/admin', express.static(path.join(__dirname, '..', 'admin')))
 
+// serve static assets with caching headers
+// HTML: no-cache so updates deploy immediately; CSS/JS/images: 1 day cache with revalidation
+const _staticOpts = { etag: true, lastModified: true }
+// (cache options are set per-extension in setHeaders below)
+app.use(express.static(path.join(__dirname, '..'), {
+  ..._staticOpts,
+  setHeaders(res, filePath) {
+    const ext = path.extname(filePath).toLowerCase()
+    if (['.css', '.js', '.woff2', '.woff', '.ttf', '.ico', '.svg'].includes(ext)) {
+      res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=3600')
+    } else if (['.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif'].includes(ext)) {
+      res.setHeader('Cache-Control', 'public, max-age=604800, stale-while-revalidate=86400')
+    } else if (['.mp4', '.webm'].includes(ext)) {
+      res.setHeader('Cache-Control', 'public, max-age=2592000')
+    } else {
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate')
+    }
+  }
+}))
+app.use(express.static(path.join(__dirname, '../..'), _staticOpts))
 
 // Ensure uploads directory exists and serve it
 const UPLOADS_DIR = path.join(__dirname, '..', 'uploads')
@@ -1058,9 +1067,6 @@ const COOKIE_ACCESS  = 'pheran_token'
 const COOKIE_REFRESH = 'pheran_refresh'
 const COOKIE_BASE    = { httpOnly:true, sameSite:'lax', path:'/' }
 
-// cookie-parser is always needed
-try{ app.use(require('cookie-parser')()) }catch(e){ console.warn('cookie-parser missing') }
-
 if(supabase){
   // ── Supabase Auth (primary) ──────────────────────────────────────────────
   console.log('[auth] using Supabase Auth')
@@ -1260,6 +1266,13 @@ app.get('/api/health', (req,res)=>{
     const products = loadData()
     res.json({ ok:true, uptime: process.uptime(), products: products.length, cacheSize: PRODUCT_CACHE.size, ts: Date.now() })
   }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
+})
+
+// Catch-all error handler — never leak stack traces / internals to clients
+app.use((err, req, res, _next) => {
+  console.error('[unhandled]', err)
+  if (res.headersSent) return
+  res.status(err.status || 500).json({ ok: false, error: 'Internal server error' })
 })
 
 const PORT = process.env.PORT || 4000
