@@ -324,11 +324,16 @@ function imgPath(src) {
 
 async function loadProducts() {
   try {
-    // Fetch data.json directly — bypasses paginated API, always reliable
-    const res = await fetch('/data.json?' + Date.now())
+    const res = await fetch('/api/products?perPage=200&_=' + Date.now())
     if (!res.ok) throw new Error('HTTP ' + res.status)
     const data = await res.json()
     allProducts = data.products || []
+    if (!allProducts.length) {
+      // fallback to static data.json if API returns nothing
+      const r2 = await fetch('/data.json?' + Date.now())
+      const d2 = await r2.json()
+      allProducts = d2.products || []
+    }
     renderGrid(allProducts)
   } catch (e) {
     toast('Could not load products: ' + e.message, 'error')

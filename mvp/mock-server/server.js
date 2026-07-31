@@ -54,20 +54,32 @@ const UPLOADS_DIR = path.join(__dirname, '..', 'uploads')
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true })
 app.use('/uploads', express.static(UPLOADS_DIR))
 
-// File upload endpoint — uses multer if installed, otherwise returns 501
+// File upload endpoint — uploads to Supabase Storage (persistent) with local disk fallback
 try {
   const multer = require('multer')
-  const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, UPLOADS_DIR),
-    filename: (req, file, cb) => {
-      const ext = path.extname(file.originalname).toLowerCase() || '.jpg'
-      cb(null, `img-${Date.now()}${ext}`)
-    }
-  })
-  const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } })
-  app.post('/api/upload', upload.array('images', 20), (req, res) => {
+  const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } })
+  app.post('/api/upload', upload.array('images', 20), async (req, res) => {
     if (!req.files || !req.files.length) return res.status(400).json({ ok: false, error: 'No files received' })
-    const paths = req.files.map(f => `uploads/${f.filename}`)
+    const paths = []
+    for (const file of req.files) {
+      const ext = path.extname(file.originalname).toLowerCase() || '.jpg'
+      const filename = `img-${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`
+      if (supabase) {
+        try {
+          const { error } = await supabase.storage
+            .from('product-images')
+            .upload(filename, file.buffer, { contentType: file.mimetype, upsert: true })
+          if (error) throw error
+          const { data } = supabase.storage.from('product-images').getPublicUrl(filename)
+          paths.push(data.publicUrl)
+          continue
+        } catch (storageErr) {
+          console.warn('[upload] Supabase Storage error:', storageErr.message, '— falling back to disk')
+        }
+      }
+      fs.writeFileSync(path.join(UPLOADS_DIR, filename), file.buffer)
+      paths.push(`/uploads/${filename}`)
+    }
     res.json({ ok: true, paths })
   })
 } catch (e) {
@@ -117,6 +129,15 @@ function loadData(){
   const js = JSON.parse(raw)
   cached = js.products || []
   return cached
+}
+async function ensureStorageBucket(){
+  if(!supabase) return
+  try{
+    await supabase.storage.createBucket('product-images',{public:true})
+    console.log('[storage] product-images bucket ready')
+  }catch(e){
+    if(!String(e?.message||e).includes('already exists')) console.warn('[storage] bucket setup failed:',e?.message||e)
+  }
 }
 async function syncFromSupabase(){
   if(!supabase) return
@@ -701,6 +722,6 @@ app.get('/api/health', (req,res)=>{
 })
 
 const PORT = process.env.PORT || 4000
-syncFromSupabase().then(()=>{
+Promise.all([syncFromSupabase(), ensureStorageBucket()]).then(()=>{
   app.listen(PORT, ()=> console.log('PHERAN mock server running on port', PORT))
 })
