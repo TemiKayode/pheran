@@ -505,6 +505,38 @@ function renderProductDetail(products){
     }
     if(product.images[0]){switchToImage(product.images[0])}
   }
+
+  // Image zoom — hover-magnifies on desktop (pointer:fine), click opens a
+  // larger lightbox on any device so the fabric/finish is easy to inspect.
+  const zoomModal = document.getElementById('zoom-modal')
+  const zoomImg = document.getElementById('zoom-img')
+  const closeZoom = document.getElementById('close-zoom')
+  const canHoverZoom = window.matchMedia('(hover: hover) and (pointer: fine)').matches
+  if(main){
+    if(canHoverZoom){
+      main.addEventListener('mousemove', e=>{
+        const rect = main.getBoundingClientRect()
+        const x = ((e.clientX-rect.left)/rect.width)*100
+        const y = ((e.clientY-rect.top)/rect.height)*100
+        main.style.transformOrigin = `${x}% ${y}%`
+        main.classList.add('zoom-active')
+      })
+      main.addEventListener('mouseleave', ()=>main.classList.remove('zoom-active'))
+    }
+    main.addEventListener('click', ()=>{
+      if(zoomImg) zoomImg.src = main.src
+      zoomModal?.classList.add('open')
+      zoomModal?.setAttribute('aria-hidden','false')
+    })
+  }
+  function closeZoomModal(){
+    zoomModal?.classList.remove('open')
+    zoomModal?.setAttribute('aria-hidden','true')
+  }
+  closeZoom?.addEventListener('click', closeZoomModal)
+  zoomModal?.addEventListener('click', e=>{ if(e.target===zoomModal) closeZoomModal() })
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeZoomModal() })
+
   function switchToImage(src){
     if(main){ main.src=src; main.style.display='block' }
     const vid = document.getElementById('product-vid')
@@ -863,7 +895,10 @@ function renderCategory(products){
       const card=document.createElement('article');card.className='product-card'
       const saved = wishlist.includes(p.id)
       card.innerHTML=`
-        <img src="${esc(p.images[0])}" alt="${esc(p.title)}" loading="lazy">
+        <div class="card-media">
+          <img class="card-img-base" src="${esc(p.images[0])}" alt="${esc(p.title)}" loading="lazy">
+          ${p.images[1] ? `<img class="card-img-alt" src="${esc(p.images[1])}" alt="" loading="lazy">` : ''}
+        </div>
         <h3>${esc(p.title)}</h3>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
           <div class="price">${formatCurrency(p.price)}</div>
@@ -871,7 +906,7 @@ function renderCategory(products){
         </div>
         <div class="card-actions">
           <button type="button" class="quick-add">Quick Add</button>
-          <button type="button" class="wishlist-btn${saved?' saved':''}" data-id="${esc(p.id)}" aria-label="Save to wishlist">${saved?'♥':'♡'}</button>
+          <button type="button" class="wishlist-btn${saved?' active':''}" data-id="${esc(p.id)}" aria-label="Save to wishlist">${saved?'♥':'♡'}</button>
         </div>`
       card.querySelector('.quick-add').addEventListener('click',e=>{
         e.stopPropagation()
@@ -883,7 +918,7 @@ function renderCategory(products){
         e.stopPropagation()
         const btn=e.currentTarget
         const nowSaved=toggleWishlist(p.id)
-        btn.textContent=nowSaved?'♥':'♡';btn.classList.toggle('saved',nowSaved)
+        btn.textContent=nowSaved?'♥':'♡';btn.classList.toggle('active',nowSaved)
       })
       card.addEventListener('click',()=>{trackRecentlyViewed(p.id);sendSessionEvent([p.id]);window.location.href='product.html?id='+p.id})
       grid.appendChild(card)

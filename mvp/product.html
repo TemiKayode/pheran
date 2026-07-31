@@ -86,8 +86,16 @@
       <div class="media-stage">
         <img id="main-photo" class="main-photo" src="" alt="Product image">
         <button id="spin-button" type="button" class="btn tertiary spin-button">360° view</button>
+        <span class="zoom-hint" aria-hidden="true">🔍 Click to zoom</span>
       </div>
       <div id="thumbs" class="thumbs"></div>
+    </div>
+
+    <div id="zoom-modal" class="modal" role="dialog" aria-modal="true" aria-label="Zoomed product image" aria-hidden="true">
+      <div class="modal-dialog zoom-dialog">
+        <button class="modal-close zoom-close" id="close-zoom" aria-label="Close zoomed image">✕</button>
+        <img id="zoom-img" class="zoom-img" src="" alt="Zoomed product image">
+      </div>
     </div>
 
     <div class="product-info">

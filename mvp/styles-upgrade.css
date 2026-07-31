@@ -521,20 +521,35 @@ body.product-page {
   position: relative;
 }
 .product-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 40px rgba(45,27,78,0.12);
+  transform: translateY(-6px);
+  box-shadow: 0 16px 44px rgba(45,27,78,0.16);
   border-color: var(--purple-lightest);
 }
 
-.product-card img {
+.product-card .card-media {
+  position: relative;
+  overflow: hidden;
+}
+.product-card .card-media img {
   width: 100%;
   aspect-ratio: 3/4;
   object-fit: cover;
   display: block;
-  transition: transform 400ms ease;
+  transition: transform 450ms ease, opacity 450ms ease;
 }
-.product-card:hover img {
-  transform: scale(1.03);
+.product-card:hover .card-img-base {
+  transform: scale(1.05);
+}
+/* Second product photo, if any, crossfades in on hover — a quick preview
+   of another angle without leaving the grid. */
+.product-card .card-img-alt {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+.product-card:hover .card-img-alt {
+  opacity: 1;
+  transform: scale(1.05);
 }
 
 .product-card .card-body {
@@ -591,6 +606,20 @@ body.product-page {
   background: var(--soft-pink);
   border-color: var(--rose-gold);
   color: var(--rose-gold);
+}
+
+/* On pointer devices with real hover, keep the heart out of the way until
+   the shopper is actually looking at the card — touch devices (no hover)
+   always show it, and an already-saved item always stays visible. */
+@media (hover: hover) and (pointer: fine) {
+  .product-card .wishlist-btn:not(.active) {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  .product-card:hover .wishlist-btn {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* Collection cards */
