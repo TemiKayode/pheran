@@ -1,6 +1,7 @@
 ﻿<!doctype html>
 <html lang="en">
 <head>
+  <script src="/kill-sw.js"></script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>PHERAN — Custom-Made</title>
@@ -75,7 +76,7 @@
       <div class="config-panel">
         <h3>1. Choose Your Garment</h3>
         <div class="config-option-grid" id="garment-grid">
-          <div class="config-option selected" data-type="dress" data-price="35000">
+          <div class="config-option" data-type="dress" data-price="35000">
             <span class="co-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3h6l1.5 6M3 3l3 16h12l3-16H3Z"/><path d="M9 3c0 2.5 1.5 4.5 3 6 1.5-1.5 3-3.5 3-6"/></svg></span>Dress
           </div>
           <div class="config-option" data-type="blouse" data-price="22000">
@@ -100,7 +101,7 @@
       <div class="config-panel">
         <h3>2. Select Your Fabric</h3>
         <div class="config-option-grid" id="fabric-grid">
-          <div class="config-option selected" data-fabric="silk" data-price-add="8000">
+          <div class="config-option" data-fabric="silk" data-price-add="8000">
             <span class="co-icon">🌟</span>Silk Blend<div style="font-size:0.75rem;color:var(--text-muted);margin-top:3px">+₦8,000</div>
           </div>
           <div class="config-option" data-fabric="linen" data-price-add="3000">
@@ -296,7 +297,7 @@
   <script>
     const prices    = { dress:35000, blouse:22000, trousers:24000, skirt:19000, suit:65000, gown:85000 }
     const fabricAdd = { silk:8000, linen:3000, cotton:2000, ankara:4000,'aso-oke':12000, wool:7000 }
-    let selectedType='dress', selectedFabric='silk', rushDelivery=false
+    let selectedType=null, selectedFabric=null, rushDelivery=false
     const fmt = v => new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(Number(v||0))
 
     function getRushFee() {
@@ -305,24 +306,37 @@
     }
 
     function updateSummary(){
-      const base = prices[selectedType] || 35000
+      const rushLbl = document.getElementById('rush-fee-label')
+      const dn = document.getElementById('delivery-note')
+      const lines = document.getElementById('summary-lines')
+      const priceEl = document.getElementById('summary-price')
+
+      // No price until the customer has actively chosen both a garment and a
+      // fabric — showing an estimate off unselected defaults implied a final
+      // price before they'd told us what they actually want.
+      if(!selectedType || !selectedFabric){
+        if(priceEl) priceEl.textContent = '—'
+        if(rushLbl) rushLbl.textContent = '+₦—'
+        if(lines) lines.innerHTML = `<p style="color:rgba(255,255,255,0.7);font-size:0.85rem;margin:0">Choose your garment and fabric to see pricing.</p>`
+        if(dn) dn.innerHTML = '📅 Your piece will be ready in <strong>10–14 business days</strong> and delivered to your door.'
+        return
+      }
+
+      const base = prices[selectedType] || 0
       const fab  = fabricAdd[selectedFabric] || 0
       const rushFee = getRushFee()
       const rush = rushDelivery ? rushFee : 0
       const total = base + fab + rush
 
       // Update rush option label dynamically
-      const rushLbl = document.getElementById('rush-fee-label')
       if(rushLbl) rushLbl.textContent = '+' + fmt(rushFee)
 
       // Update delivery note in summary panel
-      const dn = document.getElementById('delivery-note')
       if(dn) dn.innerHTML = rushDelivery
         ? '⚡ Your piece will be ready in <strong>5–7 business days</strong> and delivered to your door.'
         : '📅 Your piece will be ready in <strong>10–14 business days</strong> and delivered to your door.'
 
-      document.getElementById('summary-price').textContent = fmt(total)
-      const lines = document.getElementById('summary-lines')
+      if(priceEl) priceEl.textContent = fmt(total)
       const typeLabel = document.querySelector(`.config-option[data-type="${selectedType}"]`)?.textContent?.trim() || selectedType
       const fabLabel  = document.querySelector(`.config-option[data-fabric="${selectedFabric}"]`)?.textContent?.split('\n')[0]?.trim() || selectedFabric
       if(lines) lines.innerHTML = `
@@ -393,9 +407,11 @@
     document.getElementById('event-date')?.addEventListener('change', checkEventDate)
 
     document.getElementById('submit-custom')?.addEventListener('click',()=>{
+      if(!selectedType){ alert('Please choose a garment.'); return }
+      if(!selectedFabric){ alert('Please choose a fabric.'); return }
       const bust = document.getElementById('m-bust')?.value
       if(!bust){ alert('Please enter at least your bust measurement to continue.'); return }
-      const base    = prices[selectedType]||35000
+      const base    = prices[selectedType]||0
       const fab     = fabricAdd[selectedFabric]||0
       const price   = base + fab + (rushDelivery ? getRushFee() : 0)
       const typeLabel = document.querySelector(`.config-option[data-type="${selectedType}"]`)?.textContent?.trim()?.split('\n')[0] || selectedType
