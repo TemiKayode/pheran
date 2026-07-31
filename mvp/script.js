@@ -10,14 +10,24 @@ function escapeHtml(str){
 const esc = escapeHtml
 
 // ─── Data ──────────────────────────────────────────────────────────────────────
+// Fetch from the API first so IDs always match what the server/Supabase returns.
+// Falls back to the local data.json when the server is unreachable.
 async function loadData(){
   try{
-    const res = await fetch('data.json')
+    const res = await fetch('/api/products?perPage=200')
+    if(!res.ok) throw new Error('API '+res.status)
     const data = await res.json()
-    return data.products || []
+    if(Array.isArray(data.products) && data.products.length) return data.products
+    throw new Error('Empty API response')
   }catch(e){
-    console.warn('Could not load data.json',e)
-    return []
+    try{
+      const res = await fetch('data.json')
+      const data = await res.json()
+      return data.products || []
+    }catch(e2){
+      console.warn('Could not load products',e2)
+      return []
+    }
   }
 }
 
@@ -388,7 +398,7 @@ function renderReviews(product){
 // ─── Product Detail Page ───────────────────────────────────────────────────────
 function renderProductDetail(products){
   const id = new URLSearchParams(window.location.search).get('id')
-  const product = products.find(p=>p.id===id)||products[0]
+  const product = products.find(p=>p.id===id)||(id?null:products[0])
   if(!product) return
 
   const colorMap = {
