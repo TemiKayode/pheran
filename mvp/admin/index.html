@@ -317,6 +317,11 @@ let currentImages = []
 let tagState = { sizes: [], colors: [] }
 
 /* ── Data ──────────────────────────────────── */
+function imgPath(src) {
+  if (!src) return ''
+  return (src.startsWith('http') || src.startsWith('/') || src.startsWith('data:')) ? src : '/' + src
+}
+
 async function loadProducts() {
   try {
     // Fetch data.json directly — bypasses paginated API, always reliable
@@ -351,7 +356,7 @@ function renderGrid(products) {
     <div class="product-card" onclick="openEdit('${esc(p.id)}')">
       <div class="card-img-wrap">
         ${img
-          ? `<img class="card-img" src="${esc(img)}" alt="${esc(p.title)}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=card-img-placeholder><svg width=36 height=36 fill=none stroke=currentColor viewBox=\\'0 0 24 24\\'><path stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'1\\' d=\\'M2.25 15.75l5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z\\'/></svg>No image</div>'">`
+          ? `<img class="card-img" src="${esc(imgPath(img))}" alt="${esc(p.title)}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=card-img-placeholder><svg width=36 height=36 fill=none stroke=currentColor viewBox=\\'0 0 24 24\\'><path stroke-linecap=\\'round\\' stroke-linejoin=\\'round\\' stroke-width=\\'1\\' d=\\'M2.25 15.75l5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z\\'/></svg>No image</div>'">`
           : `<div class="card-img-placeholder"><svg width="36" height="36" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/></svg><span>No image</span></div>`}
         <span class="card-avail ${availClass}">${esc(availLabel)}</span>
         ${imgCount > 1 ? `<span class="card-img-count">${imgCount} photos</span>` : ''}
@@ -508,7 +513,7 @@ function removeImage(idx) { currentImages.splice(idx, 1); renderImagePreviews() 
 function renderImagePreviews() {
   document.getElementById('img-previews').innerHTML = currentImages.map((src, i) => `
     <div class="img-thumb">
-      <img src="${esc(src)}" alt="img ${i+1}" onerror="this.style.opacity='.3'">
+      <img src="${esc(imgPath(src))}" alt="img ${i+1}" onerror="this.style.opacity='.3'">
       <button class="img-thumb-del" onclick="removeImage(${i})" type="button">×</button>
       ${i === 0 ? '<span class="img-primary-badge">MAIN</span>' : ''}
     </div>`).join('')
