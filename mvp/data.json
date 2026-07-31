@@ -21,8 +21,8 @@
       ],
       "fabric": "Premium Linen",
       "images": [
-        "img-grey-linen-front.jpg",
-        "img-grey-linen-side.jpg"
+        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-grey-linen-front.jpg",
+        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-grey-linen-side.jpg"
       ],
       "video": "../videos/04351cfe-f9c7-4fd2-aaad-e9dbd19cc3a8.mp4",
       "description": "Effortless linen co-ord set featuring a bow-strap button-down top paired with wide-leg trousers. Crafted from breathable premium linen — the perfect set for Lagos afternoons and rooftop evenings."
@@ -47,7 +47,7 @@
       ],
       "fabric": "Ribbed Cotton",
       "images": [
-        "img-pink-cami.jpg"
+        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-pink-cami.jpg"
       ],
       "video": "../videos/0f8bca99-0b59-4816-8cd2-678f26093d1d.mp4",
       "description": "A luxurious ribbed cotton cami elevated with hand-threaded pearl and gold bead straps. Wear it alone or layered — it goes from beach to dinner with ease."
@@ -73,8 +73,8 @@
       ],
       "fabric": "Linen Blend",
       "images": [
-        "img-wine-pinstripe.jpg",
-        "img-grey-linen-front.jpg"
+        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-wine-pinstripe.jpg",
+        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-grey-linen-front.jpg"
       ],
       "video": "../videos/103456c2-e4d0-4963-a132-c2fe6e2d7b81.mp4",
       "description": "The power set. A relaxed pinstripe shirt-jacket paired with matching high-waist wide-leg trousers in a rich burgundy linen blend. Unstructured, confident, unmistakably PHERAN."
@@ -99,8 +99,8 @@
       ],
       "fabric": "Washed Linen",
       "images": [
-        "img-grey-linen-side.jpg",
-        "img-grey-linen-front.jpg"
+        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-grey-linen-side.jpg",
+        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-grey-linen-front.jpg"
       ],
       "video": "../videos/15627b52-c2c7-4166-b2fd-06e0312fa43d.mp4",
       "description": "The same signature silhouette in a classic slate wash. Our linen co-ord set in its most versatile colourway — pairs beautifully with gold accessories and bare skin."
@@ -123,8 +123,8 @@
       ],
       "fabric": "Charmeuse Silk",
       "images": [
-        "img-red-gown-front.jpg",
-        "img-red-gown-side.jpg"
+        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-red-gown-front.jpg",
+        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-red-gown-side.jpg"
       ],
       "video": "../videos/157429e1-509d-4512-b99a-e32e2ca5bcf5.mp4",
       "description": "The showpiece. An off-shoulder beaded bodice flows into a ruched mermaid skirt with a dramatic cathedral train. Hand-embellished with over 800 micro-beads. Made to order in 10–14 days."
@@ -151,8 +151,8 @@
         "Ivory"
       ],
       "images": [
-        "img-pink-cami.jpg",
-        "img-grey-linen-front.jpg"
+        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-pink-cami.jpg",
+        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-grey-linen-front.jpg"
       ],
       "description": "A refined take on the classic cami. Adjustable bow straps, ribbed texture, and a cropped fit that works with everything from high-waist trousers to flowing skirts.",
       "video": "../videos/1a4c9961-93c9-4fc2-ba6d-40ae9a30e7d2.mp4"
