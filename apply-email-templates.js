@@ -83,6 +83,8 @@ const TEMPLATE_MAP = {
 // Replace {{ .ConfirmationURL }} with the pheran.ng/verify proxy URL so the
 // Supabase project reference is never exposed in outgoing emails.
 function proxyConfirmationUrl(html, verifyType) {
+  // Points to /verify which proxies to Supabase, then Supabase redirects to /auth/callback.
+  // /auth/callback exchanges the token silently and redirects to /account — access_token never visible in URL.
   const proxyUrl = `https://pheran.ng/verify?token_hash={{ .TokenHash }}&type=${verifyType}`
   return html.replace(/\{\{\s*\.ConfirmationURL\s*\}\}/g, proxyUrl)
 }

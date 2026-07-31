@@ -104,8 +104,6 @@ for (const [route, file] of Object.entries(_PAGES)) {
 }
 
 // Auth verification proxy — hides the Supabase project URL from email links.
-// Email links point to pheran.ng/verify?token_hash=...&type=...
-// This route validates the params then redirects to Supabase internally.
 const _VALID_VERIFY_TYPES = new Set(['signup','recovery','magiclink','invite','email_change','reauthentication'])
 const _SUPA_URL = process.env.SUPABASE_URL || ''
 app.get('/verify', (req, res) => {
@@ -113,10 +111,44 @@ app.get('/verify', (req, res) => {
   if (!token_hash || !type || !_VALID_VERIFY_TYPES.has(type)) {
     return res.status(400).send('Invalid or expired verification link.')
   }
-  // Redirect back to account page after confirmation
-  const redirectTo = encodeURIComponent('https://pheran.ng/account')
+  // Redirect to /auth/callback so the access_token hash never appears on /account
+  const redirectTo = encodeURIComponent('https://pheran.ng/auth/callback')
   const target = `${_SUPA_URL}/auth/v1/verify?token_hash=${encodeURIComponent(token_hash)}&type=${encodeURIComponent(type)}&redirect_to=${redirectTo}`
   res.redirect(302, target)
+})
+
+// Auth callback — exchanges the access_token hash for a session cookie, then redirects cleanly to /account.
+// The access_token never appears in the /account URL.
+app.get('/auth/callback', (_req, res) => {
+  res.send(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex">
+<title>PHERAN — Signing in…</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',Arial,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#F7F4F0}
+.box{text-align:center;padding:40px 24px}.logo{font-family:Georgia,serif;font-size:2rem;font-weight:700;letter-spacing:5px;color:#2D1B4E}
+.sub{font-size:.9rem;color:#888;margin-top:12px;letter-spacing:.02em}.dot{display:inline-block;animation:blink 1.2s infinite}.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:0}40%{opacity:1}}</style></head>
+<body><div class="box"><div class="logo">PHERAN</div><div class="sub" id="msg">Confirming your email<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></div></div>
+<script>
+(async()=>{
+  const hp=new URLSearchParams(location.hash.slice(1))
+  const at=hp.get('access_token'),rt=hp.get('refresh_token'),type=hp.get('type')
+  if(!at||!rt){location.replace('/account');return}
+  try{
+    const r=await fetch('/api/auth/exchange',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({access_token:at,refresh_token:rt})})
+    const d=await r.json()
+    location.replace('/account'+(d.ok&&(type==='signup'||type==='email_change')?'?confirmed=1':''))
+  }catch(e){location.replace('/account')}
+})()
+</script></body></html>`)
+})
+
+// Public: bank transfer details for checkout (configured in .env)
+app.get('/api/bank-details', (_req, res) => {
+  res.json({
+    ok: true,
+    bank:    process.env.PHERAN_BANK_NAME    || 'Zenith Bank',
+    account: process.env.PHERAN_ACCOUNT_NUMBER || '1234567890',
+    name:    process.env.PHERAN_ACCOUNT_NAME   || 'PHERAN FASHION LIMITED',
+  })
 })
 
 // serve static assets — mvp/ for images/JS/CSS/SW, Pheran root for /css/ and /videos/
@@ -621,29 +653,45 @@ app.get('/api/orders/:orderId', (req,res)=>{
   }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
 })
 
-app.post('/api/orders', (req,res)=>{
+app.post('/api/orders', async(req,res)=>{
   try{
-    const { userId='anonymous', items=[], shipping={}, payment={}, deliveryMethod='standard' } = req.body||{}
+    const { userId='anonymous', userEmail='', items=[], shipping={}, deliveryMethod='standard' } = req.body||{}
     if(!items.length) return res.status(400).json({ ok:false, error:'items required' })
     const subtotal = items.reduce((s,i)=>s+(Number(i.price||0)*Number(i.qty||1)),0)
     const deliveryFee = deliveryMethod==='express' ? 3500 : (subtotal>=100000 ? 0 : 1500)
     const order = {
-      id: 'ORD-' + Date.now(),
+      id: 'PH-' + Date.now(),
       userId,
+      userEmail,
       items,
       shipping,
-      payment: { method: payment.method||'card' },
+      payment: { method: 'bank_transfer' },
       deliveryMethod,
       subtotal,
       deliveryFee,
       total: subtotal + deliveryFee,
-      status: 'confirmed',
+      status: 'pending_payment',
       createdAt: new Date().toISOString(),
     }
+    // Save to Supabase when available
+    if(supabase){
+      await supabase.from('orders').insert({
+        id: order.id,
+        user_id: userId !== 'anonymous' ? userId : null,
+        user_email: userEmail,
+        items: order.items,
+        shipping: order.shipping,
+        subtotal: order.subtotal,
+        delivery_fee: order.deliveryFee,
+        total: order.total,
+        status: order.status,
+        delivery_method: order.deliveryMethod,
+      })
+    }
+    // Also keep in-memory (admin fallback / fast lookup)
     const orders = ORDERS_STORE.get(userId) || []
     orders.unshift(order)
     ORDERS_STORE.set(userId, orders)
-    // Clear server-side cart for this user
     CART_STORE.set(userId, [])
     res.status(201).json({ ok:true, order })
   }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
@@ -653,7 +701,7 @@ app.patch('/api/orders/:orderId/status', (req,res)=>{
   try{
     const userId = req.query.userId || 'anonymous'
     const { status } = req.body||{}
-    const valid = ['confirmed','processing','dispatched','delivered','cancelled']
+    const valid = ['pending_payment','confirmed','processing','dispatched','delivered','cancelled']
     if(!valid.includes(status)) return res.status(400).json({ ok:false, error:'invalid status' })
     const orders = ORDERS_STORE.get(userId) || []
     const order = orders.find(o=>o.id===req.params.orderId)
@@ -663,6 +711,59 @@ app.patch('/api/orders/:orderId/status', (req,res)=>{
     ORDERS_STORE.set(userId, orders)
     res.json({ ok:true, order })
   }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
+})
+
+// ─── Admin orders management ───────────────────────────────────────────────────
+app.get('/api/admin/orders', requireAdminAuth, async(req,res)=>{
+  try{
+    if(supabase){
+      const { data, error } = await supabase.from('orders').select('*').order('created_at',{ascending:false})
+      if(error) return res.status(500).json({ok:false,error:error.message})
+      return res.json({ok:true, orders: data})
+    }
+    // In-memory fallback
+    const all = []
+    for(const [,orders] of ORDERS_STORE) all.push(...orders)
+    all.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt))
+    res.json({ok:true, orders:all})
+  }catch(e){ res.status(500).json({ok:false,error:String(e)}) }
+})
+
+app.patch('/api/admin/orders/:orderId/payment', requireAdminAuth, async(req,res)=>{
+  try{
+    const { orderId } = req.params
+    const { confirmed=true } = req.body||{}
+    const status = confirmed ? 'confirmed' : 'pending_payment'
+    if(supabase){
+      const { data, error } = await supabase.from('orders').update({status,updated_at:new Date().toISOString()}).eq('id',orderId).select().single()
+      if(error) return res.status(500).json({ok:false,error:error.message})
+      return res.json({ok:true,order:data})
+    }
+    for(const [,orders] of ORDERS_STORE){
+      const o = orders.find(x=>x.id===orderId)
+      if(o){ o.status=status; o.updatedAt=new Date().toISOString(); return res.json({ok:true,order:o}) }
+    }
+    res.status(404).json({ok:false,error:'Order not found'})
+  }catch(e){ res.status(500).json({ok:false,error:String(e)}) }
+})
+
+app.patch('/api/admin/orders/:orderId/status', requireAdminAuth, async(req,res)=>{
+  try{
+    const { orderId } = req.params
+    const { status } = req.body||{}
+    const valid = ['pending_payment','confirmed','processing','dispatched','delivered','cancelled']
+    if(!valid.includes(status)) return res.status(400).json({ok:false,error:'Invalid status'})
+    if(supabase){
+      const { data, error } = await supabase.from('orders').update({status,updated_at:new Date().toISOString()}).eq('id',orderId).select().single()
+      if(error) return res.status(500).json({ok:false,error:error.message})
+      return res.json({ok:true,order:data})
+    }
+    for(const [,orders] of ORDERS_STORE){
+      const o = orders.find(x=>x.id===orderId)
+      if(o){ o.status=status; o.updatedAt=new Date().toISOString(); return res.json({ok:true,order:o}) }
+    }
+    res.status(404).json({ok:false,error:'Order not found'})
+  }catch(e){ res.status(500).json({ok:false,error:String(e)}) }
 })
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────

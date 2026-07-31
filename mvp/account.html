@@ -352,30 +352,16 @@
     let currentUserId = null
 
     async function apiCheckSession(){
-      // Detect email confirmation redirect: Supabase appends #access_token=... to the URL
-      const _hp = new URLSearchParams(window.location.hash.slice(1))
-      const _at = _hp.get('access_token')
-      const _rt = _hp.get('refresh_token')
-      const _type = _hp.get('type')
-      if(_at && _rt){
-        try{
-          const r=await fetch('/api/auth/exchange',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({access_token:_at,refresh_token:_rt})})
-          const d=await r.json()
-          if(d.ok){
-            history.replaceState(null,'',window.location.pathname)
-            currentUserId=d.user.id
-            showDashboard(d.user)
-            if(_type==='signup'||_type==='email_change'){
-              const banner=document.getElementById('email-confirmed-banner')
-              if(banner){ banner.style.display='flex'; setTimeout(()=>{ banner.style.display='none' },8000) }
-            }
-            return
-          }
-        }catch(e){}
-      }
       try{
         const r=await fetch('/api/auth/me',{credentials:'include'})
-        if(r.ok){ const d=await r.json(); if(d.ok&&d.user){ currentUserId=d.user.id; showDashboard(d.user); return } }
+        if(r.ok){ const d=await r.json(); if(d.ok&&d.user){ currentUserId=d.user.id; showDashboard(d.user)
+          // Show email-confirmed banner if redirected from /auth/callback
+          if(new URLSearchParams(location.search).get('confirmed')==='1'){
+            history.replaceState(null,'',location.pathname)
+            const banner=document.getElementById('email-confirmed-banner')
+            if(banner){ banner.style.display='flex'; setTimeout(()=>{ banner.style.display='none' },8000) }
+          }
+          return } }
       }catch(e){}
       showAuthScreen()
     }

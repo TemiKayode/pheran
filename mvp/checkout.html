@@ -1,339 +1,443 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>PHERAN — Checkout</title>
-  <meta name="description" content="Complete your PHERAN order securely. We accept all major cards and offer flexible delivery across Nigeria.">
+  <meta name="description" content="Complete your PHERAN order securely. Bank transfer accepted.">
   <meta name="robots" content="noindex,nofollow">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="apple-touch-icon" href="logo.jpeg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/variables.css">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="styles-upgrade.css">
+  <style>
+    .co-wrap{display:grid;grid-template-columns:1fr 380px;gap:48px;align-items:start;padding:40px 0 80px;max-width:1080px;margin:0 auto}
+    @media(max-width:860px){.co-wrap{grid-template-columns:1fr;gap:0}}
+    /* Steps */
+    .co-steps{display:flex;align-items:center;gap:0;margin-bottom:36px}
+    .co-step{display:flex;align-items:center;gap:8px;font-size:.82rem;font-weight:600;color:var(--text-muted);letter-spacing:.04em;text-transform:uppercase}
+    .co-step .num{width:26px;height:26px;border-radius:50%;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0;transition:all .2s}
+    .co-step.active{color:var(--purple-main)}.co-step.active .num{background:var(--purple-main);color:#fff;border-color:var(--purple-main)}
+    .co-step.done{color:var(--purple-main)}.co-step.done .num{background:var(--purple-main);color:#fff;border-color:var(--purple-main)}
+    .co-step.done .num::after{content:'✓'}
+    .co-step.done .num span{display:none}
+    .co-divider{flex:1;height:1px;background:var(--gray-200);margin:0 12px;max-width:60px}
+    /* Form sections */
+    .co-section{background:#fff;border:1px solid var(--gray-100);border-radius:16px;padding:28px;margin-bottom:20px}
+    .co-section h3{font-family:var(--font-display);font-size:1.1rem;color:var(--purple-deepest);margin:0 0 20px;font-weight:700}
+    .co-fields{display:grid;gap:16px}
+    .co-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    @media(max-width:500px){.co-row{grid-template-columns:1fr}}
+    .co-field{display:flex;flex-direction:column;gap:6px}
+    .co-field label{font-size:.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted)}
+    .co-field input,.co-field select{padding:12px 14px;border:1.5px solid var(--gray-200);border-radius:10px;font-size:.92rem;font-family:var(--font-body);color:var(--text-primary);outline:none;transition:border-color .15s;background:#fff}
+    .co-field input:focus,.co-field select:focus{border-color:var(--purple-main)}
+    .co-field input.prefilled{background:var(--purple-05);border-color:var(--purple-light)}
+    /* Delivery options */
+    .delivery-option{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1.5px solid var(--gray-200);border-radius:12px;cursor:pointer;transition:all .15s}
+    .delivery-option:has(input:checked){border-color:var(--purple-main);background:var(--purple-05)}
+    .delivery-option input{accent-color:var(--purple-main)}
+    .delivery-option .info{flex:1}
+    .delivery-option strong{display:block;font-size:.92rem}
+    .delivery-option small{color:var(--text-secondary);font-size:.82rem}
+    /* Review panel */
+    .review-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gray-100);font-size:.9rem}
+    .review-row:last-child{border-bottom:none}
+    .review-label{color:var(--text-muted);font-size:.78rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px}
+    /* Bank details card */
+    .bank-card{background:linear-gradient(135deg,#2D1B4E 0%,#4a2a7a 100%);border-radius:16px;padding:24px;color:#fff;margin-bottom:20px}
+    .bank-card .bc-label{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(212,169,106,.8);margin-bottom:4px}
+    .bank-card .bc-value{font-size:1.05rem;font-weight:700;letter-spacing:.02em;margin-bottom:14px}
+    .bank-card .bc-value.big{font-size:1.35rem;letter-spacing:.04em;color:#D4A96A}
+    .copy-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:6px 14px;font-size:.78rem;font-weight:600;cursor:pointer;transition:background .15s;font-family:var(--font-body)}
+    .copy-btn:hover{background:rgba(255,255,255,.25)}
+    .copy-btn.copied{background:#16a34a;border-color:#16a34a}
+    /* Success state */
+    .co-success{display:none;text-align:center;padding:60px 24px}
+    .co-success .check{width:64px;height:64px;background:#f0faf4;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:1.8rem}
+    .co-success h2{font-family:var(--font-display);color:var(--purple-deepest);margin-bottom:8px}
+    .co-success p{color:var(--text-secondary);font-size:.9rem;margin-bottom:32px}
+    /* Summary sidebar */
+    .co-summary{background:#fff;border:1px solid var(--gray-100);border-radius:16px;padding:24px;position:sticky;top:80px}
+    .co-summary h3{font-family:var(--font-display);font-size:1rem;margin:0 0 16px;color:var(--purple-deepest)}
+    .sum-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--gray-100)}
+    .sum-item:last-child{border-bottom:none}
+    .sum-item img{width:52px;height:65px;object-fit:cover;border-radius:8px;background:var(--gray-100)}
+    .sum-item .si-info{flex:1;min-width:0}
+    .si-title{font-size:.88rem;font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .si-meta{font-size:.78rem;color:var(--text-secondary);margin-top:2px}
+    .si-price{font-size:.92rem;font-weight:700;color:var(--purple-deepest);white-space:nowrap}
+    .sum-totals{margin-top:14px;padding-top:14px;border-top:1.5px solid var(--gray-200)}
+    .sum-row{display:flex;justify-content:space-between;font-size:.88rem;margin-bottom:8px;color:var(--text-secondary)}
+    .sum-total{display:flex;justify-content:space-between;font-size:1.05rem;font-weight:800;color:var(--purple-deepest);margin-top:10px;padding-top:10px;border-top:1.5px solid var(--gray-200)}
+    .trust-note{margin-top:14px;padding:10px 14px;background:var(--purple-05);border-radius:10px;font-size:.8rem;color:var(--purple-deepest);display:flex;align-items:center;gap:8px}
+  </style>
 </head>
 <body>
-  <header class="site-header">
+  <header class="site-header" style="border-bottom:1px solid var(--gray-100)">
     <div class="container header-inner">
-      <button class="icon-btn" id="menu-btn" aria-label="Menu"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg></button>
-      <a class="logo" href="homepage.html"><img src="logo.jpeg" alt="PHERAN"></a>
-      <div style="font-size:0.85rem;color:var(--text-muted)">Secure Checkout <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"/></svg></div>
-      <a href="cart.html" style="font-size:0.9rem;color:var(--purple-main);text-decoration:none">← Back to cart</a>
+      <a class="logo" href="/"><img src="logo.jpeg" alt="PHERAN"></a>
+      <div style="font-size:.82rem;color:var(--text-muted);display:flex;align-items:center;gap:6px;font-weight:500">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"/></svg>
+        Secure Checkout
+      </div>
+      <a href="/cart" style="font-size:.85rem;color:var(--purple-main);text-decoration:none;font-weight:500">← Back to cart</a>
     </div>
   </header>
 
-  <main class="container checkout-layout">
+  <main class="container co-wrap" id="co-main">
     <!-- Left: form -->
     <div>
-      <!-- Steps indicator -->
-      <div class="checkout-steps" id="checkout-steps">
-        <div class="checkout-step active" data-step="1">1. Shipping</div>
-        <div class="checkout-step" data-step="2">2. Payment</div>
-        <div class="checkout-step" data-step="3">3. Review</div>
+      <!-- Step indicator -->
+      <div class="co-steps" id="co-steps">
+        <div class="co-step active" data-step="1"><div class="num"><span>1</span></div>Delivery</div>
+        <div class="co-divider"></div>
+        <div class="co-step" data-step="2"><div class="num"><span>2</span></div>Review & Pay</div>
       </div>
 
       <!-- Step 1: Shipping -->
-      <div id="step-1" class="checkout-step-panel">
-        <div class="checkout-form-section">
+      <div id="step-1">
+        <div class="co-section">
           <h3>Contact Information</h3>
-          <div class="field-row">
-            <div class="field-group">
-              <label for="first-name">First name</label>
-              <input id="first-name" type="text" placeholder="Adaeze" autocomplete="given-name">
+          <div class="co-fields">
+            <div class="co-row">
+              <div class="co-field"><label for="first-name">First name</label><input id="first-name" type="text" placeholder="Adaeze" autocomplete="given-name"></div>
+              <div class="co-field"><label for="last-name">Last name</label><input id="last-name" type="text" placeholder="Okafor" autocomplete="family-name"></div>
             </div>
-            <div class="field-group">
-              <label for="last-name">Last name</label>
-              <input id="last-name" type="text" placeholder="Okafor" autocomplete="family-name">
-            </div>
-          </div>
-          <div class="field-row single">
-            <div class="field-group">
-              <label for="email">Email</label>
-              <input id="email" type="email" placeholder="adaeze@email.com" autocomplete="email">
-            </div>
-          </div>
-          <div class="field-row single">
-            <div class="field-group">
-              <label for="phone">Phone</label>
-              <input id="phone" type="tel" placeholder="+234 801 234 5678" autocomplete="tel">
-            </div>
+            <div class="co-field"><label for="email">Email address</label><input id="email" type="email" placeholder="adaeze@email.com" autocomplete="email"></div>
+            <div class="co-field"><label for="phone">Phone number</label><input id="phone" type="tel" placeholder="+234 801 234 5678" autocomplete="tel"></div>
           </div>
         </div>
 
-        <div class="checkout-form-section">
+        <div class="co-section">
           <h3>Delivery Address</h3>
-          <div class="field-row single">
-            <div class="field-group">
-              <label for="address">Street address</label>
-              <input id="address" type="text" placeholder="15 Admiralty Way" autocomplete="street-address">
-            </div>
-          </div>
-          <div class="field-row single">
-            <div class="field-group">
-              <label for="address2">Apartment, suite, etc. (optional)</label>
-              <input id="address2" type="text" placeholder="Flat 3B">
-            </div>
-          </div>
-          <div class="field-row">
-            <div class="field-group">
-              <label for="city">City</label>
-              <input id="city" type="text" placeholder="Lagos" autocomplete="address-level2">
-            </div>
-            <div class="field-group">
-              <label for="state">State</label>
-              <select id="state" autocomplete="address-level1">
-                <option value="">Select state</option>
-                <option>Abia</option><option>Adamawa</option><option>Akwa Ibom</option>
-                <option>Anambra</option><option>Bauchi</option><option>Bayelsa</option>
-                <option>Benue</option><option>Borno</option><option>Cross River</option>
-                <option>Delta</option><option>Ebonyi</option><option>Edo</option>
-                <option>Ekiti</option><option>Enugu</option><option>FCT</option>
-                <option>Gombe</option><option>Imo</option><option>Jigawa</option>
-                <option>Kaduna</option><option>Kano</option><option>Katsina</option>
-                <option>Kebbi</option><option>Kogi</option><option>Kwara</option>
-                <option selected>Lagos</option><option>Nasarawa</option><option>Niger</option>
-                <option>Ogun</option><option>Ondo</option><option>Osun</option>
-                <option>Oyo</option><option>Plateau</option><option>Rivers</option>
-                <option>Sokoto</option><option>Taraba</option><option>Yobe</option><option>Zamfara</option>
-              </select>
+          <div class="co-fields">
+            <div class="co-field"><label for="address">Street address</label><input id="address" type="text" placeholder="15 Admiralty Way" autocomplete="street-address"></div>
+            <div class="co-field"><label for="address2">Apartment, suite, etc. (optional)</label><input id="address2" type="text" placeholder="Flat 3B"></div>
+            <div class="co-row">
+              <div class="co-field"><label for="city">City</label><input id="city" type="text" placeholder="Lagos" autocomplete="address-level2"></div>
+              <div class="co-field"><label for="state">State</label>
+                <select id="state" autocomplete="address-level1">
+                  <option value="">Select state</option>
+                  <option>Abia</option><option>Adamawa</option><option>Akwa Ibom</option>
+                  <option>Anambra</option><option>Bauchi</option><option>Bayelsa</option>
+                  <option>Benue</option><option>Borno</option><option>Cross River</option>
+                  <option>Delta</option><option>Ebonyi</option><option>Edo</option>
+                  <option>Ekiti</option><option>Enugu</option><option>FCT</option>
+                  <option>Gombe</option><option>Imo</option><option>Jigawa</option>
+                  <option>Kaduna</option><option>Kano</option><option>Katsina</option>
+                  <option>Kebbi</option><option>Kogi</option><option>Kwara</option>
+                  <option selected>Lagos</option><option>Nasarawa</option><option>Niger</option>
+                  <option>Ogun</option><option>Ondo</option><option>Osun</option>
+                  <option>Oyo</option><option>Plateau</option><option>Rivers</option>
+                  <option>Sokoto</option><option>Taraba</option><option>Yobe</option><option>Zamfara</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="checkout-form-section">
+        <div class="co-section">
           <h3>Delivery Method</h3>
-          <div id="delivery-options" style="display:flex;flex-direction:column;gap:10px">
-            <label style="display:flex;align-items:center;gap:12px;padding:14px;border:2px solid var(--purple-main);border-radius:12px;cursor:pointer;background:var(--purple-05)">
-              <input type="radio" name="delivery" value="standard" checked style="accent-color:var(--purple-main)">
-              <div style="flex:1">
-                <strong>Standard Delivery</strong>
-                <div style="font-size:0.85rem;color:var(--text-secondary)">3–5 business days</div>
-              </div>
-              <span id="standard-price" style="font-weight:700;color:var(--purple-main)">₦1,500</span>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <label class="delivery-option">
+              <input type="radio" name="delivery" value="standard" checked>
+              <div class="info"><strong>Standard Delivery</strong><small>3–5 business days</small></div>
+              <span id="std-price" style="font-weight:700;color:var(--purple-main)">₦1,500</span>
             </label>
-            <label style="display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--gray-200);border-radius:12px;cursor:pointer">
-              <input type="radio" name="delivery" value="express" style="accent-color:var(--purple-main)">
-              <div style="flex:1">
-                <strong>Express Delivery</strong>
-                <div style="font-size:0.85rem;color:var(--text-secondary)">1–2 business days</div>
-              </div>
+            <label class="delivery-option">
+              <input type="radio" name="delivery" value="express">
+              <div class="info"><strong>Express Delivery</strong><small>1–2 business days</small></div>
               <span style="font-weight:700">₦3,500</span>
             </label>
           </div>
         </div>
 
-        <button class="btn primary" style="width:100%;padding:16px;font-size:1rem;margin-top:4px" id="next-to-payment">Continue to Payment →</button>
+        <button class="btn primary" style="width:100%;padding:16px;font-size:1rem" id="next-btn">Continue to Review →</button>
       </div>
 
-      <!-- Step 2: Payment -->
-      <div id="step-2" class="checkout-step-panel" style="display:none">
-        <div class="checkout-form-section">
-          <h3>Payment Method</h3>
-          <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
-            <label style="display:flex;align-items:center;gap:12px;padding:14px;border:2px solid var(--purple-main);border-radius:12px;cursor:pointer;background:var(--purple-05)">
-              <input type="radio" name="payment" value="card" checked style="accent-color:var(--purple-main)">
-              <span><strong>Debit / Credit Card</strong></span>
-              <div class="payment-icons" style="margin-left:auto">
-                <span class="payment-icon">Visa</span><span class="payment-icon">MC</span>
-              </div>
-            </label>
-            <label style="display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--gray-200);border-radius:12px;cursor:pointer">
-              <input type="radio" name="payment" value="transfer" style="accent-color:var(--purple-main)">
-              <span><strong>Bank Transfer</strong></span>
-              <span style="margin-left:auto;font-size:0.82rem;color:var(--success)">Instant verification</span>
-            </label>
-            <label style="display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--gray-200);border-radius:12px;cursor:pointer">
-              <input type="radio" name="payment" value="paystack" style="accent-color:var(--purple-main)">
-              <span><strong>Paystack</strong></span>
-            </label>
-          </div>
-          <div id="card-fields">
-            <div class="field-row single">
-              <div class="field-group">
-                <label for="card-number">Card number</label>
-                <input id="card-number" type="text" placeholder="4242 4242 4242 4242" maxlength="19">
-              </div>
+      <!-- Step 2: Review + Bank Transfer -->
+      <div id="step-2" style="display:none">
+        <div class="co-section">
+          <h3>Order Review</h3>
+          <div id="review-details"></div>
+        </div>
+
+        <div class="co-section" style="margin-bottom:0">
+          <h3>Payment — Bank Transfer</h3>
+          <p style="font-size:.88rem;color:var(--text-secondary);margin-bottom:20px;line-height:1.6">Place your order below. We will show you our bank account details to complete the transfer. Your order is reserved for <strong>24 hours</strong> while we await your payment.</p>
+
+          <div id="bank-details-card" class="bank-card">
+            <div class="bc-label">Bank Name</div>
+            <div class="bc-value" id="bd-bank">Loading…</div>
+            <div class="bc-label">Account Number</div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+              <div class="bc-value big" id="bd-account" style="margin:0">—</div>
+              <button class="copy-btn" id="copy-account">Copy</button>
             </div>
-            <div class="field-row">
-              <div class="field-group">
-                <label for="card-expiry">Expiry</label>
-                <input id="card-expiry" type="text" placeholder="MM / YY" maxlength="7">
-              </div>
-              <div class="field-group">
-                <label for="card-cvv">CVV</label>
-                <input id="card-cvv" type="text" placeholder="123" maxlength="4">
-              </div>
-            </div>
-            <div class="field-row single">
-              <div class="field-group">
-                <label for="card-name">Name on card</label>
-                <input id="card-name" type="text" placeholder="ADAEZE OKAFOR">
-              </div>
+            <div class="bc-label">Account Name</div>
+            <div class="bc-value" id="bd-name">—</div>
+            <div style="height:1px;background:rgba(255,255,255,.15);margin:8px 0 16px"></div>
+            <div class="bc-label">Amount to Transfer</div>
+            <div class="bc-value big" id="bd-amount">—</div>
+            <div class="bc-label" style="margin-top:8px">Payment Reference (use as transfer remark)</div>
+            <div style="display:flex;align-items:center;gap:12px">
+              <div class="bc-value" id="bd-ref" style="margin:0;font-family:monospace;letter-spacing:.05em">—</div>
+              <button class="copy-btn" id="copy-ref">Copy</button>
             </div>
           </div>
+
+          <p style="font-size:.82rem;color:var(--text-secondary);line-height:1.6;margin-top:16px">
+            After transferring, your order will be confirmed within <strong>1–4 hours</strong> on business days. You will receive a WhatsApp notification once confirmed.
+          </p>
         </div>
-        <div style="display:flex;gap:12px;margin-top:4px">
-          <button class="btn secondary" style="flex:1;padding:14px" id="back-to-shipping">← Back</button>
-          <button class="btn primary" style="flex:2;padding:14px;font-size:1rem" id="next-to-review">Review Order →</button>
+
+        <div style="display:flex;gap:12px;margin-top:20px">
+          <button class="btn secondary" style="padding:14px 20px" id="back-btn">← Back</button>
+          <button class="btn primary" style="flex:1;padding:16px;font-size:1rem" id="place-order">Place Order & See Transfer Details</button>
         </div>
+        <p style="text-align:center;font-size:.78rem;color:var(--text-muted);margin-top:12px">By placing your order you agree to our <a href="/policies" style="color:var(--purple-main)">Terms & Policies</a>.</p>
       </div>
 
-      <!-- Step 3: Review -->
-      <div id="step-3" class="checkout-step-panel" style="display:none">
-        <div class="checkout-form-section" id="review-summary"></div>
-        <div style="display:flex;gap:12px;margin-top:4px">
-          <button class="btn secondary" style="flex:1;padding:14px" id="back-to-payment">← Back</button>
-          <button class="btn primary" style="flex:2;padding:16px;font-size:1rem" id="place-order">Place Order →</button>
+      <!-- Success state -->
+      <div class="co-success" id="co-success">
+        <div class="check">✓</div>
+        <h2>Order Placed!</h2>
+        <p>Your order <strong id="success-ref">—</strong> has been reserved.<br>Transfer the exact amount below and use your Order ID as the payment reference.</p>
+
+        <div class="bank-card" style="text-align:left;margin-bottom:24px">
+          <div class="bc-label">Bank Name</div>
+          <div class="bc-value" id="s-bank">—</div>
+          <div class="bc-label">Account Number</div>
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+            <div class="bc-value big" id="s-account" style="margin:0">—</div>
+            <button class="copy-btn" id="s-copy-account">Copy</button>
+          </div>
+          <div class="bc-label">Account Name</div>
+          <div class="bc-value" id="s-name">—</div>
+          <div style="height:1px;background:rgba(255,255,255,.15);margin:8px 0 16px"></div>
+          <div class="bc-label">Amount</div>
+          <div class="bc-value big" id="s-amount">—</div>
+          <div class="bc-label" style="margin-top:8px">Transfer Reference</div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="bc-value" id="s-ref" style="margin:0;font-family:monospace;letter-spacing:.05em">—</div>
+            <button class="copy-btn" id="s-copy-ref">Copy</button>
+          </div>
         </div>
-        <p style="text-align:center;font-size:0.8rem;color:var(--text-muted);margin-top:12px">By placing your order you agree to our <a href="policies.html">Terms of Service</a> and <a href="policies.html">Privacy Policy</a>.</p>
+
+        <div style="background:#fff8ed;border:1px solid #f6d87c;border-radius:12px;padding:16px;text-align:left;margin-bottom:28px;font-size:.85rem;line-height:1.7">
+          <strong style="display:block;margin-bottom:4px">⚠ Important</strong>
+          Always use your Order ID as the transfer remark. Orders without a reference may be delayed.
+        </div>
+
+        <a href="/account" class="btn secondary" style="display:inline-block;margin-right:12px">View My Orders</a>
+        <a href="/shop" class="btn primary" style="display:inline-block">Continue Shopping</a>
       </div>
     </div>
 
     <!-- Right: order summary -->
-    <div class="checkout-order-summary">
-      <h3 style="font-family:var(--font-display);margin:0 0 16px">Order Summary</h3>
-      <div id="checkout-items"></div>
-      <div id="checkout-totals" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--gray-200)"></div>
-      <div style="margin-top:14px;padding:12px;background:var(--purple-05);border-radius:10px;font-size:0.83rem;color:var(--purple-deepest)">
-        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"/></svg> Your payment info is encrypted and secure
+    <div class="co-summary" id="co-sidebar">
+      <h3>Order Summary</h3>
+      <div id="sum-items"></div>
+      <div class="sum-totals" id="sum-totals"></div>
+      <div class="trust-note">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z"/></svg>
+        Secure & encrypted checkout
       </div>
     </div>
   </main>
 
+  <footer class="footer-full" style="margin-top:0">
+    <div class="container footer-bottom" style="padding:16px 0 24px">
+      <p>© 2026 PHERAN. All rights reserved.</p>
+      <div class="footer-bottom-links"><a href="/policies">Privacy</a><a href="/support">Help</a></div>
+    </div>
+  </footer>
+
   <script>
-    function fmt(v){return new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(Number(v||0))}
-    function escapeHtml(str){return String(str??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-    const esc=escapeHtml
+    const fmt = v => new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(Number(v||0))
+    const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
+
+    // ── Cart ──────────────────────────────────────────────────────────────────
     function getCart(){
-      try{
-        const raw=JSON.parse(localStorage.getItem('pheran_cart')||'[]')
-        return Array.isArray(raw)?raw.filter(i=>i&&typeof i==='object'&&typeof i.key==='string'&&typeof i.title==='string'):[]
-      }catch(e){return[]}
+      try{ const r=JSON.parse(localStorage.getItem('pheran_cart')||'[]'); return Array.isArray(r)?r.filter(i=>i&&typeof i.key==='string'):[] }catch(e){return[]}
     }
-
-    // Render order summary sidebar
+    function calcTotals(cart){
+      const sub=cart.reduce((s,i)=>s+Number(i.price||0)*Number(i.qty||1),0)
+      const method=document.querySelector('input[name="delivery"]:checked')?.value
+      const fee=method==='express'?3500:(sub>=100000?0:1500)
+      return {sub,fee,total:sub+fee}
+    }
     function renderSummary(){
-      const cart=getCart()
-      const items=document.getElementById('checkout-items')
-      const totals=document.getElementById('checkout-totals')
-      if(!items) return
-      if(!cart.length){items.innerHTML='<p style="color:var(--text-muted)">Your cart is empty.</p>';return}
-      items.innerHTML=cart.map(i=>`
-        <div class="checkout-item-row">
-          <img src="${esc(i.image||'')}" alt="${esc(i.title)}" loading="lazy">
-          <div><div class="ci-title">${esc(i.title)}</div><div class="ci-meta">${esc(i.color||'')} · ${esc(i.size||'')} · Qty ${Number(i.qty)||1}</div></div>
-          <div class="ci-price">${fmt(i.price*i.qty)}</div>
+      const cart=getCart(), {sub,fee,total}=calcTotals(cart)
+      const el=document.getElementById('sum-items')
+      if(!cart.length){el.innerHTML='<p style="color:var(--text-muted);font-size:.88rem">Your cart is empty.</p>';return}
+      el.innerHTML=cart.map(i=>`
+        <div class="sum-item">
+          <img src="${esc(i.image||'')}" alt="${esc(i.title)}" onerror="this.style.display='none'">
+          <div class="si-info"><div class="si-title">${esc(i.title)}</div><div class="si-meta">${esc(i.color||'')} · ${esc(i.size||'')} · Qty ${Number(i.qty)||1}</div></div>
+          <div class="si-price">${fmt(Number(i.price||0)*Number(i.qty||1))}</div>
         </div>`).join('')
-      const sub=cart.reduce((s,i)=>s+i.price*i.qty,0)
-      const deliveryRadio=document.querySelector('input[name="delivery"]:checked')
-      const ship=deliveryRadio?.value==='express'?3500:(sub>=100000?0:1500)
-      totals.innerHTML=`
-        <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:0.9rem"><span>Subtotal</span><span>${fmt(sub)}</span></div>
-        <div style="display:flex;justify-content:space-between;margin-bottom:10px;font-size:0.9rem"><span>Shipping</span><span>${ship===0?'Free':fmt(ship)}</span></div>
-        <div style="display:flex;justify-content:space-between;font-weight:800;font-size:1.05rem;color:var(--purple-deepest)"><span>Total</span><span>${fmt(sub+ship)}</span></div>`
+      document.getElementById('sum-totals').innerHTML=`
+        <div class="sum-row"><span>Subtotal</span><span>${fmt(sub)}</span></div>
+        <div class="sum-row"><span>Delivery</span><span style="color:${fee===0?'var(--success)':''}">${fee===0?'Free':fmt(fee)}</span></div>
+        <div class="sum-total"><span>Total</span><span>${fmt(total)}</span></div>`
+      // Update bank card amount
+      document.getElementById('bd-amount').textContent=fmt(total)
+      document.getElementById('s-amount').textContent=fmt(total)
     }
 
-    // Step navigation
-    let currentStep = 1
-    function goToStep(n){
-      currentStep=n
-      ;[1,2,3].forEach(s=>{
-        const panel=document.getElementById('step-'+s)
-        const stepEl=document.querySelector(`.checkout-step[data-step="${s}"]`)
-        if(panel) panel.style.display=s===n?'block':'none'
-        if(stepEl){
-          stepEl.classList.toggle('active',s===n)
-          stepEl.classList.toggle('done',s<n)
-        }
+    // ── Step navigation ───────────────────────────────────────────────────────
+    let step=1
+    function goStep(n){
+      step=n
+      document.getElementById('step-1').style.display=n===1?'block':'none'
+      document.getElementById('step-2').style.display=n===2?'block':'none'
+      document.querySelectorAll('.co-step').forEach(el=>{
+        const s=Number(el.dataset.step)
+        el.classList.toggle('active',s===n)
+        el.classList.toggle('done',s<n)
       })
       renderSummary()
       window.scrollTo({top:0,behavior:'smooth'})
     }
 
-    document.getElementById('next-to-payment')?.addEventListener('click',()=>{
-      const fn=document.getElementById('first-name')?.value?.trim()
-      const em=document.getElementById('email')?.value?.trim()
-      if(!fn||!em){alert('Please fill in your name and email.');return}
-      goToStep(2)
-    })
-    document.getElementById('back-to-shipping')?.addEventListener('click',()=>goToStep(1))
-    document.getElementById('next-to-review')?.addEventListener('click',()=>{
-      const cart=getCart()
-      const rs=document.getElementById('review-summary')
-      const fn=document.getElementById('first-name')?.value||''
-      const ln=document.getElementById('last-name')?.value||''
-      const em=document.getElementById('email')?.value||''
-      const addr=document.getElementById('address')?.value||''
-      const city=document.getElementById('city')?.value||''
-      const state=document.getElementById('state')?.value||''
-      const sub=cart.reduce((s,i)=>s+i.price*i.qty,0)
-      const ship=document.querySelector('input[name="delivery"]:checked')?.value==='express'?3500:(sub>=100000?0:1500)
-      if(rs) rs.innerHTML=`
-        <h3>Review Your Order</h3>
-        <div style="display:grid;gap:14px;margin-top:12px">
-          <div><div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px">Delivering to</div>
-          <div style="font-size:0.92rem">${fn} ${ln}<br>${addr}, ${city}, ${state}</div>
-          <button onclick="goToStep(1)" style="background:none;border:none;color:var(--purple-main);font-weight:700;cursor:pointer;padding:0;font-size:0.85rem">Edit</button></div>
-          <div><div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px">Payment</div>
-          <div style="font-size:0.92rem">Card ending ****</div>
-          <button onclick="goToStep(2)" style="background:none;border:none;color:var(--purple-main);font-weight:700;cursor:pointer;padding:0;font-size:0.85rem">Edit</button></div>
-          <div><div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px">Order total</div>
-          <div style="font-size:1.1rem;font-weight:800;color:var(--purple-deepest)">${fmt(sub+ship)}</div></div>
-        </div>`
-      goToStep(3)
-    })
-    document.getElementById('back-to-payment')?.addEventListener('click',()=>goToStep(2))
-    document.getElementById('place-order')?.addEventListener('click',()=>{
-      const btn=document.getElementById('place-order')
-      btn.textContent='Placing order…';btn.disabled=true
-      // Save order to localStorage
-      const cart=getCart()
-      const sub=cart.reduce((s,i)=>s+i.price*i.qty,0)
-      const ship=document.querySelector('input[name="delivery"]:checked')?.value==='express'?3500:(sub>=100000?0:1500)
-      const order={
-        id:'PH'+Date.now(),
-        date:new Date().toISOString(),
-        items:cart,
-        total:sub+ship,
-        status:'Processing',
-        name:document.getElementById('first-name')?.value+' '+document.getElementById('last-name')?.value,
-        address:document.getElementById('address')?.value+', '+document.getElementById('city')?.value+', '+document.getElementById('state')?.value
+    // ── Auto-fill from session ────────────────────────────────────────────────
+    fetch('/api/auth/me',{credentials:'include'}).then(r=>r.json()).then(d=>{
+      if(d.ok&&d.user){
+        const u=d.user
+        if(u.firstName){document.getElementById('first-name').value=u.firstName;document.getElementById('first-name').classList.add('prefilled')}
+        if(u.lastName){document.getElementById('last-name').value=u.lastName;document.getElementById('last-name').classList.add('prefilled')}
+        if(u.email){document.getElementById('email').value=u.email;document.getElementById('email').classList.add('prefilled')}
+        if(u.phone){document.getElementById('phone').value=u.phone;document.getElementById('phone').classList.add('prefilled')}
       }
-      const orders=JSON.parse(localStorage.getItem('pheran_orders')||'[]')
-      orders.unshift(order)
-      localStorage.setItem('pheran_orders',JSON.stringify(orders))
-      localStorage.setItem('pheran_last_order',JSON.stringify(order))
-      localStorage.removeItem('pheran_cart')
-      setTimeout(()=>window.location.href='confirmation.html',1200)
+    }).catch(()=>{})
+
+    // ── Bank details ──────────────────────────────────────────────────────────
+    let bankDetails={}
+    fetch('/api/bank-details').then(r=>r.json()).then(d=>{
+      if(d.ok){
+        bankDetails=d
+        ;['bank','account','name','s-bank','s-account','s-name'].forEach(id=>{
+          const key=id.replace('s-','')
+          const el=document.getElementById(id)
+          if(el) el.textContent=d[key]||''
+        })
+      }
+    }).catch(()=>{})
+
+    function makeCopy(btnId,getText){
+      document.getElementById(btnId)?.addEventListener('click',function(){
+        const text=getText()
+        if(!text) return
+        navigator.clipboard.writeText(text).then(()=>{
+          this.textContent='Copied!'
+          this.classList.add('copied')
+          setTimeout(()=>{this.textContent='Copy';this.classList.remove('copied')},2000)
+        })
+      })
+    }
+    makeCopy('copy-account',()=>bankDetails.account||'')
+    makeCopy('s-copy-account',()=>bankDetails.account||'')
+    let currentOrderRef=''
+    makeCopy('copy-ref',()=>currentOrderRef)
+    makeCopy('s-copy-ref',()=>currentOrderRef)
+
+    // ── Validate step 1 ───────────────────────────────────────────────────────
+    document.getElementById('next-btn')?.addEventListener('click',()=>{
+      const fn=document.getElementById('first-name').value.trim()
+      const em=document.getElementById('email').value.trim()
+      const ad=document.getElementById('address').value.trim()
+      const ct=document.getElementById('city').value.trim()
+      if(!fn||!em){alert('Please enter your name and email.');return}
+      if(!ad||!ct){alert('Please enter your delivery address and city.');return}
+      // Build review summary
+      const fn2=document.getElementById('last-name').value.trim()
+      const st=document.getElementById('state').value
+      const ph=document.getElementById('phone').value.trim()
+      const dm=document.querySelector('input[name="delivery"]:checked').value
+      const {sub,fee,total}=calcTotals(getCart())
+      document.getElementById('review-details').innerHTML=`
+        <div class="review-row"><span class="review-label">Name</span><span>${esc(fn)} ${esc(fn2)}</span></div>
+        <div class="review-row"><span class="review-label">Email</span><span>${esc(em)}</span></div>
+        ${ph?`<div class="review-row"><span class="review-label">Phone</span><span>${esc(ph)}</span></div>`:''}
+        <div class="review-row"><span class="review-label">Deliver to</span><span>${esc(ad)}, ${esc(ct)}, ${esc(st)}</span></div>
+        <div class="review-row"><span class="review-label">Delivery</span><span>${dm==='express'?'Express (1–2 days)':'Standard (3–5 days)'}</span></div>
+        <div class="review-row" style="border:none;padding-top:12px"><span style="font-size:.82rem;color:var(--purple-main);font-weight:700;cursor:pointer" onclick="goStep(1)">← Edit details</span></div>`
+      // Set order reference placeholder in bank card
+      document.getElementById('bd-ref').textContent='(Generated on order placement)'
+      renderSummary()
+      goStep(2)
+    })
+    document.getElementById('back-btn')?.addEventListener('click',()=>goStep(1))
+
+    // ── Place order ───────────────────────────────────────────────────────────
+    document.getElementById('place-order')?.addEventListener('click', async()=>{
+      const btn=document.getElementById('place-order')
+      btn.disabled=true; btn.textContent='Placing order…'
+      const cart=getCart()
+      if(!cart.length){alert('Your cart is empty.');btn.disabled=false;btn.textContent='Place Order & See Transfer Details';return}
+      const fn=document.getElementById('first-name').value.trim()
+      const ln=document.getElementById('last-name').value.trim()
+      const em=document.getElementById('email').value.trim()
+      const ph=document.getElementById('phone').value.trim()
+      const ad=document.getElementById('address').value.trim()
+      const ad2=document.getElementById('address2').value.trim()
+      const ct=document.getElementById('city').value.trim()
+      const st=document.getElementById('state').value
+      const dm=document.querySelector('input[name="delivery"]:checked').value
+      const {sub,fee,total}=calcTotals(cart)
+
+      // Try server-side order creation
+      let orderId='PH-'+Date.now()
+      try{
+        const meRes=await fetch('/api/auth/me',{credentials:'include'})
+        const meData=meRes.ok?await meRes.json():{}
+        const userId=meData.ok?meData.user.id:'anonymous'
+        const r=await fetch('/api/orders',{
+          method:'POST',credentials:'include',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            userId, userEmail:em, items:cart,
+            shipping:{firstName:fn,lastName:ln,email:em,phone:ph,address:ad,address2:ad2,city:ct,state:st},
+            deliveryMethod:dm
+          })
+        })
+        const d=await r.json()
+        if(d.ok) orderId=d.order.id
+      }catch(e){}
+
+      // Save to localStorage as backup
+      const order={id:orderId,date:new Date().toISOString(),items:cart,total,subtotal:sub,deliveryFee:fee,status:'pending_payment',
+        name:fn+' '+ln,address:ad+(ad2?' '+ad2:'')+', '+ct+', '+st,email:em,payment:'bank_transfer'}
+      try{
+        const existing=JSON.parse(localStorage.getItem('pheran_orders')||'[]')
+        existing.unshift(order)
+        localStorage.setItem('pheran_orders',JSON.stringify(existing))
+        localStorage.setItem('pheran_last_order',JSON.stringify(order))
+        localStorage.removeItem('pheran_cart')
+      }catch(e){}
+
+      // Show success state
+      currentOrderRef=orderId
+      document.getElementById('success-ref').textContent=orderId
+      document.getElementById('s-ref').textContent=orderId
+      document.getElementById('bd-ref').textContent=orderId
+      ;['step-1','step-2'].forEach(id=>document.getElementById(id).style.display='none')
+      document.getElementById('co-steps').style.display='none'
+      document.getElementById('co-success').style.display='block'
+      renderSummary()
+      window.scrollTo({top:0,behavior:'smooth'})
     })
 
     document.querySelectorAll('input[name="delivery"]').forEach(r=>r.addEventListener('change',renderSummary))
     renderSummary()
   </script>
-  <footer class="footer-full">
-    <div class="container" style="padding:16px 0 0;text-align:center">
-      <div class="footer-social" style="justify-content:center">
-        <a href="https://instagram.com/pheran_clothing" target="_blank" rel="noopener" aria-label="Instagram @pheran_clothing"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37Z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
-        <a href="https://tiktok.com/@pheran_clothing" target="_blank" rel="noopener" aria-label="TikTok @pheran_clothing"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v3"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></a>
-        <a href="https://wa.me/2347013046873" target="_blank" rel="noopener" aria-label="WhatsApp"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.52 3.48A11.93 11.93 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.16 1.6 5.97L0 24l6.19-1.62A11.94 11.94 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.2-1.25-6.21-3.48-8.52zm-8.52 18.4a9.9 9.9 0 0 1-5.05-1.38l-.36-.21-3.73.98.99-3.64-.24-.38A9.9 9.9 0 0 1 2.1 12C2.1 6.52 6.52 2.1 12 2.1c2.64 0 5.12 1.03 6.99 2.9A9.84 9.84 0 0 1 21.9 12c0 5.48-4.42 9.88-9.9 9.88z"/></svg></a>
-      </div>
-    </div>
-    <div class="container footer-bottom" style="padding:16px 0 24px">
-      <p>© 2026 PHERAN. All rights reserved.</p>
-      <div class="footer-bottom-links">
-        <a href="policies.html">Privacy</a>
-        <a href="support.html">Help</a>
-      </div>
-    </div>
-  </footer>
 
   <script src="icons.js"></script>
-
   <script src="mobile-menu.js"></script>
 </body>
 </html>
-
-
-
