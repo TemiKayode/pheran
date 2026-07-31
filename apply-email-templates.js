@@ -116,6 +116,10 @@ async function run() {
     console.log(`[ok] ${filename}`)
   }
 
+  // Also fix Site URL and allowed redirect URLs — prevents post-auth redirect to localhost
+  configUpdate.site_url = 'https://pheran.ng'
+  configUpdate.uri_allow_list = 'https://pheran.ng/**,http://localhost:3000/**'
+
   const payload = JSON.stringify(configUpdate)
   const result = await httpsRequest(
     `https://api.supabase.com/v1/projects/${PROJECT_REF}/config/auth`,
