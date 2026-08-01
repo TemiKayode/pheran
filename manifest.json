@@ -15,9 +15,15 @@
       "purpose": "any"
     },
     {
-      "src": "mvp/img-red-gown-front.jpg",
+      "src": "mvp/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "mvp/icon-512.png",
       "sizes": "512x512",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any"
     }
   ],

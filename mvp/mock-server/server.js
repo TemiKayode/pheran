@@ -139,6 +139,11 @@ const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('he
 
 const app = express()
 
+// gzip/brotli-equivalent compression for every response — text payloads (HTML,
+// CSS, JS, JSON) typically shrink 60-80%, which matters a lot on the mobile
+// networks most of this site's traffic comes in on.
+app.use(require('compression')())
+
 // CORS — only allow known production origins and localhost for dev
 const _PROD_ORIGINS = ['https://pheran.ng', 'https://www.pheran.ng', 'https://admin.pheran.ng']
 const _EXTRA_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean)
@@ -1596,6 +1601,14 @@ app.get('/api/health', (req,res)=>{
     const products = loadData()
     res.json({ ok:true, uptime: process.uptime(), products: products.length, cacheSize: PRODUCT_CACHE.size, ts: Date.now() })
   }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
+})
+
+// 404 — registered after every route/static handler above, so anything that
+// reaches here genuinely doesn't exist. API callers get JSON; everyone else
+// gets the branded page instead of Express's bare "Cannot GET /..." default.
+app.use((req, res) => {
+  if (req.path.startsWith('/api/')) return res.status(404).json({ ok: false, error: 'Not found' })
+  res.status(404).sendFile(path.join(_MVR, '404.html'))
 })
 
 // Catch-all error handler — never leak stack traces / internals to clients
