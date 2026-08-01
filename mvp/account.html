@@ -329,6 +329,7 @@
             <span>${(o.items||[]).length} item${(o.items||[]).length!==1?'s':''}</span>
             <span><strong>${fmt(o.total)}</strong></span>
           </div>
+          ${o.status==='delivered' ? `<a href="https://g.page/r/CXT4uvIepBYIEBI/review" target="_blank" rel="noopener" style="display:block;margin-top:10px;padding-top:10px;border-top:1px solid var(--gray-100);font-size:.85rem;color:var(--purple-main);font-weight:600;text-decoration:none">★ How was it? Leave us a review →</a>` : ''}
         </div>`).join('')
     }
 

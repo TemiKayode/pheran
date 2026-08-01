@@ -86,7 +86,11 @@ async function sendOrderEmail(order) {
       <div style="font-size:11px;color:#999;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Delivery Address</div>
       <div style="color:#333;font-size:14px;line-height:1.6">${address}</div>
     </div>
-    <p style="color:#888;font-size:13px;line-height:1.6;margin:0">Questions? Email us at <a href="mailto:support@pheran.ng" style="color:#2D1B4E;font-weight:600">support@pheran.ng</a> and quote your order reference.</p>
+    <p style="color:#888;font-size:13px;line-height:1.6;margin:0 0 20px">Questions? Email us at <a href="mailto:support@pheran.ng" style="color:#2D1B4E;font-weight:600">support@pheran.ng</a> and quote your order reference.</p>
+    <div style="background:#F7F4F0;border-radius:8px;padding:16px 20px;text-align:center">
+      <p style="margin:0 0 10px;color:#555;font-size:13px;line-height:1.6">Once your order arrives, we'd love to hear how it went.</p>
+      <a href="https://g.page/r/CXT4uvIepBYIEBI/review" style="color:#2D1B4E;font-weight:700;font-size:13px;text-decoration:none">★ Leave us a Google review →</a>
+    </div>
   </td></tr>
   <tr><td style="background:#F7F4F0;padding:24px;text-align:center">
     <div style="font-family:Georgia,serif;font-size:13px;letter-spacing:5px;color:#2D1B4E;margin-bottom:6px">PHERAN</div>
