@@ -88,6 +88,10 @@ function cartAdd(product,size,color,qty){
   if(existing){existing.qty += qty}
   else{cart.push({key,id:product.id,title:product.title,price:product.price,image:product.images[0],size,color,qty})}
   saveCart(cart)
+  if(typeof gtag==='function') gtag('event','add_to_cart',{
+    currency:'NGN', value:product.price*qty,
+    items:[{item_id:product.id,item_name:product.title,item_category:product.category,price:product.price,quantity:qty}]
+  })
 }
 function cartRemove(key){
   saveCart(getCart().filter(i=>i.key!==key))
@@ -400,6 +404,11 @@ function renderProductDetail(products){
   const id = new URLSearchParams(window.location.search).get('id')
   const product = products.find(p=>p.id===id)||(id?null:products[0])
   if(!product) return
+
+  if(typeof gtag==='function') gtag('event','view_item',{
+    currency:'NGN', value:product.price,
+    items:[{item_id:product.id,item_name:product.title,item_category:product.category,price:product.price,quantity:1}]
+  })
 
   const colorMap = {
     'Soft Pink':'#F5E6EA','Lilac':'#C8A2C8','White':'#FFFFFF','Blue':'#7EB8FF',

@@ -2,6 +2,13 @@
 <html lang="en">
 <head>
   <script src="/kill-sw.js?v=20260801"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-S3T8GFPVK4"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-S3T8GFPVK4');
+  </script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>PHERAN — Checkout</title>
@@ -424,6 +431,11 @@
         localStorage.removeItem('pheran_cart')
       }catch(e){}
 
+      if(typeof gtag==='function') gtag('event','purchase',{
+        transaction_id:orderId, currency:'NGN', value:total, shipping:fee,
+        items:cart.map(i=>({item_id:i.id,item_name:i.title,price:i.price,quantity:i.qty}))
+      })
+
       // Show success state
       currentOrderRef=orderId
       document.getElementById('success-ref').textContent=orderId
@@ -438,6 +450,17 @@
 
     document.querySelectorAll('input[name="delivery"]').forEach(r=>r.addEventListener('change',renderSummary))
     renderSummary()
+
+    ;(function(){
+      const cart=getCart()
+      if(cart.length && typeof gtag==='function'){
+        const {sub}=calcTotals(cart)
+        gtag('event','begin_checkout',{
+          currency:'NGN', value:sub,
+          items:cart.map(i=>({item_id:i.id,item_name:i.title,price:i.price,quantity:i.qty}))
+        })
+      }
+    })()
   </script>
 
   <script src="icons.js?v=20260801"></script>

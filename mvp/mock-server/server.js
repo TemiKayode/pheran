@@ -158,11 +158,11 @@ app.use((req, res, next) => {
   // Content Security Policy
   res.setHeader('Content-Security-Policy', [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline'",          // inline scripts used in HTML pages
+    "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com",          // inline scripts used in HTML pages; GTM loads gtag.js
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
-    "img-src 'self' data: blob: https://*.supabase.co https://aajbecjnnuebsvxmuiww.supabase.co",
-    "connect-src 'self' https://*.supabase.co https://api.supabase.com",
+    "img-src 'self' data: blob: https://*.supabase.co https://aajbecjnnuebsvxmuiww.supabase.co https://www.google-analytics.com https://www.googletagmanager.com",
+    "connect-src 'self' https://*.supabase.co https://api.supabase.com https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com",
     "media-src 'self' blob: https://*.supabase.co",
     "frame-ancestors 'none'",
     "base-uri 'self'",
