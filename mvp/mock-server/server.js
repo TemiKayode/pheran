@@ -235,7 +235,9 @@ function withQuery(base, req) {
   return qIdx === -1 ? base : base + req.url.slice(qIdx)
 }
 for (const [route, file] of Object.entries(_PAGES)) {
-  app.get(route, (_req, res) => res.sendFile(path.join(_MVR, file)))
+  // /product is server-rendered per-product below instead of served as a
+  // static file — skip the generic handler so that one wins.
+  if (route !== '/product') app.get(route, (_req, res) => res.sendFile(path.join(_MVR, file)))
   if ('/' + file !== route) {
     // 302, not 301: a 301 gets cached by the browser near-permanently, so any
     // future bug in this redirect (like the query-string one above) would stay
@@ -246,6 +248,82 @@ for (const [route, file] of Object.entries(_PAGES)) {
     app.get('/mvp/' + file, (req, res) => res.redirect(302, withQuery(route, req)))
   }
 }
+
+// Product page — server-renders per-product title, description, share image,
+// canonical URL, and JSON-LD structured data before the HTML reaches the
+// client. Without this every product shared the same generic <title>/og:image,
+// so link previews (WhatsApp, Instagram — none of which execute JS) always
+// showed the wrong product, and search engines saw near-duplicate pages.
+// Reads straight from loadData() on every request, so a product added or
+// removed via the admin panel is reflected immediately, with no redeploy.
+let _productPageTemplate = null
+function getProductPageTemplate() {
+  if (!_productPageTemplate) _productPageTemplate = fs.readFileSync(path.join(_MVR, 'product.html'), 'utf8')
+  return _productPageTemplate
+}
+function escAttr(s) {
+  return String(s ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+app.get('/product', (req, res) => {
+  try {
+    const id = String(req.query.id || '')
+    const product = id ? loadData().find(p => p.id === id) : null
+    let html = getProductPageTemplate()
+    if (product) {
+      const title = `${product.title} — PHERAN`
+      const desc = (product.description || `Shop ${product.title} from PHERAN, Nigeria's premium fashion house.`).slice(0, 160)
+      const image = product.images?.[0] || 'https://pheran.ng/img-red-gown-front.jpg'
+      const url = `https://pheran.ng/product?id=${encodeURIComponent(product.id)}`
+      html = html
+        .replace('<title>PHERAN — Product</title>', `<title>${escAttr(title)}</title>`)
+        .replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${escAttr(desc)}">`)
+        .replace('<meta property="og:title" content="PHERAN">', `<meta property="og:title" content="${escAttr(title)}">`)
+        .replace(/<meta property="og:description" content="[^"]*">/, `<meta property="og:description" content="${escAttr(desc)}">`)
+        .replace(/<meta property="og:image" content="[^"]*">/, `<meta property="og:image" content="${escAttr(image)}">`)
+        .replace(/<meta property="og:url" content="[^"]*">/, `<meta property="og:url" content="${escAttr(url)}">`)
+        .replace('<meta name="twitter:title" content="PHERAN">', `<meta name="twitter:title" content="${escAttr(title)}">`)
+        .replace(/<meta name="twitter:description" content="[^"]*">/, `<meta name="twitter:description" content="${escAttr(desc)}">`)
+        .replace(/<meta name="twitter:image" content="[^"]*">/, `<meta name="twitter:image" content="${escAttr(image)}">`)
+        .replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${escAttr(url)}">`)
+      const productLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: product.title,
+        image: product.images || [],
+        description: product.description || '',
+        sku: product.id,
+        brand: { '@type': 'Brand', name: 'PHERAN' },
+        offers: {
+          '@type': 'Offer',
+          url,
+          priceCurrency: 'NGN',
+          price: product.price,
+          availability: product.availability === 'Out of Stock' ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
+        },
+      }
+      if (product.rating) productLd.aggregateRating = { '@type': 'AggregateRating', ratingValue: product.rating, reviewCount: product.count || 1 }
+      const breadcrumbLd = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://pheran.ng/' },
+          { '@type': 'ListItem', position: 2, name: 'Shop', item: 'https://pheran.ng/shop' },
+          { '@type': 'ListItem', position: 3, name: product.title, item: url },
+        ],
+      }
+      html = html.replace('</head>', `<script type="application/ld+json">${JSON.stringify(productLd)}</script>\n<script type="application/ld+json">${JSON.stringify(breadcrumbLd)}</script>\n</head>`)
+    } else if (id) {
+      // A specific product was requested but doesn't exist (deleted, bad link) —
+      // 404 instead of silently serving generic content as if it were fine.
+      res.status(404)
+    }
+    res.setHeader('Content-Type', 'text/html; charset=utf-8')
+    res.setHeader('Cache-Control', 'no-cache, must-revalidate')
+    res.send(html)
+  } catch (e) {
+    res.sendFile(path.join(_MVR, 'product.html'))
+  }
+})
 
 // Sitemap generated from the live catalog — a static sitemap.xml went stale
 // the moment a product was added or removed. Registered before the static
