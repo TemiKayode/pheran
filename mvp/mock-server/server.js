@@ -433,12 +433,16 @@ setInterval(() => {
   }
 }, 600000).unref()
 
-// Admin — protected by ADMIN_PIN env var (default: pheran2026)
+// Admin — protected by ADMIN_EMAIL + ADMIN_PIN env vars (defaults below are for
+// local dev only; set real values in Railway → Settings → Variables).
 // Registered BEFORE the generic static middlewares below so unauthenticated requests
 // for /admin/*.html can never be served directly by express.static — they must pass
 // through the auth-check middleware first.
 const ADMIN_PIN = process.env.ADMIN_PIN || 'pheran2026'
-const ADMIN_TOKEN = crypto.createHash('sha256').update(ADMIN_PIN + 'pheran-admin-2026').digest('hex')
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'admin@pheran.ng').trim().toLowerCase()
+// Token incorporates both credentials so changing either one (e.g. rotating the
+// PIN, or updating the admin email in Railway) invalidates existing sessions.
+const ADMIN_TOKEN = crypto.createHash('sha256').update(ADMIN_PIN + ADMIN_EMAIL + 'pheran-admin-2026').digest('hex')
 
 function setAdminCookie(req, res) {
   const secure = req.headers['x-forwarded-proto'] === 'https' || req.secure
@@ -452,8 +456,9 @@ function requireAdminAuth(req, res, next) {
   if (b64) {
     const decoded = Buffer.from(b64, 'base64').toString()
     const colonIdx = decoded.indexOf(':')
+    const user = (colonIdx >= 0 ? decoded.slice(0, colonIdx) : '').trim().toLowerCase()
     const pass = colonIdx >= 0 ? decoded.slice(colonIdx + 1) : ''
-    if (pass && timingSafeEqual(pass, ADMIN_PIN)) { setAdminCookie(req, res); return next() }
+    if (user === ADMIN_EMAIL && pass && timingSafeEqual(pass, ADMIN_PIN)) { setAdminCookie(req, res); return next() }
   }
   res.status(401).json({ ok: false, error: 'Unauthorized — admin access only' })
 }
@@ -461,11 +466,13 @@ function requireAdminAuth(req, res, next) {
 // Admin login page — served before the auth guard so unauthenticated users can reach it
 app.get('/admin/login', (_req, res) => res.sendFile(path.join(__dirname, '..', 'admin', 'login.html')))
 
-// Admin login API — validates PIN, issues httpOnly session cookie
+// Admin login API — validates email + PIN together, issues httpOnly session cookie.
+// Both must match — neither alone is enough — so a leaked PIN alone can't get in.
 app.post('/api/admin/login', (req, res) => {
+  const email = String(req.body?.email || '').trim().toLowerCase()
   const pin = String(req.body?.pin || '')
-  if (!pin || !timingSafeEqual(pin, ADMIN_PIN)) {
-    return res.status(401).json({ ok: false, error: 'Incorrect PIN' })
+  if (!email || !pin || email !== ADMIN_EMAIL || !timingSafeEqual(pin, ADMIN_PIN)) {
+    return res.status(401).json({ ok: false, error: 'Incorrect email or PIN' })
   }
   setAdminCookie(req, res)
   res.json({ ok: true })
@@ -758,7 +765,7 @@ app.post('/api/products/admin', requireAdminAuth, (req, res)=>{
     const products = loadData()
     const existingIndex = products.findIndex(p => p.id === body.id)
     // Validate and sanitize all fields — bounds prevent prototype pollution and XSS vectors
-    const VALID_CATEGORIES = ['Dresses','Tops','Bottoms','Accessories','General']
+    const VALID_CATEGORIES = ['Dresses','Tops','Bottoms','Two-piece','Accessories','General']
     const VALID_AVAIL = ['In Stock','Made to Order','Limited Stock','Out of Stock']
     const price = Math.max(0, Math.min(99999999, Number(body.price) || 0))
     const oldPrice = Math.max(0, Math.min(99999999, Number(body.oldPrice) || 0))
@@ -1391,6 +1398,117 @@ if(supabase){
     app.get('/api/auth/me',err); app.patch('/api/auth/profile',err)
   }
 }
+
+// ─── Custom Order Config (admin-editable garments/fabrics/delivery) ───────────
+const DEFAULT_CUSTOM_CONFIG = {
+  garments: [
+    { key:'dress', icon:'👗', label:'Dress', basePrice:35000 },
+    { key:'blouse', icon:'👚', label:'Blouse', basePrice:22000 },
+    { key:'trousers', icon:'👖', label:'Trousers', basePrice:24000 },
+    { key:'skirt', icon:'🩱', label:'Skirt', basePrice:19000 },
+    { key:'suit', icon:'🧥', label:'Co-ord Set', basePrice:65000 },
+    { key:'gown', icon:'💃', label:'Evening Gown', basePrice:85000 }
+  ],
+  fabrics: [
+    { key:'silk', icon:'🌟', label:'Silk Blend', priceAdd:8000 },
+    { key:'linen', icon:'🍃', label:'Linen', priceAdd:3000 },
+    { key:'cotton', icon:'☁️', label:'Cotton', priceAdd:2000 },
+    { key:'ankara', icon:'🎨', label:'Ankara Print', priceAdd:4000 },
+    { key:'aso-oke', icon:'👑', label:'Aso-oke', priceAdd:12000 },
+    { key:'wool', icon:'🧶', label:'Wool Blend', priceAdd:7000 }
+  ],
+  delivery: {
+    standardDays:'10–14 business days',
+    standardDesc:'Our recommended timeframe for exceptional quality',
+    standardLabel:'Standard',
+    rushDays:'5–7 business days',
+    rushDesc:'Priority handling by our lead tailors',
+    rushLabel:'Rush',
+    rushPercent:40
+  }
+}
+
+function stripTags(str){
+  return String(str==null?'':str).replace(/<[^>]*>/g,'').trim()
+}
+
+function sanitizeCustomConfig(body){
+  const errors = []
+  const garments = Array.isArray(body?.garments) ? body.garments : []
+  const fabrics = Array.isArray(body?.fabrics) ? body.fabrics : []
+  const delivery = (body && typeof body.delivery === 'object' && body.delivery) ? body.delivery : {}
+
+  const seenGarmentKeys = new Set()
+  const cleanGarments = garments.map((g, i) => {
+    const key = stripTags(g?.key).toLowerCase().replace(/[^a-z0-9-]/g,'')
+    const label = stripTags(g?.label).slice(0,60)
+    const icon = stripTags(g?.icon).slice(0,8)
+    const basePrice = Number(g?.basePrice)
+    if(!key) errors.push(`Garment #${i+1}: missing key`)
+    if(!label) errors.push(`Garment #${i+1}: missing label`)
+    if(!Number.isFinite(basePrice) || basePrice < 0) errors.push(`Garment #${i+1}: invalid price`)
+    if(key && seenGarmentKeys.has(key)) errors.push(`Garment #${i+1}: duplicate key "${key}"`)
+    seenGarmentKeys.add(key)
+    return { key, label, icon, basePrice: Number.isFinite(basePrice) ? Math.round(basePrice) : 0 }
+  }).filter(g => g.key && g.label)
+
+  const seenFabricKeys = new Set()
+  const cleanFabrics = fabrics.map((f, i) => {
+    const key = stripTags(f?.key).toLowerCase().replace(/[^a-z0-9-]/g,'')
+    const label = stripTags(f?.label).slice(0,60)
+    const icon = stripTags(f?.icon).slice(0,8)
+    const priceAdd = Number(f?.priceAdd)
+    if(!key) errors.push(`Fabric #${i+1}: missing key`)
+    if(!label) errors.push(`Fabric #${i+1}: missing label`)
+    if(!Number.isFinite(priceAdd) || priceAdd < 0) errors.push(`Fabric #${i+1}: invalid price`)
+    if(key && seenFabricKeys.has(key)) errors.push(`Fabric #${i+1}: duplicate key "${key}"`)
+    seenFabricKeys.add(key)
+    return { key, label, icon, priceAdd: Number.isFinite(priceAdd) ? Math.round(priceAdd) : 0 }
+  }).filter(f => f.key && f.label)
+
+  const rushPercent = Number(delivery.rushPercent)
+  const cleanDelivery = {
+    standardDays: stripTags(delivery.standardDays).slice(0,60) || DEFAULT_CUSTOM_CONFIG.delivery.standardDays,
+    standardDesc: stripTags(delivery.standardDesc).slice(0,200) || DEFAULT_CUSTOM_CONFIG.delivery.standardDesc,
+    standardLabel: stripTags(delivery.standardLabel).slice(0,30) || DEFAULT_CUSTOM_CONFIG.delivery.standardLabel,
+    rushDays: stripTags(delivery.rushDays).slice(0,60) || DEFAULT_CUSTOM_CONFIG.delivery.rushDays,
+    rushDesc: stripTags(delivery.rushDesc).slice(0,200) || DEFAULT_CUSTOM_CONFIG.delivery.rushDesc,
+    rushLabel: stripTags(delivery.rushLabel).slice(0,30) || DEFAULT_CUSTOM_CONFIG.delivery.rushLabel,
+    rushPercent: Number.isFinite(rushPercent) && rushPercent >= 0 && rushPercent <= 500 ? Math.round(rushPercent) : DEFAULT_CUSTOM_CONFIG.delivery.rushPercent
+  }
+
+  if(!cleanGarments.length) errors.push('At least one garment type is required')
+  if(!cleanFabrics.length) errors.push('At least one fabric type is required')
+
+  return { garments: cleanGarments, fabrics: cleanFabrics, delivery: cleanDelivery, errors }
+}
+
+app.get('/api/custom-config', async (_req, res) => {
+  try{
+    if(supabase){
+      const { data, error } = await supabase.from('custom_config').select('*').eq('id',1).single()
+      if(!error && data){
+        return res.json({ ok:true, garments:data.garments||DEFAULT_CUSTOM_CONFIG.garments, fabrics:data.fabrics||DEFAULT_CUSTOM_CONFIG.fabrics, delivery:data.delivery||DEFAULT_CUSTOM_CONFIG.delivery })
+      }
+    }
+    res.json({ ok:true, ...DEFAULT_CUSTOM_CONFIG })
+  }catch(e){
+    res.json({ ok:true, ...DEFAULT_CUSTOM_CONFIG })
+  }
+})
+
+app.post('/api/custom-config', requireAdminAuth, async (req, res) => {
+  try{
+    const { garments, fabrics, delivery, errors } = sanitizeCustomConfig(req.body)
+    if(errors.length) return res.status(400).json({ ok:false, error: errors.join('; ') })
+    if(!supabase) return res.status(501).json({ ok:false, error:'Supabase not configured' })
+    const { data, error } = await supabase.from('custom_config').upsert({ id:1, garments, fabrics, delivery, updated_at:new Date().toISOString() }).select().single()
+    if(error) return res.status(500).json({ ok:false, error:error.message })
+    res.json({ ok:true, garments:data.garments, fabrics:data.fabrics, delivery:data.delivery })
+  }catch(e){
+    res.status(500).json({ ok:false, error:String(e) })
+  }
+})
 
 // Health check
 app.get('/api/health', (req,res)=>{

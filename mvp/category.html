@@ -91,6 +91,7 @@
         <button class="btn secondary" data-category="Dresses">Dresses</button>
         <button class="btn secondary" data-category="Tops">Tops</button>
         <button class="btn secondary" data-category="Bottoms">Bottoms</button>
+        <button class="btn secondary" data-category="Two-piece">Two-piece</button>
       </div>
     </section>
 
@@ -248,16 +249,18 @@
       '': { title: 'All Products', desc: 'Curated essentials crafted from premium fabrics. Filter by size, colour, and fabric to find your perfect fit.' },
       'Dresses': { title: 'Dresses', desc: 'From silk wraps to linen slips — our dress edit spans every occasion with elegance.' },
       'Tops': { title: 'Tops & Blouses', desc: 'Lightweight, refined, and endlessly versatile. Tops made for layering and living in.' },
-      'Bottoms': { title: 'Bottoms', desc: 'Tailored trousers to relaxed shorts — bottoms cut to flatter every silhouette.' }
+      'Bottoms': { title: 'Bottoms', desc: 'Tailored trousers to relaxed shorts — bottoms cut to flatter every silhouette.' },
+      'Two-piece': { title: 'Two-piece Sets', desc: 'Shirt-and-short, shirt-and-trouser, top-and-skirt — coordinated sets built to be worn together or split apart.' }
+    }
+    function setHeroText(cat) {
+      const info = catTitles[cat] || catTitles['']
+      document.getElementById('category-page-title').textContent = info.title
+      document.getElementById('category-page-desc').textContent = info.desc
     }
     document.querySelectorAll('.category-actions button').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const cat = btn.dataset.category
-        const info = catTitles[cat] || catTitles['']
-        document.getElementById('category-page-title').textContent = info.title
-        document.getElementById('category-page-desc').textContent = info.desc
-      })
+      btn.addEventListener('click', () => setHeroText(btn.dataset.category))
     })
+    setHeroText(new URLSearchParams(window.location.search).get('category') || '')
   </script>
 
   <script src="mobile-menu.js?v=20260801"></script>

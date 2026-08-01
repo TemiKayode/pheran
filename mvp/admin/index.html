@@ -171,6 +171,16 @@
     .oic-val{font-size:.83rem;color:var(--text)}
     .status-select{padding:7px 10px;border:1.5px solid var(--gray-200);border-radius:9px;font-size:.8rem;font-family:inherit;color:var(--text);outline:none;background:#fff;cursor:pointer}
     .status-select:focus{border-color:var(--pm)}
+
+    /* CUSTOM CONFIG ROWS */
+    .cfg-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+    .cfg-row input{padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:9px;font-size:0.85rem;font-family:inherit;color:var(--text);outline:none;background:#fff}
+    .cfg-row input:focus{border-color:var(--pm)}
+    .cfg-icon{width:48px;text-align:center;flex-shrink:0}
+    .cfg-label{flex:1;min-width:0}
+    .cfg-price{width:110px;flex-shrink:0}
+    .cfg-row-del{background:#FEE2E2;color:var(--danger);border:1.5px solid #FECACA;width:32px;height:32px;border-radius:9px;cursor:pointer;flex-shrink:0;font-size:0.9rem;line-height:1}
+    .cfg-row-del:hover{background:var(--danger);color:#fff}
   </style>
 </head>
 <body>
@@ -196,6 +206,12 @@
     <button class="nav-item" id="nav-orders" onclick="showSection('orders')">
       <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25ZM6.75 12h.008v.008H6.75V12Zm0 3h.008v.008H6.75V15Zm0 3h.008v.008H6.75V18Z"/></svg>
       Orders <span id="orders-badge" style="margin-left:auto;background:var(--warn);color:#fff;font-size:.68rem;font-weight:700;padding:1px 6px;border-radius:99px;display:none"></span>
+    </button>
+    <div class="nav-divider"></div>
+    <div class="sidebar-label">Configuration</div>
+    <button class="nav-item" id="nav-custom" onclick="showSection('custom')">
+      <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.24-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.49l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.02-.397-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.43l1.004-.828c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"/><path d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
+      Custom Orders
     </button>
     <div class="nav-divider"></div>
     <div class="sidebar-label">Quick Links</div>
@@ -272,6 +288,53 @@
 
       <div id="orders-list" style="display:flex;flex-direction:column;gap:12px"></div>
     </div>
+
+    <!-- Custom Orders config section -->
+    <div id="section-custom" style="display:none">
+      <div class="page-header">
+        <h1 class="page-title">Custom Orders</h1>
+        <div class="header-actions">
+          <button class="btn btn-primary" id="save-custom-btn" onclick="saveCustomConfig()" disabled>
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M4.5 12.75l6 6 9-13.5"/></svg>
+            Save Changes
+          </button>
+        </div>
+      </div>
+      <p style="color:var(--text-2);font-size:0.85rem;margin:-14px 0 20px">Controls the garment types, fabrics, prices, and delivery options shown on the <a href="../custom.html" target="_blank" style="color:var(--pm);font-weight:600">Custom-Made page</a>.</p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
+        <div style="background:#fff;border:1.5px solid var(--gray-200);border-radius:14px;padding:20px">
+          <div class="ep-section" style="margin-bottom:14px">1. Choose Your Garment</div>
+          <div id="garment-rows"><p style="font-size:0.85rem;color:var(--text-2)">Loading…</p></div>
+          <button class="btn btn-secondary btn-sm" id="add-garment-btn" style="margin-top:8px" onclick="addGarmentRow()" disabled>+ Add Garment Type</button>
+        </div>
+
+        <div style="background:#fff;border:1.5px solid var(--gray-200);border-radius:14px;padding:20px">
+          <div class="ep-section" style="margin-bottom:14px">2. Select Your Fabric</div>
+          <div id="fabric-rows"><p style="font-size:0.85rem;color:var(--text-2)">Loading…</p></div>
+          <button class="btn btn-secondary btn-sm" id="add-fabric-btn" style="margin-top:8px" onclick="addFabricRow()" disabled>+ Add Fabric Type</button>
+        </div>
+      </div>
+
+      <div style="background:#fff;border:1.5px solid var(--gray-200);border-radius:14px;padding:20px;margin-top:20px">
+        <div class="ep-section" style="margin-bottom:14px">5. Delivery Expectation</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="field-hint" style="font-weight:700;color:var(--text);text-transform:none;font-size:0.82rem">Standard delivery</div>
+            <div class="field"><label>Label</label><input id="cfg-standard-label" placeholder="Standard"></div>
+            <div class="field"><label>Timeframe</label><input id="cfg-standard-days" placeholder="10–14 business days"></div>
+            <div class="field"><label>Description</label><input id="cfg-standard-desc" placeholder="Our recommended timeframe…"></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="field-hint" style="font-weight:700;color:var(--text);text-transform:none;font-size:0.82rem">Rush delivery</div>
+            <div class="field"><label>Label</label><input id="cfg-rush-label" placeholder="Rush"></div>
+            <div class="field"><label>Timeframe</label><input id="cfg-rush-days" placeholder="5–7 business days"></div>
+            <div class="field"><label>Description</label><input id="cfg-rush-desc" placeholder="Priority handling…"></div>
+            <div class="field"><label>Rush surcharge (%)</label><input id="cfg-rush-percent" type="number" min="0" max="500" placeholder="40"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 </div>
 
@@ -296,7 +359,7 @@
         <label>Category *</label>
         <select id="ep-category">
           <option>Dresses</option><option>Tops</option>
-          <option>Bottoms</option><option>Co-ords</option>
+          <option>Bottoms</option><option>Two-piece</option>
           <option>Accessories</option>
         </select>
       </div>
@@ -682,6 +745,7 @@ async function saveProduct() {
   if (!name) { toast('Product name is required', 'error'); return }
   const price = Number(document.getElementById('ep-price').value)
   if (!price) { toast('Price is required', 'error'); return }
+  if (!currentImages.length && !confirm('This product has no images and will show a placeholder on the site. Save anyway?')) return
 
   const oldPrice = Number(document.getElementById('ep-old-price').value || 0)
   const payload = {
@@ -754,9 +818,137 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel()
 function showSection(name) {
   document.getElementById('section-products').style.display = name === 'products' ? '' : 'none'
   document.getElementById('section-orders').style.display   = name === 'orders'   ? '' : 'none'
+  document.getElementById('section-custom').style.display   = name === 'custom'   ? '' : 'none'
   document.getElementById('nav-products').classList.toggle('active', name === 'products')
   document.getElementById('nav-orders').classList.toggle('active',   name === 'orders')
+  document.getElementById('nav-custom').classList.toggle('active',   name === 'custom')
   if (name === 'orders') loadOrders()
+  if (name === 'custom') loadCustomConfigAdmin()
+}
+
+/* ── Custom order config ───────────────────────────────────────────── */
+let customConfig = { garments: [], fabrics: [], delivery: {} }
+
+async function loadCustomConfigAdmin() {
+  document.getElementById('add-garment-btn').disabled = true
+  document.getElementById('add-fabric-btn').disabled = true
+  document.getElementById('save-custom-btn').disabled = true
+  try {
+    const r = await fetch('/api/custom-config')
+    const d = await r.json()
+    if (d.ok) customConfig = { garments: d.garments || [], fabrics: d.fabrics || [], delivery: d.delivery || {} }
+  } catch (e) {
+    toast('Could not load custom-order config: ' + e.message, 'error')
+  }
+  document.getElementById('add-garment-btn').disabled = false
+  document.getElementById('add-fabric-btn').disabled = false
+  document.getElementById('save-custom-btn').disabled = false
+  renderGarmentRows()
+  renderFabricRows()
+  const del = customConfig.delivery || {}
+  document.getElementById('cfg-standard-label').value = del.standardLabel || 'Standard'
+  document.getElementById('cfg-standard-days').value  = del.standardDays  || ''
+  document.getElementById('cfg-standard-desc').value  = del.standardDesc  || ''
+  document.getElementById('cfg-rush-label').value     = del.rushLabel     || 'Rush'
+  document.getElementById('cfg-rush-days').value      = del.rushDays      || ''
+  document.getElementById('cfg-rush-desc').value       = del.rushDesc      || ''
+  document.getElementById('cfg-rush-percent').value   = del.rushPercent ?? 40
+}
+
+function renderGarmentRows() {
+  const wrap = document.getElementById('garment-rows')
+  wrap.innerHTML = customConfig.garments.map((g, i) => `
+    <div class="cfg-row" data-idx="${i}">
+      <input class="cfg-icon" value="${esc(g.icon||'')}" placeholder="👗" maxlength="4">
+      <input class="cfg-label" value="${esc(g.label||'')}" placeholder="Garment name">
+      <input class="cfg-price" type="number" min="0" value="${g.basePrice||0}" placeholder="Price">
+      <button class="cfg-row-del" type="button" onclick="removeGarmentRow(${i})">✕</button>
+    </div>`).join('')
+}
+function renderFabricRows() {
+  const wrap = document.getElementById('fabric-rows')
+  wrap.innerHTML = customConfig.fabrics.map((f, i) => `
+    <div class="cfg-row" data-idx="${i}">
+      <input class="cfg-icon" value="${esc(f.icon||'')}" placeholder="🌟" maxlength="4">
+      <input class="cfg-label" value="${esc(f.label||'')}" placeholder="Fabric name">
+      <input class="cfg-price" type="number" min="0" value="${f.priceAdd||0}" placeholder="+Price">
+      <button class="cfg-row-del" type="button" onclick="removeFabricRow(${i})">✕</button>
+    </div>`).join('')
+}
+
+function readGarmentRows() {
+  return Array.from(document.querySelectorAll('#garment-rows .cfg-row')).map(row => ({
+    key: (row.querySelector('.cfg-label').value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ('garment-' + Date.now()),
+    icon: row.querySelector('.cfg-icon').value.trim(),
+    label: row.querySelector('.cfg-label').value.trim(),
+    basePrice: Number(row.querySelector('.cfg-price').value) || 0
+  }))
+}
+function readFabricRows() {
+  return Array.from(document.querySelectorAll('#fabric-rows .cfg-row')).map(row => ({
+    key: (row.querySelector('.cfg-label').value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ('fabric-' + Date.now()),
+    icon: row.querySelector('.cfg-icon').value.trim(),
+    label: row.querySelector('.cfg-label').value.trim(),
+    priceAdd: Number(row.querySelector('.cfg-price').value) || 0
+  }))
+}
+
+function addGarmentRow() {
+  customConfig.garments = readGarmentRows()
+  customConfig.garments.push({ key: '', icon: '✨', label: '', basePrice: 0 })
+  renderGarmentRows()
+}
+function removeGarmentRow(i) {
+  customConfig.garments = readGarmentRows()
+  customConfig.garments.splice(i, 1)
+  renderGarmentRows()
+}
+function addFabricRow() {
+  customConfig.fabrics = readFabricRows()
+  customConfig.fabrics.push({ key: '', icon: '✨', label: '', priceAdd: 0 })
+  renderFabricRows()
+}
+function removeFabricRow(i) {
+  customConfig.fabrics = readFabricRows()
+  customConfig.fabrics.splice(i, 1)
+  renderFabricRows()
+}
+
+async function saveCustomConfig() {
+  const garments = readGarmentRows()
+  const fabrics = readFabricRows()
+  if (garments.some(g => !g.label)) { toast('Every garment needs a name', 'error'); return }
+  if (fabrics.some(f => !f.label)) { toast('Every fabric needs a name', 'error'); return }
+
+  const payload = {
+    garments, fabrics,
+    delivery: {
+      standardLabel: document.getElementById('cfg-standard-label').value.trim() || 'Standard',
+      standardDays:  document.getElementById('cfg-standard-days').value.trim(),
+      standardDesc:  document.getElementById('cfg-standard-desc').value.trim(),
+      rushLabel:     document.getElementById('cfg-rush-label').value.trim() || 'Rush',
+      rushDays:      document.getElementById('cfg-rush-days').value.trim(),
+      rushDesc:      document.getElementById('cfg-rush-desc').value.trim(),
+      rushPercent:   Number(document.getElementById('cfg-rush-percent').value) || 0
+    }
+  }
+
+  try {
+    const res = await fetch('/api/custom-config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    if (res.status === 401) { toast('Session expired — refresh and log in again', 'error'); return }
+    const json = await res.json()
+    if (json.ok) {
+      toast('Custom-order settings saved', 'success')
+      customConfig = { garments: json.garments, fabrics: json.fabrics, delivery: json.delivery }
+      renderGarmentRows(); renderFabricRows()
+    } else {
+      toast(json.error || 'Save failed', 'error')
+    }
+  } catch (e) { toast('Network error — is the server running?', 'error') }
 }
 
 /* ── Orders ────────────────────────────────────────────────────────── */

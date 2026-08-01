@@ -1,56 +1,6 @@
 {
   "products": [
     {
-      "id": "silk-wrap-001",
-      "title": "Linen Bow-Strap Co-ord Set",
-      "category": "Dresses",
-      "price": 78000,
-      "oldPrice": 95000,
-      "rating": 4.6,
-      "count": 128,
-      "sizes": [
-        "XS",
-        "S",
-        "M",
-        "L",
-        "XL"
-      ],
-      "colors": [
-        "Grey Blue",
-        "Slate"
-      ],
-      "fabric": "Premium Linen",
-      "images": [
-        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-grey-linen-front.jpg",
-        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-grey-linen-side.jpg"
-      ],
-      "description": "Effortless linen co-ord set featuring a bow-strap button-down top paired with wide-leg trousers. Crafted from breathable premium linen — the perfect set for Lagos afternoons and rooftop evenings."
-    },
-    {
-      "id": "cotton-blouse-002",
-      "title": "Pearl-Strap Ribbed Cami",
-      "category": "Tops",
-      "price": 42000,
-      "rating": 4.4,
-      "count": 74,
-      "sizes": [
-        "XS",
-        "S",
-        "M",
-        "L"
-      ],
-      "colors": [
-        "Dusty Rose",
-        "Ivory",
-        "Sage"
-      ],
-      "fabric": "Ribbed Cotton",
-      "images": [
-        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-pink-cami.jpg"
-      ],
-      "description": "A luxurious ribbed cotton cami elevated with hand-threaded pearl and gold bead straps. Wear it alone or layered — it goes from beach to dinner with ease."
-    },
-    {
       "id": "tailored-trousers-003",
       "title": "Pinstripe Wide-Leg Set",
       "category": "Bottoms",
@@ -124,15 +74,61 @@
       "description": "The showpiece. An off-shoulder beaded bodice flows into a ruched mermaid skirt with a dramatic cathedral train. Hand-embellished with over 800 micro-beads. Made to order in 10–14 days."
     },
     {
-      "id": "summer-short-006",
-      "title": "Strap top",
-      "category": "Tops",
+      "id": "product-1785550593925",
+      "title": "Peach linen short two piece",
+      "category": "Two-piece",
+      "price": 35000,
+      "oldPrice": 40000,
+      "rating": 4.5,
+      "count": 1,
       "availability": "In Stock",
-      "price": 20000,
-      "oldPrice": 38000,
-      "fabric": "Ribbed Cotton",
-      "rating": 4.3,
-      "count": 34,
+      "sizes": [
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Peach"
+      ],
+      "fabric": "Premium linen",
+      "images": [
+        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-peach-linen-short-set.jpg"
+      ],
+      "description": "Quality linen, classy with comfort"
+    },
+    {
+      "id": "two-piece-mono-peplum",
+      "title": "Mono Print Peplum Two-Piece",
+      "category": "Two-piece",
+      "price": 48000,
+      "rating": 4.6,
+      "count": 1,
+      "availability": "In Stock",
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Black",
+        "White"
+      ],
+      "fabric": "Ankara Print Cotton",
+      "images": [
+        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-mono-print-peplum-set.jpg"
+      ],
+      "description": "A fitted peplum top in a bold monochrome swirl print, paired with a matching flared midi skirt. Puff sleeves and a defined waist make this a statement two-piece that still moves easily through a full day out."
+    },
+    {
+      "id": "two-piece-floral-shorts",
+      "title": "Floral Shirt & Shorts Two-Piece",
+      "category": "Two-piece",
+      "price": 42000,
+      "rating": 4.5,
+      "count": 1,
+      "availability": "In Stock",
       "sizes": [
         "XS",
         "S",
@@ -140,14 +136,37 @@
         "L"
       ],
       "colors": [
-        "Dusty Rose",
-        "White",
-        "Ivory"
+        "Olive",
+        "Cream"
       ],
+      "fabric": "Printed Cotton",
       "images": [
-        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-pink-cami.jpg"
+        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-floral-shirt-shorts-set.jpg"
       ],
-      "description": "A refined take on the classic cami. Adjustable bow straps, ribbed texture, and a cropped fit that works with everything from high-waist trousers to flowing skirts."
+      "description": "An oversized floral shirt in warm olive and cream tones, paired with tailored olive shorts. Relaxed through the shoulders, structured at the waist — easy to dress up or down."
+    },
+    {
+      "id": "two-piece-brown-trouser",
+      "title": "Brown Relaxed Shirt & Trouser Set",
+      "category": "Two-piece",
+      "price": 52000,
+      "rating": 4.4,
+      "count": 1,
+      "availability": "In Stock",
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Brown"
+      ],
+      "fabric": "Linen Blend",
+      "images": [
+        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-brown-shirt-trouser-set.jpg"
+      ],
+      "description": "A relaxed, oversized shirt in a rich chocolate brown, paired with matching wide-leg trousers. Quietly confident tailoring built from breathable linen blend — as at home in the office as it is at a weekend brunch."
     }
   ]
 }
