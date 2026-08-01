@@ -10,16 +10,16 @@
   <meta property="og:site_name" content="PHERAN">
   <meta property="og:title" content="PHERAN — Premium Nigerian Fashion">
   <meta property="og:description" content="PHERAN is Nigeria's premier luxury fashion house. Shop handcrafted gowns, co-ord sets, and bespoke pieces made for the modern African woman.">
-  <meta property="og:image" content="https://pheran.ng/mvp/img-red-gown-front.jpg">
-  <meta property="og:url" content="https://pheran.ng/mvp/homepage.html">
+  <meta property="og:image" content="https://pheran.ng/img-red-gown-front.jpg">
+  <meta property="og:url" content="https://pheran.ng/">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@pheranng">
   <meta name="twitter:title" content="PHERAN — Premium Nigerian Fashion">
   <meta name="twitter:description" content="PHERAN is Nigeria's premier luxury fashion house. Shop handcrafted gowns, co-ord sets, and bespoke pieces made for the modern African woman.">
-  <meta name="twitter:image" content="https://pheran.ng/mvp/img-red-gown-front.jpg">
+  <meta name="twitter:image" content="https://pheran.ng/img-red-gown-front.jpg">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="apple-touch-icon" href="logo.jpeg">
-  <link rel="canonical" href="https://pheran.ng/mvp/homepage.html">
+  <link rel="canonical" href="https://pheran.ng/">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -39,9 +39,12 @@
     .vid-slide[data-slide="1"] .hero-vid-overlay{background:linear-gradient(to bottom,rgba(50,0,0,.18) 0%,rgba(50,0,0,.56) 55%,rgba(50,0,0,.78) 100%)}
     .vid-slide[data-slide="2"] .hero-vid-overlay{background:linear-gradient(to bottom,rgba(30,10,0,.18) 0%,rgba(60,20,10,.54) 55%,rgba(60,20,10,.78) 100%)}
     /* Slide-in text animation */
-    .vid-slide .hero-eyebrow,.vid-slide h1,.vid-slide .lead,.vid-slide .hero-ctas{opacity:0;transform:translateY(20px)}
+    .vid-slide .hero-eyebrow,.vid-slide h1,.vid-slide h2,.vid-slide .lead,.vid-slide .hero-ctas{opacity:0;transform:translateY(20px)}
+    /* Only slide 1's headline is a real h1 (page topic); slides 2/3 use h2 for
+       one-H1-per-page SEO, pinned to the same size h1's UA default was giving them. */
+    .vid-slide h1,.vid-slide h2{font-size:2em;font-weight:700;margin:0 0 .5em}
     .vid-slide.active .hero-eyebrow{animation:heroUp .7s cubic-bezier(.22,1,.36,1) .15s both}
-    .vid-slide.active h1{animation:heroUp .7s cubic-bezier(.22,1,.36,1) .3s both}
+    .vid-slide.active h1,.vid-slide.active h2{animation:heroUp .7s cubic-bezier(.22,1,.36,1) .3s both}
     .vid-slide.active .lead{animation:heroUp .7s cubic-bezier(.22,1,.36,1) .45s both}
     .vid-slide.active .hero-ctas{animation:heroUp .7s cubic-bezier(.22,1,.36,1) .6s both}
     @keyframes heroUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
@@ -100,7 +103,7 @@
         <a class="nav-link" href="category.html">Shop</a>
         <a class="nav-link" href="custom.html">Custom</a>
         <a class="nav-link" href="gallery.html">Gallery</a>
-        <a class="nav-link" href="about.html">About</a>
+        <a class="nav-link" href="/about">About</a>
       </nav>
       <div class="header-actions">
         <button class="icon-btn" id="search-btn" aria-label="Search"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg></button>
@@ -139,7 +142,7 @@
         <div class="hero-vid-overlay"></div>
         <div class="hero-inner container">
           <div class="hero-eyebrow">The Showpiece Collection</div>
-          <h1>Wear the Moment.<br>Own the Room.</h1>
+          <h2>Wear the Moment.<br>Own the Room.</h2>
           <p class="lead">Hand-embellished couture gowns for the woman who commands every entrance. Made to order across Nigeria.</p>
           <div class="hero-ctas">
             <a class="btn primary" href="product.html?id=evening-gown-005">Shop The Gown</a>
@@ -156,7 +159,7 @@
         <div class="hero-vid-overlay"></div>
         <div class="hero-inner container">
           <div class="hero-eyebrow">The Harmattan Edit</div>
-          <h1>Power Dressing,<br>Nigerianly.</h1>
+          <h2>Power Dressing,<br>Nigerianly.</h2>
           <p class="lead">Structured silhouettes in rich Harmattan tones — crafted for the woman who leads every room she enters.</p>
           <div class="hero-ctas">
             <a class="btn primary" href="category.html">Shop the Edit</a>
@@ -288,7 +291,7 @@
               <div class="ec-tag">Style Guide</div>
               <h3 class="ec-title">How to Wear the Linen Co-ord Set Three Ways</h3>
               <p class="ec-desc">From a Lagos brunch to an evening event — one co-ord, three unforgettable looks curated by our in-house stylist.</p>
-              <a class="ec-link" href="about.html">Read more →</a>
+              <a class="ec-link" href="/about">Read more →</a>
             </div>
           </div>
           <div class="editorial-card">
@@ -297,7 +300,7 @@
               <div class="ec-tag">Behind the Seams</div>
               <h3 class="ec-title">The Artisans Behind Every PHERAN Piece</h3>
               <p class="ec-desc">Meet the master tailors and fabric specialists across Nigeria who bring every PHERAN design to life.</p>
-              <a class="ec-link" href="about.html">Read more →</a>
+              <a class="ec-link" href="/about">Read more →</a>
             </div>
           </div>
         </div>
@@ -393,7 +396,7 @@
         </div>
         <div class="footer-col">
           <h4>Company</h4>
-          <a href="about.html">Our Story</a>
+          <a href="/about">Our Story</a>
           <a href="about.html#values">Sustainability</a>
           <a href="support.html">Help & FAQ</a>
           <a href="support.html#contact">Contact Us</a>

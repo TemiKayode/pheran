@@ -2,7 +2,7 @@
   "name": "PHERAN — Premium Nigerian Fashion",
   "short_name": "PHERAN",
   "description": "Shop handcrafted Nigerian fashion or create your own bespoke piece.",
-  "start_url": "/mvp/homepage.html",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#2D1B4E",
   "theme_color": "#5B2D8E",
@@ -29,21 +29,21 @@
       "name": "Shop Now",
       "short_name": "Shop",
       "description": "Browse all styles",
-      "url": "/mvp/category.html",
+      "url": "/shop",
       "icons": [{ "src": "mvp/favicon.svg", "sizes": "any" }]
     },
     {
       "name": "Custom-Made",
       "short_name": "Custom",
       "description": "Design your own piece",
-      "url": "/mvp/custom.html",
+      "url": "/custom",
       "icons": [{ "src": "mvp/favicon.svg", "sizes": "any" }]
     },
     {
       "name": "My Cart",
       "short_name": "Cart",
       "description": "View your shopping cart",
-      "url": "/mvp/cart.html",
+      "url": "/cart",
       "icons": [{ "src": "mvp/favicon.svg", "sizes": "any" }]
     }
   ]

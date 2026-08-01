@@ -225,6 +225,7 @@ const _PAGES = {
   '/support': 'support.html',
   '/gallery': 'gallery.html',
   '/custom': 'custom.html',
+  '/about': 'about.html',
 }
 // Preserves ?id=... etc. when redirecting legacy .html links to their clean path —
 // dropping the query string here sent every /product.html?id=X click to a bare
@@ -245,6 +246,35 @@ for (const [route, file] of Object.entries(_PAGES)) {
     app.get('/mvp/' + file, (req, res) => res.redirect(302, withQuery(route, req)))
   }
 }
+
+// Sitemap generated from the live catalog — a static sitemap.xml went stale
+// the moment a product was added or removed. Registered before the static
+// file middlewares so it takes precedence over the checked-in fallback file.
+const _STATIC_ROUTES = [
+  { path: '/',       freq: 'weekly',  priority: '1.0' },
+  { path: '/shop',   freq: 'weekly',  priority: '0.9' },
+  { path: '/gallery',freq: 'monthly', priority: '0.7' },
+  { path: '/custom', freq: 'monthly', priority: '0.7' },
+  { path: '/about',  freq: 'monthly', priority: '0.6' },
+  { path: '/support',freq: 'monthly', priority: '0.5' },
+  { path: '/policies',freq: 'monthly', priority: '0.4' },
+]
+app.get('/sitemap.xml', (_req, res) => {
+  try {
+    const products = loadData()
+    const urls = [
+      ..._STATIC_ROUTES.map(r => ({ loc: `https://pheran.ng${r.path}`, freq: r.freq, priority: r.priority })),
+      ...products.map(p => ({ loc: `https://pheran.ng/product?id=${encodeURIComponent(p.id)}`, freq: 'weekly', priority: '0.8' })),
+    ]
+    const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+      urls.map(u => `  <url>\n    <loc>${u.loc}</loc>\n    <changefreq>${u.freq}</changefreq>\n    <priority>${u.priority}</priority>\n  </url>`).join('\n') +
+      `\n</urlset>\n`
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8')
+    res.send(body)
+  } catch (e) {
+    res.status(500).send('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>')
+  }
+})
 
 // Auth verification proxy — hides the Supabase project URL from email links.
 const _VALID_VERIFY_TYPES = new Set(['signup','recovery','magiclink','invite','email_change','reauthentication'])

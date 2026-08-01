@@ -1,4 +1,10 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /api
+Disallow: /cart
+Disallow: /checkout
+Disallow: /order-confirmed
+Disallow: /account
 
 Sitemap: https://pheran.ng/sitemap.xml

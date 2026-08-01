@@ -451,6 +451,20 @@ function renderProductDetail(products){
   if(ogTitle) ogTitle.setAttribute('content', product.title + ' — PHERAN')
   const ogDesc = document.querySelector('meta[property="og:description"]')
   if(ogDesc) ogDesc.setAttribute('content', product.description||'')
+  // Twitter/X reads its own tags rather than falling back to og:*, and link
+  // previews (WhatsApp, Twitter) don't execute JS — this only helps crawlers
+  // that do (Googlebot); real fix is server-rendering these per product.
+  const twTitle = document.querySelector('meta[name="twitter:title"]')
+  if(twTitle) twTitle.setAttribute('content', product.title + ' — PHERAN')
+  const twDesc = document.querySelector('meta[name="twitter:description"]')
+  if(twDesc) twDesc.setAttribute('content', product.description||'')
+  if(product.images?.[0]){
+    document.querySelector('meta[property="og:image"]')?.setAttribute('content', product.images[0])
+    document.querySelector('meta[name="twitter:image"]')?.setAttribute('content', product.images[0])
+  }
+  const productUrl = 'https://pheran.ng/product?id=' + encodeURIComponent(product.id)
+  document.querySelector('meta[property="og:url"]')?.setAttribute('content', productUrl)
+  document.querySelector('link[rel="canonical"]')?.setAttribute('href', productUrl)
   if(title) title.textContent = product.title
   if(stickyTitle) stickyTitle.textContent = product.title
   if(price) price.textContent = formatCurrency(product.price)
