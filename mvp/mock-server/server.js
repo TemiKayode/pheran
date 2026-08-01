@@ -127,6 +127,16 @@ try {
   }
 } catch(e) { console.warn('[supabase] not available:', e.message) }
 
+// Shared JWT signing secret for the local users.json fallback auth path (only used
+// when Supabase Auth isn't configured). Defined once at module scope so the signer
+// and verifier always agree. This repo is public, so a fixed fallback string here
+// would let anyone forge a session for any account — an unset JWT_SECRET gets a
+// random one generated for this run instead.
+if (!process.env.JWT_SECRET) {
+  console.warn('[auth] WARNING: JWT_SECRET not set — generated a random secret for this run. Set JWT_SECRET in the environment so sessions survive a restart.')
+}
+const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex')
+
 const app = express()
 
 // CORS — only allow known production origins and localhost for dev
@@ -433,13 +443,23 @@ setInterval(() => {
   }
 }, 600000).unref()
 
-// Admin — protected by ADMIN_EMAIL + ADMIN_PIN env vars (defaults below are for
-// local dev only; set real values in Railway → Settings → Variables).
+// Admin — protected by ADMIN_EMAIL + ADMIN_PIN env vars.
 // Registered BEFORE the generic static middlewares below so unauthenticated requests
 // for /admin/*.html can never be served directly by express.static — they must pass
 // through the auth-check middleware first.
-const ADMIN_PIN = process.env.ADMIN_PIN || 'pheran2026'
+//
+// IMPORTANT: this repo is public on GitHub. A hardcoded fallback PIN here would be
+// visible to anyone and usable as a live backdoor if ADMIN_PIN is ever unset in
+// Railway. So instead of a fixed fallback, an unset ADMIN_PIN gets a random one
+// generated fresh at boot (logged once below) — it still lets the server start,
+// but there is no fixed value anywhere in source that grants access.
+if (!process.env.ADMIN_PIN) {
+  console.warn('[admin] WARNING: ADMIN_PIN not set — generated a temporary random PIN for this run (see below). Set ADMIN_PIN in the environment for a persistent login.')
+}
+const ADMIN_PIN = process.env.ADMIN_PIN || String(crypto.randomInt(10000000, 100000000))
+if (!process.env.ADMIN_PIN) console.warn(`[admin] Temporary PIN for this run: ${ADMIN_PIN}`)
 const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'admin@pheran.ng').trim().toLowerCase()
+if (!process.env.ADMIN_EMAIL) console.warn('[admin] ADMIN_EMAIL not set — using default admin@pheran.ng. Set ADMIN_EMAIL in the environment to use your own address.')
 // Token incorporates both credentials so changing either one (e.g. rotating the
 // PIN, or updating the admin email in Railway) invalidates existing sessions.
 const ADMIN_TOKEN = crypto.createHash('sha256').update(ADMIN_PIN + ADMIN_EMAIL + 'pheran-admin-2026').digest('hex')
@@ -945,7 +965,7 @@ async function getSessionUserId(req) {
       const jwt = require('jsonwebtoken')
       const t = req.cookies?.[COOKIE_ACCESS]
       if (!t) return 'anonymous'
-      const p = jwt.verify(t, process.env.JWT_SECRET || 'pheran-dev-secret-change-in-production')
+      const p = jwt.verify(t, JWT_SECRET)
       return p?.id || 'anonymous'
     } catch(e) { return 'anonymous' }
   }
@@ -1334,8 +1354,6 @@ if(supabase){
   // ── Fallback: bcrypt + users.json ────────────────────────────────────────
   console.log('[auth] Supabase not configured — using local users.json')
   const USERS_PATH = path.join(__dirname,'..','users.json')
-  if (!process.env.JWT_SECRET) console.warn('[auth] WARNING: JWT_SECRET not set — using a public default. Anyone can forge session tokens. Set JWT_SECRET in the environment.')
-  const JWT_SECRET = process.env.JWT_SECRET || 'pheran-dev-secret-change-in-production'
   function loadUsers(){ try{ return JSON.parse(fs.readFileSync(USERS_PATH,'utf8')||'[]') }catch(e){ return [] } }
   function saveUsersList(u){ fs.writeFileSync(USERS_PATH,JSON.stringify(u,null,2),'utf8') }
 
