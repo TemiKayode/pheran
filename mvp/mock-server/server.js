@@ -165,8 +165,8 @@ app.use((req, res, next) => {
     "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com",          // inline scripts used in HTML pages; GTM loads gtag.js
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
-    "img-src 'self' data: blob: https://*.supabase.co https://aajbecjnnuebsvxmuiww.supabase.co https://www.google-analytics.com https://www.googletagmanager.com",
-    "connect-src 'self' https://*.supabase.co https://api.supabase.com https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com",
+    "img-src 'self' data: blob: https://*.supabase.co https://aajbecjnnuebsvxmuiww.supabase.co https://www.google-analytics.com https://www.googletagmanager.com https://www.google.com https://www.google.com.ng",
+    "connect-src 'self' https://*.supabase.co https://api.supabase.com https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://stats.g.doubleclick.net https://www.google.com https://www.google.com.ng",
     "media-src 'self' blob: https://*.supabase.co",
     "frame-ancestors 'none'",
     "base-uri 'self'",
@@ -230,6 +230,9 @@ const _PAGES = {
   '/gallery': 'gallery.html',
   '/custom': 'custom.html',
   '/about': 'about.html',
+  '/guides/what-to-wear-to-an-owambe': 'guide-owambe.html',
+  '/guides/custom-aso-oke-dress-nigeria': 'guide-aso-oke.html',
+  '/guides/bespoke-evening-gown-cost-lagos': 'guide-gown-pricing.html',
 }
 // Preserves ?id=... etc. when redirecting legacy .html links to their clean path —
 // dropping the query string here sent every /product.html?id=X click to a bare
@@ -340,6 +343,9 @@ const _STATIC_ROUTES = [
   { path: '/about',  freq: 'monthly', priority: '0.6' },
   { path: '/support',freq: 'monthly', priority: '0.5' },
   { path: '/policies',freq: 'monthly', priority: '0.4' },
+  { path: '/guides/what-to-wear-to-an-owambe',          freq: 'monthly', priority: '0.6' },
+  { path: '/guides/custom-aso-oke-dress-nigeria',        freq: 'monthly', priority: '0.6' },
+  { path: '/guides/bespoke-evening-gown-cost-lagos',     freq: 'monthly', priority: '0.6' },
 ]
 app.get('/sitemap.xml', (_req, res) => {
   try {
