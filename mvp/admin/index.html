@@ -858,7 +858,7 @@ async function loadCustomConfigAdmin() {
 function renderGarmentRows() {
   const wrap = document.getElementById('garment-rows')
   wrap.innerHTML = customConfig.garments.map((g, i) => `
-    <div class="cfg-row" data-idx="${i}">
+    <div class="cfg-row" data-idx="${i}" data-key="${esc(g.key||'')}">
       <input class="cfg-icon" value="${esc(g.icon||'')}" placeholder="👗" maxlength="4">
       <input class="cfg-label" value="${esc(g.label||'')}" placeholder="Garment name">
       <input class="cfg-price" type="number" min="0" value="${g.basePrice||0}" placeholder="Price">
@@ -868,7 +868,7 @@ function renderGarmentRows() {
 function renderFabricRows() {
   const wrap = document.getElementById('fabric-rows')
   wrap.innerHTML = customConfig.fabrics.map((f, i) => `
-    <div class="cfg-row" data-idx="${i}">
+    <div class="cfg-row" data-idx="${i}" data-key="${esc(f.key||'')}">
       <input class="cfg-icon" value="${esc(f.icon||'')}" placeholder="🌟" maxlength="4">
       <input class="cfg-label" value="${esc(f.label||'')}" placeholder="Fabric name">
       <input class="cfg-price" type="number" min="0" value="${f.priceAdd||0}" placeholder="+Price">
@@ -876,9 +876,15 @@ function renderFabricRows() {
     </div>`).join('')
 }
 
+// Keys are stable identifiers referenced by live customer sessions (custom.html)
+// and past orders — re-deriving them from the label on every save would silently
+// rename them (e.g. relabeling "Gown" to "Evening Gown" would turn key "gown" into
+// "evening-gown"), breaking anything still holding the old key. So an existing
+// row's key is read from data-key (set once, at render time) and never recomputed;
+// only a brand-new row (added this session, no data-key yet) gets a fresh slug.
 function readGarmentRows() {
   return Array.from(document.querySelectorAll('#garment-rows .cfg-row')).map(row => ({
-    key: (row.querySelector('.cfg-label').value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ('garment-' + Date.now()),
+    key: row.dataset.key || (row.querySelector('.cfg-label').value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ('garment-' + Date.now()),
     icon: row.querySelector('.cfg-icon').value.trim(),
     label: row.querySelector('.cfg-label').value.trim(),
     basePrice: Number(row.querySelector('.cfg-price').value) || 0
@@ -886,7 +892,7 @@ function readGarmentRows() {
 }
 function readFabricRows() {
   return Array.from(document.querySelectorAll('#fabric-rows .cfg-row')).map(row => ({
-    key: (row.querySelector('.cfg-label').value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ('fabric-' + Date.now()),
+    key: row.dataset.key || (row.querySelector('.cfg-label').value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ('fabric-' + Date.now()),
     icon: row.querySelector('.cfg-icon').value.trim(),
     label: row.querySelector('.cfg-label').value.trim(),
     priceAdd: Number(row.querySelector('.cfg-price').value) || 0

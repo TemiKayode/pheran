@@ -408,8 +408,12 @@
       const dm=document.querySelector('input[name="delivery"]:checked').value
       const {sub,fee,total}=calcTotals(cart)
 
-      // Try server-side order creation
-      let orderId='PH-'+Date.now()
+      // Server-side order creation — this is the source of truth (it validates
+      // prices against the live catalog/custom-order config). If it fails, the
+      // order does not exist anywhere the business can see it, so we must not
+      // show the success screen / real bank details as if it had gone through —
+      // that would tell a customer to wire money for an order no one will fulfill.
+      let orderId
       try{
         const meRes=await fetch('/api/auth/me',{credentials:'include'})
         const meData=meRes.ok?await meRes.json():{}
@@ -424,8 +428,18 @@
           })
         })
         const d=await r.json()
-        if(d.ok) orderId=d.order.id
-      }catch(e){}
+        if(d.ok){
+          orderId=d.order.id
+        } else {
+          alert((d.error||'Could not place your order')+' — please review your cart and try again.')
+          btn.disabled=false;btn.textContent='Place Order & See Transfer Details'
+          return
+        }
+      }catch(e){
+        alert('Network error placing your order — please check your connection and try again.')
+        btn.disabled=false;btn.textContent='Place Order & See Transfer Details'
+        return
+      }
 
       // Save to localStorage as backup
       const order={id:orderId,date:new Date().toISOString(),items:cart,total,subtotal:sub,deliveryFee:fee,status:'pending_payment',

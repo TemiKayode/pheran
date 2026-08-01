@@ -250,9 +250,12 @@ function initSearch(products){
 // ─── PWA ───────────────────────────────────────────────────────────────────────
 let deferredPrompt = null
 function initPWA(){
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('../sw.js').catch(()=>{})
-  }
+  // No service worker is registered here on purpose — see kill-sw.js, which
+  // actively unregisters any that exist. The last one (sw.js) cached opaque
+  // 206 Partial Content responses via Cache.put(), which throws, and that
+  // broke admin image uploads (this was live and self-reinflicted: this
+  // function used to re-register the very sw.js kill-sw.js had just removed,
+  // on every single page load).
   window.addEventListener('beforeinstallprompt',e=>{
     e.preventDefault()
     deferredPrompt = e

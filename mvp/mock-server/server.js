@@ -1053,21 +1053,78 @@ app.get('/api/orders/:orderId', async(req,res)=>{
   }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
 })
 
+// Re-derives each cart line's price from the authoritative catalog / custom-order
+// config instead of trusting the client — the cart lives in localStorage, which
+// anyone can edit via devtools before placing an order. Returns null items for
+// anything that doesn't resolve to a real product so the caller can reject the order.
+async function priceOrderItems(items) {
+  const catalog = loadData()
+  const customConfig = await getCustomConfig()
+  let priceError = null
+  const priced = items.map(raw => {
+    if (priceError) return null
+    const qty = Math.max(1, Math.min(20, Math.floor(Number(raw?.qty)) || 1))
+    if (raw?.id === 'custom') {
+      const garment = customConfig.garments.find(g => g.key === raw.garmentKey)
+      const fabric = customConfig.fabrics.find(f => f.key === raw.fabricKey)
+      if (!garment || !fabric) { priceError = 'Invalid custom-order selection'; return null }
+      const base = garment.basePrice
+      const fab = fabric.priceAdd
+      const rushPercent = customConfig.delivery?.rushPercent ?? 40
+      const rush = raw.rush ? Math.round((base + fab) * (rushPercent / 100)) : 0
+      return {
+        key: String(raw.key || `custom-${Date.now()}`).slice(0,100),
+        id: 'custom', qty,
+        price: base + fab + rush,
+        title: `Custom ${garment.label}`,
+        image: String(raw.image || '').slice(0,500),
+        size: String(raw.size || 'Custom').slice(0,40),
+        color: String(raw.color || 'As specified').slice(0,100),
+      }
+    }
+    const product = catalog.find(p => p.id === raw?.id)
+    if (!product) { priceError = `Unknown product: ${String(raw?.id||'').slice(0,50)}`; return null }
+    return {
+      key: String(raw.key || product.id).slice(0,100),
+      id: product.id, qty,
+      price: product.price,
+      title: product.title,
+      image: product.images?.[0] || '',
+      size: String(raw.size || '').slice(0,40),
+      color: String(raw.color || '').slice(0,100),
+    }
+  })
+  return priceError ? { error: priceError } : { items: priced }
+}
+
 app.post('/api/orders', mutationRateLimit, async(req,res)=>{
   try{
     const sessionUserId = await getSessionUserId(req)
-    const { userEmail='', items=[], shipping={}, deliveryMethod='standard' } = req.body||{}
+    const { userEmail='', items: rawItems=[], shipping={}, deliveryMethod='standard' } = req.body||{}
     const userId = sessionUserId // always use session-derived ID — never trust client
-    if(!Array.isArray(items) || !items.length) return res.status(400).json({ ok:false, error:'items required' })
-    if(items.length > 50) return res.status(400).json({ ok:false, error:'Too many items' })
-    const subtotal = items.reduce((s,i)=>s+(Number(i.price||0)*Number(i.qty||1)),0)
+    if(!Array.isArray(rawItems) || !rawItems.length) return res.status(400).json({ ok:false, error:'items required' })
+    if(rawItems.length > 50) return res.status(400).json({ ok:false, error:'Too many items' })
+    const priced = await priceOrderItems(rawItems)
+    if(priced.error) return res.status(400).json({ ok:false, error: priced.error })
+    const items = priced.items
+    const subtotal = items.reduce((s,i)=>s+(i.price*i.qty),0)
     const deliveryFee = deliveryMethod==='express' ? 3500 : (subtotal>=100000 ? 0 : 1500)
+    const safeShipping = {
+      firstName: String(shipping.firstName||'').slice(0,60),
+      lastName:  String(shipping.lastName||'').slice(0,60),
+      email:     String(shipping.email||'').slice(0,200),
+      phone:     String(shipping.phone||'').slice(0,30),
+      address:   String(shipping.address||'').slice(0,300),
+      address2:  String(shipping.address2||'').slice(0,300),
+      city:      String(shipping.city||'').slice(0,100),
+      state:     String(shipping.state||'').slice(0,100),
+    }
     const order = {
       id: 'PH-' + Date.now(),
       userId,
-      userEmail,
+      userEmail: String(userEmail||'').slice(0,200),
       items,
-      shipping,
+      shipping: safeShipping,
       payment: { method: 'bank_transfer' },
       deliveryMethod,
       subtotal,
@@ -1501,18 +1558,23 @@ function sanitizeCustomConfig(body){
   return { garments: cleanGarments, fabrics: cleanFabrics, delivery: cleanDelivery, errors }
 }
 
-app.get('/api/custom-config', async (_req, res) => {
-  try{
-    if(supabase){
+// Shared by the public GET endpoint below and by server-side order-price
+// validation, so both always agree on the current garment/fabric/rush prices.
+async function getCustomConfig() {
+  if (supabase) {
+    try {
       const { data, error } = await supabase.from('custom_config').select('*').eq('id',1).single()
-      if(!error && data){
-        return res.json({ ok:true, garments:data.garments||DEFAULT_CUSTOM_CONFIG.garments, fabrics:data.fabrics||DEFAULT_CUSTOM_CONFIG.fabrics, delivery:data.delivery||DEFAULT_CUSTOM_CONFIG.delivery })
+      if (!error && data) {
+        return { garments: data.garments||DEFAULT_CUSTOM_CONFIG.garments, fabrics: data.fabrics||DEFAULT_CUSTOM_CONFIG.fabrics, delivery: data.delivery||DEFAULT_CUSTOM_CONFIG.delivery }
       }
-    }
-    res.json({ ok:true, ...DEFAULT_CUSTOM_CONFIG })
-  }catch(e){
-    res.json({ ok:true, ...DEFAULT_CUSTOM_CONFIG })
+    } catch(e) { /* fall through to default */ }
   }
+  return DEFAULT_CUSTOM_CONFIG
+}
+
+app.get('/api/custom-config', async (_req, res) => {
+  const cfg = await getCustomConfig()
+  res.json({ ok:true, ...cfg })
 })
 
 app.post('/api/custom-config', requireAdminAuth, async (req, res) => {

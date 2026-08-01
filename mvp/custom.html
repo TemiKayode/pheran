@@ -467,7 +467,13 @@
         image: 'img-grey-linen-front.jpg',
         size:  'Custom' + (rushDelivery ? ' (Rush)' : ''),
         color: document.getElementById('color-preference')?.value || 'As specified',
-        qty:   1
+        qty:   1,
+        // Sent alongside price so the server can independently recompute and
+        // verify it against the live custom-order config — price above is
+        // only used as a display fallback if that lookup ever fails.
+        garmentKey: selectedType,
+        fabricKey: selectedFabric,
+        rush: rushDelivery
       }
       const cart = JSON.parse(localStorage.getItem('pheran_cart')||'[]')
       cart.push(item)
