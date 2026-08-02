@@ -416,24 +416,69 @@ app.get('/sitemap.xml', (_req, res) => {
   }
 })
 
-// Auth verification proxy — hides the Supabase project URL from email links.
+// Email verification page — deliberately NOT a redirect straight to Supabase's
+// GET /auth/v1/verify. That endpoint is stateful and single-use on a bare GET,
+// which email security scanners (Outlook Safe Links, corporate gateways, etc.)
+// routinely pre-fetch before the real user ever opens the email — silently
+// burning the one-time token, so the genuine click then fails with a
+// confusing "requires a token" error. It also put the raw Supabase project
+// domain in the visitor's address bar.
+// This page instead renders normally (harmless if a scanner fetches it — that
+// alone consumes nothing) and its own JS does the actual verification via a
+// POST to /api/auth/verify below, which calls Supabase server-to-server and
+// sets the session cookie directly. The browser never leaves pheran.ng, and
+// nothing is consumed until a real browser actually executes the script.
 const _VALID_VERIFY_TYPES = new Set(['signup','recovery','magiclink','invite','email_change','reauthentication'])
-const _SUPA_URL = process.env.SUPABASE_URL || ''
 app.get('/verify', (req, res) => {
   const { token_hash, type } = req.query
   if (!token_hash || !type || !_VALID_VERIFY_TYPES.has(type)) {
     return res.status(400).send('Invalid or expired verification link.')
   }
-  // Redirect to /auth/callback so the access_token hash never appears on /account
-  const redirectTo = encodeURIComponent('https://pheran.ng/auth/callback')
-  const target = `${_SUPA_URL}/auth/v1/verify?token_hash=${encodeURIComponent(token_hash)}&type=${encodeURIComponent(type)}&redirect_to=${redirectTo}`
-  res.redirect(302, target)
+  res.setHeader('Content-Type', 'text/html; charset=utf-8')
+  res.send(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex">
+<script src="https://js.sentry-cdn.com/6de81974c2a513ec04b868a2f6fda26d.min.js" crossorigin="anonymous"></script>
+<script src="/kill-sw.js?v=20260801"></script>
+<title>PHERAN — Confirming…</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',Arial,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#F7F4F0}
+.box{text-align:center;padding:40px 24px;max-width:380px}.logo{font-family:Georgia,serif;font-size:2rem;font-weight:700;letter-spacing:5px;color:#2D1B4E}
+.sub{font-size:.9rem;color:#888;margin-top:12px;letter-spacing:.02em;line-height:1.6}.dot{display:inline-block;animation:blink 1.2s infinite}.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:0}40%{opacity:1}}
+.retry{display:none;margin-top:20px;padding:12px 24px;background:#2D1B4E;color:#fff;border:none;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;text-decoration:none}
+</style></head>
+<body><div class="box"><div class="logo">PHERAN</div><div class="sub" id="msg">Confirming your email<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></div><a class="retry" id="retry" href="/account">Go to my account →</a></div>
+<script>
+(async()=>{
+  const p = new URLSearchParams(location.search)
+  const token_hash = p.get('token_hash'), type = p.get('type')
+  const msg = document.getElementById('msg'), retry = document.getElementById('retry')
+  if(!token_hash || !type){ msg.textContent = 'This link is invalid or incomplete.'; return }
+  try{
+    const r = await fetch('/api/auth/verify', {
+      method:'POST', credentials:'include', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ token_hash, type })
+    })
+    const d = await r.json()
+    if(d.ok){
+      location.replace('/account' + ((type==='signup'||type==='email_change') ? '?confirmed=1' : ''))
+    } else {
+      msg.textContent = 'This link has expired or was already used. If you already have an account, just sign in — otherwise request a new link.'
+      retry.style.display = 'inline-block'
+      retry.textContent = 'Go to sign in →'
+    }
+  }catch(e){
+    msg.textContent = 'Something went wrong confirming this link.'
+    retry.style.display = 'inline-block'
+  }
+})()
+</script></body></html>`)
 })
 
 // Auth callback — exchanges the access_token hash for a session cookie, then redirects cleanly to /account.
 // The access_token never appears in the /account URL.
 app.get('/auth/callback', (_req, res) => {
   res.send(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex">
+<script src="https://js.sentry-cdn.com/6de81974c2a513ec04b868a2f6fda26d.min.js" crossorigin="anonymous"></script>
+<script src="/kill-sw.js?v=20260801"></script>
 <title>PHERAN — Signing in…</title>
 <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',Arial,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#F7F4F0}
 .box{text-align:center;padding:40px 24px}.logo{font-family:Georgia,serif;font-size:2rem;font-weight:700;letter-spacing:5px;color:#2D1B4E}
@@ -1377,6 +1422,21 @@ if(supabase){
     try{
       const { data, error } = await supabase.auth.setSession({ access_token, refresh_token })
       if(error || !data?.session) return res.status(401).json({ok:false,error:'Invalid or expired token'})
+      setSession(req, res, data.session)
+      res.json({ok:true, user:fmtUser(data.user)})
+    }catch(e){ res.status(500).json({ok:false,error:String(e)}) }
+  })
+
+  // Backs the /verify page above — does the actual token_hash verification
+  // server-to-server (Supabase's domain is never sent to the browser) and sets
+  // the session cookie directly on success. Rate-limited via the /api/auth
+  // prefix like every other auth endpoint, so this can't be brute-forced.
+  app.post('/api/auth/verify', async(req,res)=>{
+    try{
+      const { token_hash, type } = req.body || {}
+      if(!token_hash || !type || !_VALID_VERIFY_TYPES.has(type)) return res.status(400).json({ok:false,error:'Invalid verification request'})
+      const { data, error } = await supabase.auth.verifyOtp({ token_hash, type })
+      if(error || !data?.session) return res.status(401).json({ok:false,error:'This link has expired or was already used'})
       setSession(req, res, data.session)
       res.json({ok:true, user:fmtUser(data.user)})
     }catch(e){ res.status(500).json({ok:false,error:String(e)}) }
