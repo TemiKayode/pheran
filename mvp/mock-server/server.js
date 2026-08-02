@@ -250,11 +250,17 @@ function authRateLimit(req, res, next) {
 app.use('/api/auth', authRateLimit)
 app.use('/api/admin/login', authRateLimit)
 
-// Rewrite requests from admin.pheran.ng so they hit /admin/* routes
+// On admin.pheran.ng, the bare root should show the admin panel instead of the
+// storefront homepage. Deliberately narrow — only the exact "/" path, not
+// "doesn't start with /admin" as this used to read. That broader form rewrote
+// every API call the admin panel's own JS makes (/api/admin/login,
+// /api/products, /api/admin/orders, ...) into a nonsense /admin/api/... path
+// that matches nothing, so every one of them silently 401'd. Same-origin asset
+// requests like /kill-sw.js were caught by it too.
 app.use((req, _res, next) => {
   const host = (req.headers.host || '').split(':')[0]
-  if (host === 'admin.pheran.ng' && !req.path.startsWith('/admin')) {
-    req.url = '/admin' + (req.url === '/' ? '/' : req.url)
+  if (host === 'admin.pheran.ng' && req.path === '/') {
+    req.url = '/admin/' + req.url.slice(1)
   }
   next()
 })
