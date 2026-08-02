@@ -34,6 +34,7 @@ body{font-family:var(--font-body);color:var(--text-primary);margin:0;background:
 
 /* Product page */
 .product-page{display:grid;grid-template-columns:1.2fr 0.8fr;gap:32px;padding:32px 0}
+.product-page>*{min-width:0}
 .product-media{display:flex;flex-direction:column;gap:16px}
 .media-stage{position:relative;overflow:hidden;border-radius:16px;box-shadow:var(--shadow-lg);cursor:zoom-in}
 .media-stage .main-photo{width:100%;display:block;border-radius:16px;transition:transform 60ms linear}
@@ -64,6 +65,9 @@ body{font-family:var(--font-body);color:var(--text-primary);margin:0;background:
 .selector-block{display:flex;flex-direction:column;gap:8px}
 .size-block{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .size-block select{min-width:120px;padding:12px;border:1px solid var(--gray-200);border-radius:12px;background:var(--white-pure)}
+@media(max-width:640px){
+  .selectors{grid-template-columns:1fr}
+}
 .link-btn{background:transparent;color:var(--purple-main);border:none;padding:0;font-weight:700;cursor:pointer}
 .qty-block .qty-control{display:flex;align-items:center;border:1px solid var(--gray-200);border-radius:12px;overflow:hidden;width:max-content}
 .qty-control button{background:var(--white-pure);border:none;padding:12px 14px;font-size:1rem;cursor:pointer}
@@ -81,11 +85,16 @@ body{font-family:var(--font-body);color:var(--text-primary);margin:0;background:
 .section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:20px}
 .section-head h2{margin:0;font-size:1.5rem}
 .recommendation-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.recommendation-card{background:var(--white-pure);border-radius:16px;padding:16px;box-shadow:var(--shadow-sm);cursor:pointer;transition:transform 160ms ease}
+.recommendation-card{background:var(--white-pure);border-radius:16px;padding:16px;box-shadow:var(--shadow-sm);cursor:pointer;transition:transform 160ms ease;min-width:0}
 .recommendation-card:hover{transform:translateY(-3px)}
 .recommendation-card img{width:100%;border-radius:14px;object-fit:cover;height:220px}
 .recommendation-card h3{margin:12px 0 8px;font-size:1rem}
 .recommendation-card .price{margin:0}
+@media(max-width:640px){
+  .recommendation-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .recommendation-card{padding:10px}
+  .recommendation-card img{height:160px}
+}
 .modal{position:fixed;inset:0;background:rgba(15,12,34,0.65);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;visibility:hidden;transition:opacity 180ms ease,visibility 180ms ease;z-index:50}
 .modal.open{opacity:1;visibility:visible}
 .modal-dialog{width:min(550px,100%);background:var(--white-pure);border-radius:20px;padding:28px;position:relative;box-shadow:var(--shadow-xl)}

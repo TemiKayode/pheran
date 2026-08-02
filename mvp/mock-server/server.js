@@ -191,7 +191,10 @@ app.use(cors({
   },
   credentials: true,
 }))
-app.use(express.json({ limit: '1mb' }))
+// navigator.sendBeacon() (used for session-tracking on page unload) sends its
+// body as Content-Type: text/plain, not application/json — without this, every
+// beacon's payload silently fails to parse and the route 400s on an "empty" body.
+app.use(express.json({ limit: '1mb', type: ['application/json', 'text/plain'] }))
 // cookie-parser must run before any middleware/route reads req.cookies (admin auth, etc.)
 try { app.use(require('cookie-parser')()) } catch (e) { console.warn('cookie-parser missing') }
 
@@ -212,7 +215,7 @@ app.use((req, res, next) => {
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: blob: https://*.supabase.co https://aajbecjnnuebsvxmuiww.supabase.co https://www.google-analytics.com https://www.googletagmanager.com https://www.google.com https://www.google.com.ng",
-    "connect-src 'self' https://*.supabase.co https://api.supabase.com https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://stats.g.doubleclick.net https://www.google.com https://www.google.com.ng https://*.ingest.us.sentry.io https://o4509921943158784.ingest.us.sentry.io",
+    "connect-src 'self' https://*.supabase.co https://api.supabase.com https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://stats.g.doubleclick.net https://www.google.com https://www.google.com.ng https://*.ingest.us.sentry.io https://o4509921943158784.ingest.us.sentry.io",
     "media-src 'self' blob: https://*.supabase.co",
     "frame-ancestors 'none'",
     "base-uri 'self'",
