@@ -1,7 +1,8 @@
 @import url('../css/variables.css');
 
 *{box-sizing:border-box}
-body{font-family:var(--font-body);color:var(--text-primary);margin:0;background:var(--white-pure)}
+html{overflow-x:hidden}
+body{font-family:var(--font-body);color:var(--text-primary);margin:0;background:var(--white-pure);overflow-x:hidden}
 .container{max-width:var(--max-width);margin:0 auto;padding:0 var(--space-md)}
 .site-header{height:var(--header-height);border-bottom:1px solid var(--gray-200);background:var(--white-pure)}
 .header-inner{display:flex;align-items:center;justify-content:space-between;height:100%}
@@ -100,6 +101,7 @@ body{font-family:var(--font-body);color:var(--text-primary);margin:0;background:
 
 /* Category page styles */
 .category-page{display:grid;grid-template-columns:280px 1fr;gap:24px;padding:32px 0}
+.category-page>*{min-width:0}
 .filters{background:var(--white-pure);border:1px solid var(--gray-200);padding:16px;border-radius:8px;height:fit-content}
 .category-hero{background:linear-gradient(180deg, rgba(91,45,142,0.08), rgba(255,255,255,0));padding:28px 24px;margin-bottom:24px;border-radius:12px;border:1px solid var(--gray-200)}
 .hero-copy{max-width:600px}
@@ -389,6 +391,12 @@ button.btn.primary{border:none}
 .lookbook-banner .lb-text h3{margin:0 0 6px;color:#fff;font-family:var(--font-display);font-size:1.2rem}
 .lookbook-banner .lb-text p{margin:0;color:rgba(255,255,255,0.75);font-size:0.88rem}
 .lookbook-banner .lb-cta{white-space:nowrap;padding:10px 20px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.5);color:#fff;border-radius:999px;font-size:0.88rem;text-decoration:none;font-weight:700;backdrop-filter:blur(4px)}
+@media(max-width:640px){
+  .category-story{grid-template-columns:1fr;padding:20px}
+  .category-story>div[style*="flex"]{margin-top:16px}
+  .category-story .story-stat{padding:0 8px}
+  .lookbook-banner{flex-direction:column;align-items:flex-start;padding:20px}
+}
 
 /* ─── Category improved empty state ─────────────────────────── */
 .empty-full{padding:48px 20px;text-align:center}
