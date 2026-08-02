@@ -206,7 +206,8 @@ body{font-family:var(--font-body);color:var(--text-primary);margin:0;background:
 }
 
 @media(max-width:640px){
-  .product-grid{grid-template-columns:1fr}
+  .product-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .product-card{padding:8px}
   .filters{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.98);z-index:20;padding:20px;overflow-y:auto;transform:translateY(-120%);transition:transform 220ms ease;box-shadow:0 24px 60px rgba(0,0,0,0.12)}
   .filters.open{transform:translateY(0)}
   .category-topbar{gap:8px}
