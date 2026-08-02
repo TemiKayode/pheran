@@ -8,8 +8,17 @@ if (process.env.SENTRY_DSN) {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
     environment: process.env.SENTRY_ENVIRONMENT || (process.env.RAILWAY_ENVIRONMENT_NAME || 'production'),
+    release: process.env.RAILWAY_GIT_COMMIT_SHA || undefined, // Railway sets this automatically — lets Sentry pin a new/regressed issue to the exact deploy
     tracesSampleRate: 0.1,
-    sendDefaultPii: false, // don't auto-attach cookies/headers — shipping/payment data runs through here
+    // Explicit, not just the (already-private) defaults: request/response bodies carry
+    // shipping addresses, phone numbers, and emails; cookies and headers carry session
+    // tokens and the admin Basic-Auth credential. None of that belongs in an error report.
+    dataCollection: {
+      userInfo: false,
+      cookies: false,
+      httpHeaders: { request: false, response: false },
+      httpBodies: [],
+    },
   })
   console.log('[sentry] error tracking enabled')
 }
