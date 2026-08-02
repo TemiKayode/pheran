@@ -761,7 +761,7 @@ app.get('/api/products', (req, res)=>{
   }
 
   // pagination: support cursor or page
-  const perPage = Number(params.perPage) || 12
+  const perPage = Math.min(200, Math.max(1, Number(params.perPage) || 12))
   let page = Number(params.page) || 1
   if(params.cursor){
     const start = decodeCursor(params.cursor) || 0
@@ -970,59 +970,11 @@ async function getSessionUserId(req) {
       const jwt = require('jsonwebtoken')
       const t = req.cookies?.[COOKIE_ACCESS]
       if (!t) return 'anonymous'
-      const p = jwt.verify(t, JWT_SECRET)
+      const p = jwt.verify(t, JWT_SECRET, { algorithms: ['HS256'] })
       return p?.id || 'anonymous'
     } catch(e) { return 'anonymous' }
   }
 }
-
-// In-memory mock cart store (keyed by userId from authenticated session)
-const CART_STORE = new Map()
-
-app.get('/api/cart', async(req,res)=>{
-  try{
-    const userId = await getSessionUserId(req)
-    const cart = CART_STORE.get(userId) || []
-    const subtotal = cart.reduce((s,i)=>s+(i.price*i.qty),0)
-    res.json({ ok:true, cart, subtotal, count: cart.reduce((s,i)=>s+i.qty,0) })
-  }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
-})
-
-app.post('/api/cart', mutationRateLimit, async(req,res)=>{
-  try{
-    const userId = await getSessionUserId(req)
-    const { productId, size, color, qty=1, price, title, image } = req.body||{}
-    if(!productId || typeof productId !== 'string' || productId.length > 200) return res.status(400).json({ ok:false, error:'productId required' })
-    const safeQty = Math.max(1, Math.min(99, Number(qty)||1))
-    const safePrice = Math.max(0, Math.min(99999999, Number(price)||0))
-    const cart = CART_STORE.get(userId) || []
-    const key = `${productId}|${String(size||'').slice(0,20)}|${String(color||'').slice(0,50)}`
-    const existing = cart.find(i=>i.key===key)
-    if(existing){ existing.qty = Math.min(99, existing.qty + safeQty) }
-    else { cart.push({ key, productId, size:String(size||'').slice(0,20), color:String(color||'').slice(0,50), qty:safeQty, price:safePrice, title:String(title||productId).slice(0,200), image:String(image||'').slice(0,500) }) }
-    CART_STORE.set(userId, cart)
-    res.json({ ok:true, cart, count: cart.reduce((s,i)=>s+i.qty,0) })
-  }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
-})
-
-app.delete('/api/cart', mutationRateLimit, async(req,res)=>{
-  try{
-    const userId = await getSessionUserId(req)
-    const { key } = req.body||{}
-    if(!key || typeof key !== 'string') return res.status(400).json({ ok:false, error:'item key required' })
-    const cart = (CART_STORE.get(userId)||[]).filter(i=>i.key!==key)
-    CART_STORE.set(userId, cart)
-    res.json({ ok:true, cart })
-  }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
-})
-
-app.post('/api/cart/clear', mutationRateLimit, async(req,res)=>{
-  try{
-    const userId = await getSessionUserId(req)
-    CART_STORE.set(userId, [])
-    res.json({ ok:true })
-  }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
-})
 
 // In-memory mock orders store (keyed by authenticated userId — never client-supplied)
 const ORDERS_STORE = new Map()
@@ -1125,7 +1077,7 @@ app.post('/api/orders', mutationRateLimit, async(req,res)=>{
       state:     String(shipping.state||'').slice(0,100),
     }
     const order = {
-      id: 'PH-' + Date.now(),
+      id: 'PH-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
       userId,
       userEmail: String(userEmail||'').slice(0,200),
       items,
@@ -1138,9 +1090,13 @@ app.post('/api/orders', mutationRateLimit, async(req,res)=>{
       status: 'pending_payment',
       createdAt: new Date().toISOString(),
     }
-    // Save to Supabase when available
+    // Save to Supabase — the source of truth the admin panel reads from. If this
+    // write fails (network blip, constraint violation, an ID collision from the
+    // Date.now()-based id under concurrent requests) the order must not be
+    // reported as placed: the customer would be shown real bank details and told
+    // to wire money for an order the business can never see or confirm.
     if(supabase){
-      await supabase.from('orders').insert({
+      const { error: insertError } = await supabase.from('orders').insert({
         id: order.id,
         user_id: userId !== 'anonymous' ? userId : null,
         user_email: userEmail,
@@ -1152,12 +1108,15 @@ app.post('/api/orders', mutationRateLimit, async(req,res)=>{
         status: order.status,
         delivery_method: order.deliveryMethod,
       })
+      if(insertError){
+        console.error('[orders] insert failed:', insertError.message)
+        return res.status(500).json({ ok:false, error:'Could not save your order — please try again' })
+      }
     }
     // Also keep in-memory (admin fallback / fast lookup)
     const orders = ORDERS_STORE.get(userId) || []
     orders.unshift(order)
     ORDERS_STORE.set(userId, orders)
-    CART_STORE.set(userId, [])
     // Fire-and-forget — never delays the response
     sendOrderEmail(order).catch(()=>{})
     res.status(201).json({ ok:true, order })
@@ -1421,8 +1380,8 @@ if(supabase){
 
   try{
     const bcrypt=require('bcryptjs'), jwt=require('jsonwebtoken')
-    const sign=(u)=>jwt.sign({id:u.id,email:u.email},JWT_SECRET,{expiresIn:'30d'})
-    const verify=(t)=>{ try{ return jwt.verify(t,JWT_SECRET) }catch(e){ return null } }
+    const sign=(u)=>jwt.sign({id:u.id,email:u.email},JWT_SECRET,{expiresIn:'30d',algorithm:'HS256'})
+    const verify=(t)=>{ try{ return jwt.verify(t,JWT_SECRET,{algorithms:['HS256']}) }catch(e){ return null } }
     const co={...COOKIE_BASE, maxAge:30*24*60*60*1000}
     const safe=(u)=>{ const{passwordHash,...r}=u; return r }
 
