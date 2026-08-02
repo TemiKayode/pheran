@@ -19,6 +19,13 @@ body{font-family:var(--font-body);color:var(--text-primary);margin:0;background:
 .horizontal-scroll{display:flex;gap:12px;overflow:auto;padding-bottom:8px}
 .product-card{min-width:180px;background:var(--white-pure);border-radius:8px;padding:8px;box-shadow:var(--shadow-sm)}
 .product-card img{width:100%;height:auto;border-radius:6px}
+/* Bestsellers: a horizontal-scroll strip forces mobile visitors to keep swiping
+   sideways to see the rest of the catalog. A 2-column grid shows more of it at
+   once without any scrolling beyond the page's normal vertical scroll. */
+@media(max-width:768px){
+  #bestsellers.horizontal-scroll{display:grid;grid-template-columns:repeat(2,1fr);overflow:visible;padding-bottom:0}
+  #bestsellers.horizontal-scroll .product-card{min-width:0}
+}
 .newsletter{background:var(--soft-pink);padding:24px;border-radius:8px;margin:24px 0;text-align:center}
 .newsletter-form{display:flex;gap:8px;justify-content:center}
 .newsletter-form input{padding:12px;border:1px solid var(--gray-200);border-radius:8px;min-width:220px}

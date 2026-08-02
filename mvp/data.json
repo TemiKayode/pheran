@@ -1,6 +1,31 @@
 {
   "products": [
     {
+      "id": "two-piece-mono-peplum",
+      "title": "Mono Print Peplum Two-Piece",
+      "category": "Dresses",
+      "price": 48000,
+      "rating": 4.6,
+      "count": 10,
+      "availability": "In Stock",
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "colors": [
+        "Black",
+        "White"
+      ],
+      "fabric": "Ankara Print Cotton",
+      "images": [
+        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-1785686441146-5ell1re4ec.jpg"
+      ],
+      "description": "A fitted peplum top in a bold monochrome swirl print, paired with a matching flared midi skirt. Puff sleeves and a defined waist make this a statement two-piece that still moves easily through a full day out."
+    },
+    {
       "id": "linen-dress-004",
       "title": "Linen Co-ord — Slate",
       "category": "Two-piece",
@@ -22,34 +47,9 @@
       ],
       "fabric": "Linen",
       "images": [
-        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-1785676705333-c96rpfqdqm.png"
+        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-1785686446327-2mzir4qw2ty.jpg"
       ],
       "description": "The same signature silhouette in a classic slate wash. Our linen co-ord set in its most versatile colourway — pairs beautifully with gold accessories and bare skin."
-    },
-    {
-      "id": "two-piece-mono-peplum",
-      "title": "Mono Print Peplum Two-Piece",
-      "category": "Dresses",
-      "price": 48000,
-      "rating": 4.6,
-      "count": 10,
-      "availability": "In Stock",
-      "sizes": [
-        "XS",
-        "S",
-        "M",
-        "L",
-        "XL"
-      ],
-      "colors": [
-        "Black",
-        "White"
-      ],
-      "fabric": "Ankara Print Cotton",
-      "images": [
-        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-1785675452368-8nnsi1vc16.png"
-      ],
-      "description": "A fitted peplum top in a bold monochrome swirl print, paired with a matching flared midi skirt. Puff sleeves and a defined waist make this a statement two-piece that still moves easily through a full day out."
     },
     {
       "id": "two-piece-floral-shorts",
@@ -76,29 +76,6 @@
       "description": "An oversized floral shirt in warm olive and cream tones, paired with tailored olive shorts. Relaxed through the shoulders, structured at the waist — easy to dress up or down."
     },
     {
-      "id": "evening-gown-005",
-      "title": "Red Beaded Off-Shoulder Gown",
-      "category": "Dresses",
-      "price": 150000,
-      "oldPrice": 180000,
-      "rating": 4.9,
-      "count": 12,
-      "availability": "In Stock",
-      "sizes": [
-        "S",
-        "M",
-        "L"
-      ],
-      "colors": [
-        "Scarlet Red"
-      ],
-      "fabric": "Charmeuse Silk",
-      "images": [
-        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-1785677464536-mcxs7c1wff.png"
-      ],
-      "description": "The showpiece. An off-shoulder beaded bodice flows into a ruched mermaid skirt with a dramatic cathedral train. Hand-embellished with over 800 micro-beads. Made to order in 10–14 days."
-    },
-    {
       "id": "tailored-trousers-003",
       "title": "Pinstripe Wide-Leg Linen Set",
       "category": "Two-piece",
@@ -120,7 +97,7 @@
       ],
       "fabric": "Linen",
       "images": [
-        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-1785676508024-3i9ttr0u0k3.png"
+        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-1785686443589-qz9dkdcrwj.jpg"
       ],
       "description": "The power set. A relaxed pinstripe shirt-jacket paired with matching high-waist wide-leg trousers in a rich burgundy linen blend. Unstructured, confident, unmistakably PHERAN."
     },
@@ -151,6 +128,29 @@
         "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-1785676430193-zdxrru83ma.jpg"
       ],
       "description": "A relaxed, oversized shirt in a rich chocolate brown, paired with matching wide-leg trousers. Quietly confident tailoring built from breathable linen blend — as at home in the office as it is at a weekend brunch."
+    },
+    {
+      "id": "evening-gown-005",
+      "title": "Red Beaded Off-Shoulder Gown",
+      "category": "Dresses",
+      "price": 150000,
+      "oldPrice": 180000,
+      "rating": 4.9,
+      "count": 12,
+      "availability": "In Stock",
+      "sizes": [
+        "S",
+        "M",
+        "L"
+      ],
+      "colors": [
+        "Scarlet Red"
+      ],
+      "fabric": "Charmeuse Silk",
+      "images": [
+        "https://aajbecjnnuebsvxmuiww.supabase.co/storage/v1/object/public/product-images/img-1785686437224-mtrnwzd66uh.jpg"
+      ],
+      "description": "The showpiece. An off-shoulder beaded bodice flows into a ruched mermaid skirt with a dramatic cathedral train. Hand-embellished with over 800 micro-beads. Made to order in 10–14 days."
     },
     {
       "id": "product-1785677662902",
