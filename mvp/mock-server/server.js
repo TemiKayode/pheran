@@ -1,4 +1,26 @@
 require('dotenv').config()
+
+// Sentry must be initialized before express (and anything else) is required,
+// so its auto-instrumentation can hook into them. No-ops entirely if
+// SENTRY_DSN isn't set — safe to leave unconfigured in local dev.
+const Sentry = require('@sentry/node')
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.SENTRY_ENVIRONMENT || (process.env.RAILWAY_ENVIRONMENT_NAME || 'production'),
+    tracesSampleRate: 0.1,
+    sendDefaultPii: false, // don't auto-attach cookies/headers — shipping/payment data runs through here
+  })
+  console.log('[sentry] error tracking enabled')
+}
+// Used at the handful of business-critical call sites (order writes, payment/status
+// updates, product writes, uploads) that catch their own errors and would otherwise
+// never reach Sentry.setupExpressErrorHandler below. No-ops if SENTRY_DSN isn't set.
+function reportError(e, extra) {
+  if (!process.env.SENTRY_DSN) return
+  Sentry.captureException(e instanceof Error ? e : new Error(String(e)), extra ? { extra } : undefined)
+}
+
 const express = require('express')
 const cors = require('cors')
 const fs = require('fs')
@@ -581,6 +603,10 @@ try {
           continue
         } catch (storageErr) {
           console.warn('[upload] Supabase Storage error:', storageErr.message, '— falling back to disk')
+          // Not a hard failure (disk fallback below still serves the request), but worth
+          // knowing about — Railway's filesystem isn't persistent across deploys, so a
+          // disk-stored image silently disappears on the next redeploy.
+          reportError(new Error('Upload fell back to disk: ' + storageErr.message), { filename })
         }
       }
       fs.writeFileSync(path.join(UPLOADS_DIR, filename), file.buffer)
@@ -620,7 +646,7 @@ function saveProducts(products){
   if(supabase){
     const rows = products.map(p=>{ const{oldPrice,...rest}=p; return{...rest,old_price:oldPrice??null} })
     supabase.from('products').upsert(rows).then(({error})=>{
-      if(error) console.warn('[supabase] write error:', error.message)
+      if(error){ console.warn('[supabase] write error:', error.message); reportError(new Error('Product upsert failed: '+error.message)) }
     })
   }
 }
@@ -818,6 +844,7 @@ app.post('/api/products/admin', requireAdminAuth, (req, res)=>{
     saveProducts(products)
     res.json({ ok:true, message: existingIndex >= 0 ? 'Product updated' : 'Product created', product })
   } catch(e){
+    reportError(e)
     res.status(500).json({ ok:false, error: String(e) })
   }
 })
@@ -833,7 +860,7 @@ app.delete('/api/products/admin', requireAdminAuth, async (req, res)=>{
     // on the next server restart/deploy.
     if(supabase){
       const { error } = await supabase.from('products').delete().eq('id', id)
-      if(error) console.warn('[supabase] delete error:', error.message)
+      if(error){ console.warn('[supabase] delete error:', error.message); reportError(new Error('Product delete failed: '+error.message), { productId: id }) }
     }
     res.json({ ok:true, message:'Product deleted' })
   } catch(e){
@@ -1110,6 +1137,7 @@ app.post('/api/orders', mutationRateLimit, async(req,res)=>{
       })
       if(insertError){
         console.error('[orders] insert failed:', insertError.message)
+        reportError(new Error('Order insert failed: ' + insertError.message), { orderId: order.id, total: order.total })
         return res.status(500).json({ ok:false, error:'Could not save your order — please try again' })
       }
     }
@@ -1120,7 +1148,10 @@ app.post('/api/orders', mutationRateLimit, async(req,res)=>{
     // Fire-and-forget — never delays the response
     sendOrderEmail(order).catch(()=>{})
     res.status(201).json({ ok:true, order })
-  }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
+  }catch(e){
+    reportError(e)
+    res.status(500).json({ ok:false, error: String(e) })
+  }
 })
 
 // ─── Admin orders management ───────────────────────────────────────────────────
@@ -1210,7 +1241,7 @@ app.patch('/api/admin/orders/:orderId/payment', requireAdminAuth, async(req,res)
     const status = confirmed ? 'confirmed' : 'pending_payment'
     if(supabase){
       const { data, error } = await supabase.from('orders').update({status,updated_at:new Date().toISOString()}).eq('id',orderId).select().single()
-      if(error) return res.status(500).json({ok:false,error:error.message})
+      if(error){ reportError(new Error('Payment update failed: '+error.message), { orderId }); return res.status(500).json({ok:false,error:error.message}) }
       return res.json({ok:true,order:data})
     }
     for(const [,orders] of ORDERS_STORE){
@@ -1218,7 +1249,7 @@ app.patch('/api/admin/orders/:orderId/payment', requireAdminAuth, async(req,res)
       if(o){ o.status=status; o.updatedAt=new Date().toISOString(); return res.json({ok:true,order:o}) }
     }
     res.status(404).json({ok:false,error:'Order not found'})
-  }catch(e){ res.status(500).json({ok:false,error:String(e)}) }
+  }catch(e){ reportError(e); res.status(500).json({ok:false,error:String(e)}) }
 })
 
 app.patch('/api/admin/orders/:orderId/status', requireAdminAuth, async(req,res)=>{
@@ -1229,7 +1260,7 @@ app.patch('/api/admin/orders/:orderId/status', requireAdminAuth, async(req,res)=
     if(!valid.includes(status)) return res.status(400).json({ok:false,error:'Invalid status'})
     if(supabase){
       const { data, error } = await supabase.from('orders').update({status,updated_at:new Date().toISOString()}).eq('id',orderId).select().single()
-      if(error) return res.status(500).json({ok:false,error:error.message})
+      if(error){ reportError(new Error('Status update failed: '+error.message), { orderId, status }); return res.status(500).json({ok:false,error:error.message}) }
       return res.json({ok:true,order:data})
     }
     for(const [,orders] of ORDERS_STORE){
@@ -1237,7 +1268,7 @@ app.patch('/api/admin/orders/:orderId/status', requireAdminAuth, async(req,res)=
       if(o){ o.status=status; o.updatedAt=new Date().toISOString(); return res.json({ok:true,order:o}) }
     }
     res.status(404).json({ok:false,error:'Order not found'})
-  }catch(e){ res.status(500).json({ok:false,error:String(e)}) }
+  }catch(e){ reportError(e); res.status(500).json({ok:false,error:String(e)}) }
 })
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
@@ -1569,6 +1600,13 @@ app.use((req, res) => {
   if (req.path.startsWith('/api/')) return res.status(404).json({ ok: false, error: 'Not found' })
   res.status(404).sendFile(path.join(_MVR, '404.html'))
 })
+
+// Reports anything that reaches Express's error-handling chain to Sentry, then
+// passes it on to our own handler below to format the response. Most routes in
+// this file catch their own errors and never reach here — see the explicit
+// Sentry.captureException calls at the handful of business-critical call sites
+// (order creation, payment/status updates) for those.
+if (process.env.SENTRY_DSN) Sentry.setupExpressErrorHandler(app)
 
 // Catch-all error handler — never leak stack traces / internals to clients
 app.use((err, req, res, _next) => {
