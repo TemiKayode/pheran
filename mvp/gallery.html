@@ -18,13 +18,13 @@
   <meta property="og:site_name" content="PHERAN">
   <meta property="og:title" content="Gallery & Inspiration — PHERAN">
   <meta property="og:description" content="Explore PHERAN's lookbook — editorial campaigns, customer styles, and behind-the-scenes films from our Lagos studio.">
-  <meta property="og:image" content="https://pheran.ng/img-red-gown-front.jpg">
+  <meta property="og:image" content="https://pheran.ng/img-red-gown-front.jpg?v=20260802">
   <meta property="og:url" content="https://pheran.ng/gallery">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@pheranng">
   <meta name="twitter:title" content="Gallery & Inspiration — PHERAN">
   <meta name="twitter:description" content="Explore PHERAN's lookbook — editorial campaigns, customer styles, and behind-the-scenes films from our Lagos studio.">
-  <meta name="twitter:image" content="https://pheran.ng/img-red-gown-front.jpg">
+  <meta name="twitter:image" content="https://pheran.ng/img-red-gown-front.jpg?v=20260802">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="apple-touch-icon" href="logo.jpeg">
   <link rel="canonical" href="https://pheran.ng/gallery">
@@ -66,10 +66,9 @@
     <div class="gallery-filters" id="gallery-filters">
       <button class="gallery-filter-btn active" data-filter="all">All Looks</button>
       <button class="gallery-filter-btn" data-filter="dresses">Dresses</button>
-      <button class="gallery-filter-btn" data-filter="custom">Custom-Made</button>
-      <button class="gallery-filter-btn" data-filter="editorial">Editorial</button>
-      <button class="gallery-filter-btn" data-filter="occasion">Occasion</button>
-      <button class="gallery-filter-btn" data-filter="everyday">Everyday</button>
+      <button class="gallery-filter-btn" data-filter="tops">Tops</button>
+      <button class="gallery-filter-btn" data-filter="bottoms">Bottoms</button>
+      <button class="gallery-filter-btn" data-filter="two-piece">Two-piece</button>
     </div>
 
     <!-- Masonry gallery -->
@@ -154,39 +153,33 @@
     const badge=document.getElementById('cart-count-badge')
     if(badge){const c=JSON.parse(localStorage.getItem('pheran_cart')||'[]').reduce((s,i)=>s+i.qty,0);badge.textContent=c}
 
-    // Real images mapped to gallery items
-    const REAL_IMGS = {
-      'red-gown-front':   'img-red-gown-front.jpg',
-      'red-gown-side':    'img-red-gown-side.jpg',
-      'grey-linen-front': 'img-grey-linen-front.jpg',
-      'grey-linen-side':  'img-grey-linen-side.jpg',
-      'pink-cami':        'img-pink-cami.jpg',
-      'wine-pinstripe':   'img-wine-pinstripe.jpg',
-    }
-    // Videos for gallery items (from ../videos/)
-    const GALLERY_VIDS = [
-      '../videos/245dd796-b8e8-4709-be68-f37681e7f4e7.mp4',
-      '../videos/302eff50-a1b3-45be-be4d-682bed5b7264.mp4',
-      '../videos/330ed6f1-c907-49c7-9f6c-d5c2b4fe5b21.mp4',
-      '../videos/3f5d39a5-1d73-4a5b-9374-d5285e612005.mp4',
-      '../videos/4a182829-91c0-4b78-9cf4-37b5ea25de7b.mp4',
-      '../videos/5849f7b5-9951-4cf3-9fd0-594173a76aaa.mp4',
-    ]
+    // Gallery is built from the live catalog so it can never fall out of sync
+    // with what's actually for sale — the previous version was a fixed,
+    // hand-written list that only ever covered 3 of the products in the shop,
+    // and two of its entries linked to product IDs that no longer exist.
+    let galleryItems = []
 
-    const galleryItems = [
-      {filter:'dresses occasion',title:'Red Beaded Off-Shoulder Gown',desc:'PHERAN Signature Collection · 2026',product:'evening-gown-005',img:'red-gown-front',isVideo:false},
-      {filter:'dresses editorial',title:'Evening Gown — Side Profile',desc:'Editorial shoot · Spring 2026',product:'evening-gown-005',img:'red-gown-side',isVideo:false},
-      {filter:'everyday',title:'Linen Bow-Strap Co-ord — Front',desc:'Customer look · @adaeze.style',product:'silk-wrap-001',img:'grey-linen-front',isVideo:false},
-      {filter:'everyday',title:'Linen Co-ord Set — Side View',desc:'Office to evening transition',product:'linen-dress-004',img:'grey-linen-side',isVideo:false},
-      {filter:'dresses editorial',title:'Pearl-Strap Ribbed Cami',desc:'New Arrivals · Summer 2026',product:'cotton-blouse-002',img:'pink-cami',isVideo:false},
-      {filter:'custom occasion',title:'Pinstripe Wide-Leg Set',desc:'Custom-made · Client: Fatima B.',product:'tailored-trousers-003',img:'wine-pinstripe',isVideo:false},
-      {filter:'editorial',title:'PHERAN Studio Film',desc:'Behind the seams · Lagos',product:'evening-gown-005',img:'red-gown-front',isVideo:true,vidIdx:0},
-      {filter:'custom',title:'Co-ord Collection Video',desc:'Campaign film · 2026',product:'silk-wrap-001',img:'grey-linen-front',isVideo:true,vidIdx:1},
-      {filter:'occasion',title:'Gown — Movement Film',desc:'Event styling · @chisom.looks',product:'evening-gown-005',img:'red-gown-side',isVideo:true,vidIdx:2},
-      {filter:'everyday',title:'Linen Set Video Lookbook',desc:'Everyday luxury · PHERAN',product:'linen-dress-004',img:'grey-linen-side',isVideo:true,vidIdx:3},
-      {filter:'custom occasion',title:'Bespoke Evening Film',desc:'Custom order · Lagos 2026',product:'evening-gown-005',img:'red-gown-front',isVideo:true,vidIdx:4},
-      {filter:'editorial dresses',title:'Campaign Behind the Scenes',desc:'Spring/Summer 2026 shoot',product:'cotton-blouse-002',img:'pink-cami',isVideo:true,vidIdx:5},
-    ]
+    async function loadGallery(){
+      try{
+        const res = await fetch('/api/products?perPage=200')
+        const data = await res.json()
+        const products = data.products || []
+        const items = []
+        products.forEach(p=>{
+          if(!p.images || !p.images[0]) return
+          const filter = (p.category||'').toLowerCase().replace(/\s+/g,'-')
+          const desc = [p.fabric, p.category].filter(Boolean).join(' · ') || 'PHERAN'
+          items.push({filter, title:p.title, desc, product:p.id, img:p.images[0], isVideo:false})
+          if(p.video){
+            items.push({filter, title:p.title+' — Video', desc:'Lookbook film · PHERAN', product:p.id, img:p.images[0], isVideo:true, vidSrc:p.video})
+          }
+        })
+        galleryItems = items
+      }catch(e){
+        galleryItems = []
+      }
+      renderGallery()
+    }
 
     let savedFaves = JSON.parse(localStorage.getItem('pheran_faves')||'[]')
     let visibleCount = 9
@@ -198,14 +191,18 @@
 
     function renderGallery(){
       const masonry = document.getElementById('gallery-masonry')
-      const filtered = activeFilter==='all'?galleryItems:galleryItems.filter(i=>i.filter.includes(activeFilter))
+      const filtered = activeFilter==='all'?galleryItems:galleryItems.filter(i=>i.filter===activeFilter)
+      if(!filtered.length){
+        masonry.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:40px 0">No looks in this category yet.</p>`
+        document.getElementById('gallery-load-more').style.display='none'
+        return
+      }
       const visible = filtered.slice(0,visibleCount)
       masonry.innerHTML = visible.map((item,idx)=>{
-        const imgSrc = REAL_IMGS[item.img] || ''
         const vidBadge = item.isVideo ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(45,27,78,0.6);border-radius:50%;width:52px;height:52px;display:flex;align-items:center;justify-content:center;pointer-events:none">${playIcon}</div>` : ''
         return `
         <div class="gallery-item" data-idx="${idx}" data-filter="${item.filter}" onclick="openLightbox(${idx})">
-          <img src="${imgSrc}" alt="${item.title}" loading="lazy">
+          <img src="${item.img}" alt="${item.title}" loading="lazy">
           ${vidBadge}
           <div class="gallery-item-overlay">
             <div class="gi-title">${item.title}</div>
@@ -218,22 +215,21 @@
     }
 
     function openLightbox(idx){
-      const filtered = activeFilter==='all'?galleryItems:galleryItems.filter(i=>i.filter.includes(activeFilter))
+      const filtered = activeFilter==='all'?galleryItems:galleryItems.filter(i=>i.filter===activeFilter)
       const item=filtered[idx]
       if(!item) return
       const lb=document.getElementById('lightbox')
       const lbImg = document.getElementById('lb-img')
       const lbVid = document.getElementById('lb-vid')
-      const imgSrc = REAL_IMGS[item.img] || ''
-      if(item.isVideo && GALLERY_VIDS[item.vidIdx]){
+      if(item.isVideo && item.vidSrc){
         if(lbVid){
-          lbVid.src = GALLERY_VIDS[item.vidIdx]
+          lbVid.src = item.vidSrc
           lbVid.style.display='block'
           lbVid.play()
         }
         lbImg.style.display = 'none'
       } else {
-        lbImg.src = imgSrc
+        lbImg.src = item.img
         lbImg.style.display = 'block'
         if(lbVid){ lbVid.style.display='none'; lbVid.pause(); lbVid.src='' }
       }
@@ -271,10 +267,10 @@
     const communityGrid=document.getElementById('community-grid')
     if(communityGrid){
       const communityImgs=[
-        {src:'img-red-gown-front.jpg',label:'@chisom.looks'},
-        {src:'img-grey-linen-front.jpg',label:'@adaeze.style'},
+        {src:'img-red-gown-front.jpg?v=20260802',label:'@chisom.looks'},
+        {src:'img-grey-linen-front.jpg?v=20260802',label:'@adaeze.style'},
         {src:'img-pink-cami.jpg',label:'@tolu.m'},
-        {src:'img-wine-pinstripe.jpg',label:'@fatima.b'},
+        {src:'img-wine-pinstripe.jpg?v=20260802',label:'@fatima.b'},
       ]
       communityGrid.innerHTML=communityImgs.map((ci,i)=>`
         <div style="aspect-ratio:1;border-radius:10px;overflow:hidden;cursor:pointer;position:relative" onclick="window.open('https://instagram.com/pheran_clothing','_blank')">
@@ -285,7 +281,7 @@
         </div>`).join('')
     }
 
-    renderGallery()
+    loadGallery()
   </script>
   <script src="icons.js?v=20260801"></script>
 
