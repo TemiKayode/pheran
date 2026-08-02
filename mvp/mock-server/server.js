@@ -208,11 +208,11 @@ app.use((req, res, next) => {
   // Content Security Policy
   res.setHeader('Content-Security-Policy', [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com",          // inline scripts used in HTML pages; GTM loads gtag.js
+    "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://js.sentry-cdn.com https://browser.sentry-cdn.com",          // inline scripts used in HTML pages; GTM loads gtag.js; Sentry's loader pulls the full SDK from browser.sentry-cdn.com
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: blob: https://*.supabase.co https://aajbecjnnuebsvxmuiww.supabase.co https://www.google-analytics.com https://www.googletagmanager.com https://www.google.com https://www.google.com.ng",
-    "connect-src 'self' https://*.supabase.co https://api.supabase.com https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://stats.g.doubleclick.net https://www.google.com https://www.google.com.ng",
+    "connect-src 'self' https://*.supabase.co https://api.supabase.com https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://stats.g.doubleclick.net https://www.google.com https://www.google.com.ng https://*.ingest.us.sentry.io https://o4509921943158784.ingest.us.sentry.io",
     "media-src 'self' blob: https://*.supabase.co",
     "frame-ancestors 'none'",
     "base-uri 'self'",
