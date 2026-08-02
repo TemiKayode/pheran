@@ -650,54 +650,63 @@ try {
   })
   app.post('/api/upload', requireAdminAuth, upload.any(), async (req, res) => {
     if (!req.files || !req.files.length) return res.status(400).json({ ok: false, error: 'No files received' })
-    const results = []
-    for (const file of req.files) {
-      const isVideo = file.mimetype.startsWith('video/')
-      let buffer = file.buffer
-      let mimetype = file.mimetype
-      let ext = UPLOAD_MIME[file.mimetype] || path.extname(file.originalname).toLowerCase() || (isVideo ? '.mp4' : '.jpg')
-      // Images always get re-encoded to a size-capped JPEG, regardless of the
-      // format uploaded in. Uncompressed PNG screenshots/exports from a phone
-      // or image editor were landing at 1.5-2MB each versus ~70KB for an
-      // equivalent JPEG — the single biggest thing slowing image load time
-      // across the site, since this is what ends up in every product card.
-      if (!isVideo) {
-        try {
-          buffer = await sharp(file.buffer)
-            .rotate() // apply EXIF orientation before stripping metadata
-            .resize({ width: 1400, withoutEnlargement: true })
-            .jpeg({ quality: 85, progressive: true, mozjpeg: true })
-            .toBuffer()
-          mimetype = 'image/jpeg'
-          ext = '.jpg'
-        } catch (sharpErr) {
-          console.warn('[upload] image optimization failed, using original:', sharpErr.message)
-          reportError(new Error('Upload optimization failed: ' + sharpErr.message), { originalName: file.originalname })
+    // Express 4 doesn't route a rejected async-handler promise to the error
+    // middleware — an uncaught throw here (e.g. a disk write failing) would
+    // otherwise leave the request hanging with no response ever sent.
+    try {
+      const results = []
+      for (const file of req.files) {
+        const isVideo = file.mimetype.startsWith('video/')
+        let buffer = file.buffer
+        let mimetype = file.mimetype
+        let ext = UPLOAD_MIME[file.mimetype] || path.extname(file.originalname).toLowerCase() || (isVideo ? '.mp4' : '.jpg')
+        // Images always get re-encoded to a size-capped JPEG, regardless of the
+        // format uploaded in. Uncompressed PNG screenshots/exports from a phone
+        // or image editor were landing at 1.5-2MB each versus ~70KB for an
+        // equivalent JPEG — the single biggest thing slowing image load time
+        // across the site, since this is what ends up in every product card.
+        if (!isVideo) {
+          try {
+            buffer = await sharp(file.buffer)
+              .rotate() // apply EXIF orientation before stripping metadata
+              .resize({ width: 1400, withoutEnlargement: true })
+              .jpeg({ quality: 85, progressive: true, mozjpeg: true })
+              .toBuffer()
+            mimetype = 'image/jpeg'
+            ext = '.jpg'
+          } catch (sharpErr) {
+            console.warn('[upload] image optimization failed, using original:', sharpErr.message)
+            reportError(new Error('Upload optimization failed: ' + sharpErr.message), { originalName: file.originalname })
+          }
         }
-      }
-      const prefix = isVideo ? 'videos/' : ''
-      const filename = `${prefix}${isVideo ? 'vid' : 'img'}-${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`
-      if (supabase) {
-        try {
-          const { error } = await supabase.storage
-            .from('product-images')
-            .upload(filename, buffer, { contentType: mimetype, upsert: true })
-          if (error) throw error
-          const { data } = supabase.storage.from('product-images').getPublicUrl(filename)
-          results.push({ url: data.publicUrl, type: isVideo ? 'video' : 'image', name: file.originalname })
-          continue
-        } catch (storageErr) {
-          console.warn('[upload] Supabase Storage error:', storageErr.message, '— falling back to disk')
-          // Not a hard failure (disk fallback below still serves the request), but worth
-          // knowing about — Railway's filesystem isn't persistent across deploys, so a
-          // disk-stored image silently disappears on the next redeploy.
-          reportError(new Error('Upload fell back to disk: ' + storageErr.message), { filename })
+        const prefix = isVideo ? 'videos/' : ''
+        const filename = `${prefix}${isVideo ? 'vid' : 'img'}-${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`
+        if (supabase) {
+          try {
+            const { error } = await supabase.storage
+              .from('product-images')
+              .upload(filename, buffer, { contentType: mimetype, upsert: true })
+            if (error) throw error
+            const { data } = supabase.storage.from('product-images').getPublicUrl(filename)
+            results.push({ url: data.publicUrl, type: isVideo ? 'video' : 'image', name: file.originalname })
+            continue
+          } catch (storageErr) {
+            console.warn('[upload] Supabase Storage error:', storageErr.message, '— falling back to disk')
+            // Not a hard failure (disk fallback below still serves the request), but worth
+            // knowing about — Railway's filesystem isn't persistent across deploys, so a
+            // disk-stored image silently disappears on the next redeploy.
+            reportError(new Error('Upload fell back to disk: ' + storageErr.message), { filename })
+          }
         }
+        fs.writeFileSync(path.join(UPLOADS_DIR, filename), buffer)
+        results.push({ url: `/uploads/${filename}`, type: isVideo ? 'video' : 'image', name: file.originalname })
       }
-      fs.writeFileSync(path.join(UPLOADS_DIR, filename), buffer)
-      results.push({ url: `/uploads/${filename}`, type: isVideo ? 'video' : 'image', name: file.originalname })
+      res.json({ ok: true, results, paths: results.map(r => r.url) })
+    } catch (e) {
+      console.error('[upload] failed:', e.message)
+      reportError(e, { route: '/api/upload' })
+      if (!res.headersSent) res.status(500).json({ ok: false, error: 'Upload failed — please try again' })
     }
-    res.json({ ok: true, results, paths: results.map(r => r.url) })
   })
 } catch (e) {
   app.post('/api/upload', (_req, res) => {
