@@ -298,6 +298,8 @@
           <div class="si-info"><div class="si-title">${esc(i.title)}</div><div class="si-meta">${esc(i.color||'')} · ${esc(i.size||'')} · Qty ${Number(i.qty)||1}</div></div>
           <div class="si-price">${fmt(Number(i.price||0)*Number(i.qty||1))}</div>
         </div>`).join('')
+      const stdEl=document.getElementById('std-price')
+      if(stdEl) stdEl.textContent=sub>=100000?'Free':'₦1,500'
       document.getElementById('sum-totals').innerHTML=`
         <div class="sum-row"><span>Subtotal</span><span>${fmt(sub)}</span></div>
         <div class="sum-row"><span>Delivery</span><span style="color:${fee===0?'var(--success)':''}">${fee===0?'Free':fmt(fee)}</span></div>
