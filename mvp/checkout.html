@@ -53,9 +53,10 @@
     .delivery-option strong{display:block;font-size:.92rem}
     .delivery-option small{color:var(--text-secondary);font-size:.82rem}
     /* Review panel */
-    .review-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gray-100);font-size:.9rem}
+    .review-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--gray-100);font-size:.9rem}
     .review-row:last-child{border-bottom:none}
-    .review-label{color:var(--text-muted);font-size:.78rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px}
+    .review-row span:last-child{text-align:right;word-break:break-word;overflow-wrap:anywhere;min-width:0;flex:1}
+    .review-label{flex-shrink:0;color:var(--text-muted);font-size:.78rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px}
     /* Bank details card */
     .bank-card{background:linear-gradient(135deg,#2D1B4E 0%,#4a2a7a 100%);border-radius:16px;padding:24px;color:#fff;margin-bottom:20px}
     .bank-card .bc-label{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(212,169,106,.8);margin-bottom:4px}
