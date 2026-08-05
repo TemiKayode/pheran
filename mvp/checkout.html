@@ -163,6 +163,14 @@
               <div class="info"><strong>Express Delivery</strong><small>1–2 business days</small></div>
               <span style="font-weight:700">₦3,500</span>
             </label>
+            <label class="delivery-option">
+              <input type="radio" name="delivery" value="international">
+              <div class="info"><strong>International Delivery</strong><small>Contact us for timeline</small></div>
+              <span style="font-weight:700;font-size:.82rem;color:var(--text-muted)">Quote</span>
+            </label>
+          </div>
+          <div id="intl-notice" style="display:none;margin-top:10px;padding:12px 14px;background:#FFF8E7;border:1px solid #F59E0B;border-radius:10px;font-size:.83rem;color:#92400E;line-height:1.5">
+            <strong>International order?</strong> Place your order and our team will contact you on WhatsApp within 24 hours with your delivery quote. The international shipping fee will be invoiced separately before dispatch.
           </div>
         </div>
 
@@ -285,11 +293,11 @@
     function calcTotals(cart){
       const sub=cart.reduce((s,i)=>s+Number(i.price||0)*Number(i.qty||1),0)
       const method=document.querySelector('input[name="delivery"]:checked')?.value
-      const fee=method==='express'?3500:(sub>=100000?0:1500)
-      return {sub,fee,total:sub+fee}
+      const fee=method==='express'?3500:method==='international'?0:(sub>=100000?0:1500)
+      return {sub,fee,total:sub+fee,method}
     }
     function renderSummary(){
-      const cart=getCart(), {sub,fee,total}=calcTotals(cart)
+      const cart=getCart(), {sub,fee,total,method}=calcTotals(cart)
       const el=document.getElementById('sum-items')
       if(!cart.length){el.innerHTML='<p style="color:var(--text-muted);font-size:.88rem">Your cart is empty.</p>';return}
       el.innerHTML=cart.map(i=>`
@@ -300,10 +308,13 @@
         </div>`).join('')
       const stdEl=document.getElementById('std-price')
       if(stdEl) stdEl.textContent=sub>=100000?'Free':'₦1,500'
+      const intlNotice=document.getElementById('intl-notice')
+      if(intlNotice) intlNotice.style.display=method==='international'?'block':'none'
+      const feeLabel=method==='international'?'<span style="font-size:.82rem;color:#92400E;font-weight:700">Quoted separately</span>':fee===0?'<span style="color:var(--success)">Free</span>':fmt(fee)
       document.getElementById('sum-totals').innerHTML=`
         <div class="sum-row"><span>Subtotal</span><span>${fmt(sub)}</span></div>
-        <div class="sum-row"><span>Delivery</span><span style="color:${fee===0?'var(--success)':''}">${fee===0?'Free':fmt(fee)}</span></div>
-        <div class="sum-total"><span>Total</span><span>${fmt(total)}</span></div>`
+        <div class="sum-row"><span>Delivery</span><span>${feeLabel}</span></div>
+        <div class="sum-total"><span>Total</span><span>${fmt(total)}${method==='international'?'<span style="font-size:.72rem;font-weight:400;color:var(--text-muted);display:block">+ intl. delivery</span>':''}</span></div>`
       // Update bank card amount
       document.getElementById('bd-amount').textContent=fmt(total)
       document.getElementById('s-amount').textContent=fmt(total)

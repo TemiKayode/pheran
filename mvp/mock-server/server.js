@@ -1186,7 +1186,7 @@ app.post('/api/orders', mutationRateLimit, async(req,res)=>{
     if(priced.error) return res.status(400).json({ ok:false, error: priced.error })
     const items = priced.items
     const subtotal = items.reduce((s,i)=>s+(i.price*i.qty),0)
-    const deliveryFee = deliveryMethod==='express' ? 3500 : (subtotal>=100000 ? 0 : 1500)
+    const deliveryFee = deliveryMethod==='express' ? 3500 : deliveryMethod==='international' ? 0 : (subtotal>=100000 ? 0 : 1500)
     const safeShipping = {
       firstName: String(shipping.firstName||'').slice(0,60),
       lastName:  String(shipping.lastName||'').slice(0,60),

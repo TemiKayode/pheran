@@ -404,13 +404,13 @@
       `
     }
 
-    // Returns the date that is `n` business days (Mon–Fri) from today
+    // Returns the date that is `n` business days (Mon–Sat) from today
     function addBusinessDays(n) {
       const d = new Date(); d.setHours(0,0,0,0)
       let added = 0
       while (added < n) {
         d.setDate(d.getDate() + 1)
-        if (d.getDay() !== 0 && d.getDay() !== 6) added++
+        if (d.getDay() !== 0) added++
       }
       return d
     }
