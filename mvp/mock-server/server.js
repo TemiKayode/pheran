@@ -169,6 +169,14 @@ if (!process.env.JWT_SECRET) {
 const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex')
 
 const app = express()
+// Both Railway's edge and (once enabled) Cloudflare's proxy sit in front of
+// this process, so req.ip is a proxy hop's address unless Express is told to
+// read it from X-Forwarded-For instead.
+app.set('trust proxy', true)
+// Cloudflare's CF-Connecting-IP is the authoritative client IP when present
+// (set by Cloudflare itself, not client-controllable) — falls back to the
+// X-Forwarded-For-derived req.ip for traffic that reaches Railway directly.
+function clientIp(req) { return req.headers['cf-connecting-ip'] || req.ip || 'unknown' }
 
 // gzip/brotli-equivalent compression for every response — text payloads (HTML,
 // CSS, JS, JSON) typically shrink 60-80%, which matters a lot on the mobile
@@ -241,7 +249,7 @@ app.use((req, res, next) => {
 // brute-force protection at all before this, since it isn't under /api/auth.
 const _authRateMap = new Map()
 function authRateLimit(req, res, next) {
-  const key = req.ip || 'unknown'
+  const key = clientIp(req)
   const now = Date.now()
   const rec = _authRateMap.get(key) || { n: 0, t: now }
   if (now - rec.t > 900000) { rec.n = 0; rec.t = now }
@@ -515,7 +523,7 @@ app.get('/api/bank-details', (_req, res) => {
 // Rate limit for order/cart mutations — 60 requests per IP per 15 minutes
 const _mutationRateMap = new Map()
 function mutationRateLimit(req, res, next) {
-  const key = req.ip || 'unknown'
+  const key = clientIp(req)
   const now = Date.now()
   const rec = _mutationRateMap.get(key) || { n: 0, t: now }
   if (now - rec.t > 900000) { rec.n = 0; rec.t = now }
@@ -1082,8 +1090,13 @@ async function getSessionUserId(req) {
     const access = req.cookies?.[COOKIE_ACCESS]
     if (!access) return 'anonymous'
     try {
-      const { data } = await supabase.auth.getUser(access)
-      return data?.user?.id || 'anonymous'
+      // getClaims() verifies locally against the project's cached JWKS when
+      // asymmetric signing keys are in use — no per-request round trip to
+      // Supabase Auth. Transparently falls back to a getUser()-equivalent
+      // call for symmetric-secret projects, so this is never worse than
+      // before and gets faster the moment the project upgrades signing keys.
+      const { data } = await supabase.auth.getClaims(access)
+      return data?.claims?.sub || 'anonymous'
     } catch(e) { return 'anonymous' }
   } else {
     // bcrypt fallback: read JWT from cookie
@@ -1387,12 +1400,20 @@ if(supabase){
     const m = u.user_metadata||{}
     return { id:u.id, email:u.email, firstName:m.firstName||'', lastName:m.lastName||'', phone:m.phone||'' }
   }
+  // Shapes getClaims()'s JWT payload to look like the Supabase User object
+  // fmtUser() and callers of resolveUser() already expect (u.id, u.user_metadata).
+  function claimsToUser(claims){
+    return { id: claims.sub, email: claims.email, user_metadata: claims.user_metadata || {} }
+  }
+
   async function resolveUser(req, res){
     const access  = req.cookies?.[COOKIE_ACCESS]
     const refresh = req.cookies?.[COOKIE_REFRESH]
     if(access){
-      const { data, error } = await supabase.auth.getUser(access)
-      if(!error && data.user) return data.user
+      // See getSessionUserId() — verifies locally via cached JWKS when possible
+      // instead of round-tripping to Supabase Auth on every authenticated request.
+      const { data, error } = await supabase.auth.getClaims(access)
+      if(!error && data?.claims) return claimsToUser(data.claims)
     }
     // access token expired — try refresh
     if(refresh){
