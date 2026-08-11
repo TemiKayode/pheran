@@ -169,14 +169,38 @@ if (!process.env.JWT_SECRET) {
 const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex')
 
 const app = express()
-// Both Railway's edge and (once enabled) Cloudflare's proxy sit in front of
-// this process, so req.ip is a proxy hop's address unless Express is told to
-// read it from X-Forwarded-For instead.
-app.set('trust proxy', true)
-// Cloudflare's CF-Connecting-IP is the authoritative client IP when present
-// (set by Cloudflare itself, not client-controllable) — falls back to the
-// X-Forwarded-For-derived req.ip for traffic that reaches Railway directly.
-function clientIp(req) { return req.headers['cf-connecting-ip'] || req.ip || 'unknown' }
+// Railway's edge (and Cloudflare, once the orange cloud is enabled) terminates
+// TLS and proxies to this process, so req.socket.remoteAddress is a proxy hop —
+// the same value for every visitor on earth. Without this setting every client
+// collapsed into a single rate-limit bucket: 20 requests to /api/auth locked
+// *all* customers out of login for 15 minutes, and 60 to /api/orders blocked
+// all checkout. One attacker could take the store offline with a request every
+// 15 seconds.
+//
+// This MUST be a hop count, not `true`. With `true`, Express trusts the entire
+// X-Forwarded-For chain and req.ip becomes its leftmost entry — which is the
+// part the *client* wrote. An attacker would then get a fresh rate-limit bucket
+// per forged header, turning every limit below into a no-op. A number tells
+// Express exactly how many proxies sit in front of us so it skips those and
+// reads the first address it didn't receive from an untrusted source.
+//
+// Set TRUST_PROXY_HOPS to 2 when Cloudflare proxying is enabled in front of
+// Railway. Getting this number wrong is fail-safe in one direction only: too
+// high hands out spoofable buckets, too low shares one bucket. Verify against
+// /api/health-ip below after any change to the proxy chain.
+app.set('trust proxy', Number(process.env.TRUST_PROXY_HOPS) || 1)
+
+// Single source of truth for "who is this request from", used by every limiter.
+//
+// Deliberately does NOT read CF-Connecting-IP. That header is only trustworthy
+// on requests that actually passed through Cloudflare, and a Railway service
+// stays reachable on its *.up.railway.app hostname regardless of what the
+// pheran.ng DNS record points at — so an attacker can hit the origin directly
+// and set CF-Connecting-IP to whatever they like. With the hop count correct,
+// req.ip already resolves to the real client through Cloudflare anyway:
+// Cloudflare appends the true client IP to X-Forwarded-For and Railway appends
+// Cloudflare's, so skipping 2 trusted hops lands exactly on the client.
+function clientIp(req) { return req.ip || 'unknown' }
 
 // gzip/brotli-equivalent compression for every response — text payloads (HTML,
 // CSS, JS, JSON) typically shrink 60-80%, which matters a lot on the mobile
@@ -260,6 +284,16 @@ function authRateLimit(req, res, next) {
 }
 app.use('/api/auth', authRateLimit)
 app.use('/api/admin/login', authRateLimit)
+
+// Every limiter here keys on client IP, so each distinct attacker IP allocates a
+// Map entry that previously lived until restart — an attacker rotating source
+// addresses could grow these without bound. Sweep expired windows every 15 min.
+setInterval(() => {
+  const now = Date.now()
+  for (const map of [_authRateMap, _mutationRateMap, _adminFailMap]) {
+    for (const [k, v] of map.entries()) if (now - v.t > 900000) map.delete(k)
+  }
+}, 900000).unref()
 
 // On admin.pheran.ng, the bare root should show the admin panel instead of the
 // storefront homepage. Deliberately narrow — only the exact "/" path, not
@@ -567,17 +601,61 @@ function setAdminCookie(req, res) {
   res.cookie('admin_auth', ADMIN_TOKEN, { httpOnly: true, sameSite: 'lax', path: '/', maxAge: 8 * 60 * 60 * 1000, secure })
 }
 
+// ── Admin brute-force lockout ────────────────────────────────────────────────
+// Mounting a limiter on a path only protects that path. requireAdminAuth also
+// accepts an Authorization: Basic header, and it guards ~10 routes (/api/upload,
+// /api/products/admin, /api/cache-metrics, /api/session-events, /api/cooccurrence,
+// /api/admin/orders, /api/admin/orders/export, /api/custom-config, ...) — none of
+// which were behind authRateLimit. So the PIN could be guessed at full speed
+// against, say, GET /api/cache-metrics while /api/admin/login sat politely
+// rate-limited. The check therefore has to live in the guard, not on a route.
+//
+// Counts FAILURES only. An admin working normally holds a valid cookie and never
+// touches this path, so the panel's own burst of API calls can't lock its user
+// out — but a stranger guessing PINs gets 10 tries per 15 minutes.
+const _adminFailMap = new Map()
+const ADMIN_FAIL_WINDOW = 15 * 60 * 1000
+const ADMIN_FAIL_MAX = 10
+
+function adminLockedOut(req) {
+  const rec = _adminFailMap.get(clientIp(req))
+  if (!rec) return false
+  if (Date.now() - rec.t > ADMIN_FAIL_WINDOW) { _adminFailMap.delete(clientIp(req)); return false }
+  return rec.n >= ADMIN_FAIL_MAX
+}
+function adminRecordFailure(req) {
+  const key = clientIp(req)
+  const now = Date.now()
+  const rec = _adminFailMap.get(key) || { n: 0, t: now }
+  if (now - rec.t > ADMIN_FAIL_WINDOW) { rec.n = 0; rec.t = now }
+  rec.n++
+  _adminFailMap.set(key, rec)
+}
+function adminClearFailures(req) { _adminFailMap.delete(clientIp(req)) }
+function adminLockoutResponse(res) {
+  return res.status(429).set('Retry-After', '900')
+    .json({ ok: false, error: 'Too many failed attempts — try again in 15 minutes' })
+}
+
 // requireAdminAuth — timing-safe comparison to prevent timing oracle attacks
 function requireAdminAuth(req, res, next) {
+  // Valid session cookie wins before the lockout check, so a legitimate admin is
+  // never collateral damage from someone else brute-forcing the same IP.
   if (req.cookies?.admin_auth && timingSafeEqual(req.cookies.admin_auth, ADMIN_TOKEN)) return next()
+  if (adminLockedOut(req)) return adminLockoutResponse(res)
   const [, b64] = (req.headers['authorization'] || '').split(' ')
   if (b64) {
     const decoded = Buffer.from(b64, 'base64').toString()
     const colonIdx = decoded.indexOf(':')
     const user = (colonIdx >= 0 ? decoded.slice(0, colonIdx) : '').trim().toLowerCase()
     const pass = colonIdx >= 0 ? decoded.slice(colonIdx + 1) : ''
-    if (user === ADMIN_EMAIL && pass && timingSafeEqual(pass, ADMIN_PIN)) { setAdminCookie(req, res); return next() }
+    if (user === ADMIN_EMAIL && pass && timingSafeEqual(pass, ADMIN_PIN)) {
+      adminClearFailures(req)
+      setAdminCookie(req, res)
+      return next()
+    }
   }
+  adminRecordFailure(req)
   res.status(401).json({ ok: false, error: 'Unauthorized — admin access only' })
 }
 
@@ -587,11 +665,16 @@ app.get('/admin/login', (_req, res) => res.sendFile(path.join(__dirname, '..', '
 // Admin login API — validates email + PIN together, issues httpOnly session cookie.
 // Both must match — neither alone is enough — so a leaked PIN alone can't get in.
 app.post('/api/admin/login', (req, res) => {
+  // Shares _adminFailMap with requireAdminAuth so the two credential entry points
+  // draw down one budget — otherwise an attacker simply alternates between them.
+  if (adminLockedOut(req)) return adminLockoutResponse(res)
   const email = String(req.body?.email || '').trim().toLowerCase()
   const pin = String(req.body?.pin || '')
   if (!email || !pin || email !== ADMIN_EMAIL || !timingSafeEqual(pin, ADMIN_PIN)) {
+    adminRecordFailure(req)
     return res.status(401).json({ ok: false, error: 'Incorrect email or PIN' })
   }
+  adminClearFailures(req)
   setAdminCookie(req, res)
   res.json({ ok: true })
 })
@@ -1713,6 +1796,21 @@ app.post('/api/custom-config', requireAdminAuth, async (req, res) => {
   }catch(e){
     res.status(500).json({ ok:false, error:String(e) })
   }
+})
+
+// Proxy-chain diagnostic — confirms TRUST_PROXY_HOPS is correct for the current
+// deployment. Every rate limit in this file keys on `resolved`, so if that shows
+// a proxy address instead of your real IP the limits are shared site-wide (too
+// few hops); if it echoes a value you injected into x-forwarded-for, they're
+// bypassable (too many hops). Admin-only: it reflects request headers back.
+app.get('/api/health-ip', requireAdminAuth, (req,res)=>{
+  res.json({
+    ok: true,
+    resolved: clientIp(req),
+    trustProxyHops: Number(process.env.TRUST_PROXY_HOPS) || 1,
+    socketAddress: req.socket?.remoteAddress || null,
+    xForwardedFor: req.headers['x-forwarded-for'] || null,
+  })
 })
 
 // Health check
