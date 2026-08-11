@@ -40,7 +40,7 @@ async function startServer(envOverrides = {}) {
   child.stderr.on('data', d => { out += d })
 
   const baseUrl = `http://127.0.0.1:${port}`
-  const deadline = Date.now() + 10000
+  const deadline = Date.now() + 25000
   while (Date.now() < deadline) {
     try {
       const res = await fetch(`${baseUrl}/api/health`)

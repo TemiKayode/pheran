@@ -202,6 +202,21 @@ app.set('trust proxy', Number(process.env.TRUST_PROXY_HOPS) || 1)
 // Cloudflare's, so skipping 2 trusted hops lands exactly on the client.
 function clientIp(req) { return req.ip || 'unknown' }
 
+// Shared state backend — optional. Rate limits, the admin brute-force lockout,
+// and the orders fallback store all need to agree across every Railway replica
+// to mean anything (an in-memory Map is only correct on a single instance: a
+// 20-request limit becomes a 20-request-per-replica limit, and the admin
+// lockout resets every time the balancer picks a different instance). When
+// REDIS_URL isn't set — local dev, the test suite — everything below falls
+// back to the original in-memory Maps, so neither needs Redis to run.
+let redis = null
+if (process.env.REDIS_URL) {
+  const Redis = require('ioredis')
+  redis = new Redis(process.env.REDIS_URL, { maxRetriesPerRequest: 2 })
+  redis.on('error', e => console.warn('[redis] connection error:', e.message))
+  redis.on('connect', () => console.log('[redis] connected'))
+}
+
 // gzip/brotli-equivalent compression for every response — text payloads (HTML,
 // CSS, JS, JSON) typically shrink 60-80%, which matters a lot on the mobile
 // networks most of this site's traffic comes in on.
@@ -268,18 +283,50 @@ app.use((req, res, next) => {
   next()
 })
 
+// Fixed-window counter shared by every rate limit in this file. Redis INCR is
+// atomic, so concurrent requests from the same key can't race past the limit
+// the way a plain read-then-write on a Map could. Falls back to the Map when
+// Redis isn't configured (local dev, tests) — a limit is only shared across
+// Railway replicas when Redis is; per-instance is still correct, just looser,
+// on a single instance.
+//
+// On a Redis error this fails OPEN (returns 0, i.e. "not limited yet") rather
+// than blocking the request — a transient Redis blip shouldn't be able to
+// take down login or checkout for every customer.
+async function windowedCount(map, prefix, key, windowMs) {
+  if (redis) {
+    try {
+      const rkey = `${prefix}:${key}`
+      const count = await redis.incr(rkey)
+      if (count === 1) await redis.pexpire(rkey, windowMs)
+      return count
+    } catch (e) {
+      console.warn('[redis] rate-limit check failed, failing open:', e.message)
+      return 0
+    }
+  }
+  const now = Date.now()
+  const rec = map.get(key) || { n: 0, t: now }
+  if (now - rec.t > windowMs) { rec.n = 0; rec.t = now }
+  rec.n++
+  map.set(key, rec)
+  return rec.n
+}
+async function windowedClear(map, prefix, key) {
+  if (redis) {
+    try { await redis.del(`${prefix}:${key}`) } catch (e) { console.warn('[redis] rate-limit clear failed:', e.message) }
+    return
+  }
+  map.delete(key)
+}
+
 // Rate-limit auth endpoints — 20 attempts per IP per 15 minutes.
 // Also covers /api/admin/login — the PIN gate for the whole admin panel had no
 // brute-force protection at all before this, since it isn't under /api/auth.
 const _authRateMap = new Map()
-function authRateLimit(req, res, next) {
-  const key = clientIp(req)
-  const now = Date.now()
-  const rec = _authRateMap.get(key) || { n: 0, t: now }
-  if (now - rec.t > 900000) { rec.n = 0; rec.t = now }
-  rec.n++
-  _authRateMap.set(key, rec)
-  if (rec.n > 20) return res.status(429).set('Retry-After', '900').json({ ok: false, error: 'Too many requests — try again in 15 minutes' })
+async function authRateLimit(req, res, next) {
+  const count = await windowedCount(_authRateMap, 'rl:auth', clientIp(req), 900000)
+  if (count > 20) return res.status(429).set('Retry-After', '900').json({ ok: false, error: 'Too many requests — try again in 15 minutes' })
   next()
 }
 app.use('/api/auth', authRateLimit)
@@ -556,14 +603,9 @@ app.get('/api/bank-details', (_req, res) => {
 
 // Rate limit for order/cart mutations — 60 requests per IP per 15 minutes
 const _mutationRateMap = new Map()
-function mutationRateLimit(req, res, next) {
-  const key = clientIp(req)
-  const now = Date.now()
-  const rec = _mutationRateMap.get(key) || { n: 0, t: now }
-  if (now - rec.t > 900000) { rec.n = 0; rec.t = now }
-  rec.n++
-  _mutationRateMap.set(key, rec)
-  if (rec.n > 60) return res.status(429).set('Retry-After', '900').json({ ok: false, error: 'Too many requests — try again in 15 minutes' })
+async function mutationRateLimit(req, res, next) {
+  const count = await windowedCount(_mutationRateMap, 'rl:mutation', clientIp(req), 900000)
+  if (count > 60) return res.status(429).set('Retry-After', '900').json({ ok: false, error: 'Too many requests — try again in 15 minutes' })
   next()
 }
 
@@ -617,32 +659,36 @@ const _adminFailMap = new Map()
 const ADMIN_FAIL_WINDOW = 15 * 60 * 1000
 const ADMIN_FAIL_MAX = 10
 
-function adminLockedOut(req) {
-  const rec = _adminFailMap.get(clientIp(req))
-  if (!rec) return false
-  if (Date.now() - rec.t > ADMIN_FAIL_WINDOW) { _adminFailMap.delete(clientIp(req)); return false }
-  return rec.n >= ADMIN_FAIL_MAX
+// Atomically bumps this IP's failure counter and checks it in one step —
+// called before credentials are even evaluated. A separate "check if locked,
+// then later record a failure" pair would race under a concurrent burst:
+// verified against a real Redis instance, 11 simultaneous wrong-PIN requests
+// all read the counter as 0 before any of their own increments landed, so
+// none of them individually saw a 429 even though the count ended up past
+// the threshold — a burst attacker could ride that window for far more than
+// ADMIN_FAIL_MAX guesses. Folding the check and increment into one atomic
+// windowedCount() call closes it. A correct PIN clears the counter right after.
+async function adminFailCountAndCheck(req) {
+  const count = await windowedCount(_adminFailMap, 'rl:adminfail', clientIp(req), ADMIN_FAIL_WINDOW)
+  return count > ADMIN_FAIL_MAX
 }
-function adminRecordFailure(req) {
-  const key = clientIp(req)
-  const now = Date.now()
-  const rec = _adminFailMap.get(key) || { n: 0, t: now }
-  if (now - rec.t > ADMIN_FAIL_WINDOW) { rec.n = 0; rec.t = now }
-  rec.n++
-  _adminFailMap.set(key, rec)
+async function adminClearFailures(req) {
+  await windowedClear(_adminFailMap, 'rl:adminfail', clientIp(req))
 }
-function adminClearFailures(req) { _adminFailMap.delete(clientIp(req)) }
 function adminLockoutResponse(res) {
   return res.status(429).set('Retry-After', '900')
     .json({ ok: false, error: 'Too many failed attempts — try again in 15 minutes' })
 }
 
 // requireAdminAuth — timing-safe comparison to prevent timing oracle attacks
-function requireAdminAuth(req, res, next) {
+async function requireAdminAuth(req, res, next) {
   // Valid session cookie wins before the lockout check, so a legitimate admin is
   // never collateral damage from someone else brute-forcing the same IP.
   if (req.cookies?.admin_auth && timingSafeEqual(req.cookies.admin_auth, ADMIN_TOKEN)) return next()
-  if (adminLockedOut(req)) return adminLockoutResponse(res)
+  // Counts this request as an attempt up front, before credentials are even
+  // looked at — see adminFailCountAndCheck for why it can't be a separate
+  // check-then-record-later pair. A correct PIN clears it again just below.
+  if (await adminFailCountAndCheck(req)) return adminLockoutResponse(res)
   const [, b64] = (req.headers['authorization'] || '').split(' ')
   if (b64) {
     const decoded = Buffer.from(b64, 'base64').toString()
@@ -650,12 +696,11 @@ function requireAdminAuth(req, res, next) {
     const user = (colonIdx >= 0 ? decoded.slice(0, colonIdx) : '').trim().toLowerCase()
     const pass = colonIdx >= 0 ? decoded.slice(colonIdx + 1) : ''
     if (user === ADMIN_EMAIL && pass && timingSafeEqual(pass, ADMIN_PIN)) {
-      adminClearFailures(req)
+      await adminClearFailures(req)
       setAdminCookie(req, res)
       return next()
     }
   }
-  adminRecordFailure(req)
   res.status(401).json({ ok: false, error: 'Unauthorized — admin access only' })
 }
 
@@ -664,17 +709,17 @@ app.get('/admin/login', (_req, res) => res.sendFile(path.join(__dirname, '..', '
 
 // Admin login API — validates email + PIN together, issues httpOnly session cookie.
 // Both must match — neither alone is enough — so a leaked PIN alone can't get in.
-app.post('/api/admin/login', (req, res) => {
+app.post('/api/admin/login', async (req, res) => {
   // Shares _adminFailMap with requireAdminAuth so the two credential entry points
   // draw down one budget — otherwise an attacker simply alternates between them.
-  if (adminLockedOut(req)) return adminLockoutResponse(res)
+  // Counts this request as an attempt up front — see adminFailCountAndCheck.
+  if (await adminFailCountAndCheck(req)) return adminLockoutResponse(res)
   const email = String(req.body?.email || '').trim().toLowerCase()
   const pin = String(req.body?.pin || '')
   if (!email || !pin || email !== ADMIN_EMAIL || !timingSafeEqual(pin, ADMIN_PIN)) {
-    adminRecordFailure(req)
     return res.status(401).json({ ok: false, error: 'Incorrect email or PIN' })
   }
-  adminClearFailures(req)
+  await adminClearFailures(req)
   setAdminCookie(req, res)
   res.json({ ok: true })
 })
@@ -1193,19 +1238,75 @@ async function getSessionUserId(req) {
   }
 }
 
-// In-memory mock orders store (keyed by authenticated userId — never client-supplied)
+// Orders fallback store — only read/written when Supabase is unavailable (a
+// query error, or SUPABASE_URL unset for local dev). Backed by Redis when
+// configured so every Railway replica sees the same fallback data instead of
+// each one only knowing about the orders it personally handled — otherwise
+// which orders a customer or admin can see would depend on which replica
+// happens to answer the request, during the exact Supabase-outage window
+// this store exists to survive. Falls back further to an in-memory Map when
+// Redis isn't configured either (e.g. local dev with neither set).
 const ORDERS_STORE = new Map()
+const ORDERS_REDIS_KEY = 'orders:fallback' // hash: orderId -> JSON order
+
+async function fallbackOrderSave(order) {
+  if (redis) {
+    try { return await redis.hset(ORDERS_REDIS_KEY, order.id, JSON.stringify(order)) }
+    catch (e) { console.warn('[redis] order fallback save failed:', e.message) }
+    return
+  }
+  const orders = ORDERS_STORE.get(order.userId) || []
+  const idx = orders.findIndex(o => o.id === order.id)
+  if (idx >= 0) orders[idx] = order
+  else orders.unshift(order)
+  ORDERS_STORE.set(order.userId, orders)
+}
+async function fallbackOrdersAll() {
+  if (redis) {
+    try {
+      const all = await redis.hgetall(ORDERS_REDIS_KEY)
+      return Object.values(all).map(v => JSON.parse(v))
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    } catch (e) { console.warn('[redis] order fallback read failed:', e.message); return [] }
+  }
+  const all = []
+  for (const [, orders] of ORDERS_STORE) all.push(...orders)
+  return all.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+}
+async function fallbackOrdersForUser(userId) {
+  return (await fallbackOrdersAll()).filter(o => o.userId === userId)
+}
+async function fallbackOrderById(orderId) {
+  if (redis) {
+    try {
+      const raw = await redis.hget(ORDERS_REDIS_KEY, orderId)
+      return raw ? JSON.parse(raw) : null
+    } catch (e) { console.warn('[redis] order fallback lookup failed:', e.message); return null }
+  }
+  for (const [, orders] of ORDERS_STORE) {
+    const o = orders.find(x => x.id === orderId)
+    if (o) return o
+  }
+  return null
+}
+async function fallbackOrderUpdate(orderId, patch) {
+  const order = await fallbackOrderById(orderId)
+  if (!order) return null
+  Object.assign(order, patch)
+  await fallbackOrderSave(order)
+  return order
+}
 
 app.get('/api/orders', async(req,res)=>{
   try{
     const userId = await getSessionUserId(req)
     if(userId === 'anonymous') return res.json({ ok:true, orders:[], total:0 })
-    // Prefer Supabase for accuracy; fall back to in-memory
+    // Prefer Supabase for accuracy; fall back to the shared fallback store
     if(supabase){
       const { data, error } = await supabase.from('orders').select('*').eq('user_id', userId).order('created_at',{ascending:false}).limit(100)
       if(!error) return res.json({ ok:true, orders: data||[], total: (data||[]).length })
     }
-    const orders = ORDERS_STORE.get(userId) || []
+    const orders = await fallbackOrdersForUser(userId)
     res.json({ ok:true, orders, total: orders.length })
   }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
 })
@@ -1220,9 +1321,8 @@ app.get('/api/orders/:orderId', async(req,res)=>{
       if(error || !data) return res.status(404).json({ ok:false, error:'Order not found' })
       return res.json({ ok:true, order: data })
     }
-    const orders = ORDERS_STORE.get(userId) || []
-    const order = orders.find(o=>o.id===orderId)
-    if(!order) return res.status(404).json({ ok:false, error:'Order not found' })
+    const order = await fallbackOrderById(orderId)
+    if(!order || order.userId !== userId) return res.status(404).json({ ok:false, error:'Order not found' })
     res.json({ ok:true, order })
   }catch(e){ res.status(500).json({ ok:false, error: String(e) }) }
 })
@@ -1340,10 +1440,8 @@ app.post('/api/orders', mutationRateLimit, async(req,res)=>{
         return res.status(500).json({ ok:false, error:'Could not save your order — please try again' })
       }
     }
-    // Also keep in-memory (admin fallback / fast lookup)
-    const orders = ORDERS_STORE.get(userId) || []
-    orders.unshift(order)
-    ORDERS_STORE.set(userId, orders)
+    // Also keep in the shared fallback store (admin fallback / fast lookup)
+    await fallbackOrderSave(order)
     // Fire-and-forget — never delays the response
     sendOrderEmail(order).catch(()=>{})
     res.status(201).json({ ok:true, order })
@@ -1373,10 +1471,8 @@ app.get('/api/admin/orders', requireAdminAuth, async(req,res)=>{
       if(error) return res.status(500).json({ok:false,error:error.message})
       return res.json({ok:true, orders: data, total: count, page, limit})
     }
-    // In-memory fallback
-    let all = []
-    for(const [,orders] of ORDERS_STORE) all.push(...orders)
-    all.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt))
+    // Fallback store
+    let all = await fallbackOrdersAll()
     if(status && status !== 'all') all = all.filter(o=>o.status===status)
     if(from) all = all.filter(o=>new Date(o.createdAt)>=new Date(from))
     if(to)   all = all.filter(o=>new Date(o.createdAt)<=new Date(to+'T23:59:59.999Z'))
@@ -1394,8 +1490,7 @@ app.get('/api/admin/orders/export', requireAdminAuth, async(req,res)=>{
       if(error) return res.status(500).json({ok:false,error:error.message})
       orders = data || []
     } else {
-      for(const [,o] of ORDERS_STORE) orders.push(...o)
-      orders.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt))
+      orders = await fallbackOrdersAll()
     }
     // Neutralize formula injection — a customer-supplied shipping name/address starting
     // with =, +, -, or @ would otherwise execute as a formula when the admin opens this
@@ -1443,10 +1538,8 @@ app.patch('/api/admin/orders/:orderId/payment', requireAdminAuth, async(req,res)
       if(error){ reportError(new Error('Payment update failed: '+error.message), { orderId }); return res.status(500).json({ok:false,error:error.message}) }
       return res.json({ok:true,order:data})
     }
-    for(const [,orders] of ORDERS_STORE){
-      const o = orders.find(x=>x.id===orderId)
-      if(o){ o.status=status; o.updatedAt=new Date().toISOString(); return res.json({ok:true,order:o}) }
-    }
+    const updated = await fallbackOrderUpdate(orderId, { status, updatedAt: new Date().toISOString() })
+    if(updated) return res.json({ok:true,order:updated})
     res.status(404).json({ok:false,error:'Order not found'})
   }catch(e){ reportError(e); res.status(500).json({ok:false,error:String(e)}) }
 })
@@ -1462,10 +1555,8 @@ app.patch('/api/admin/orders/:orderId/status', requireAdminAuth, async(req,res)=
       if(error){ reportError(new Error('Status update failed: '+error.message), { orderId, status }); return res.status(500).json({ok:false,error:error.message}) }
       return res.json({ok:true,order:data})
     }
-    for(const [,orders] of ORDERS_STORE){
-      const o = orders.find(x=>x.id===orderId)
-      if(o){ o.status=status; o.updatedAt=new Date().toISOString(); return res.json({ok:true,order:o}) }
-    }
+    const updated = await fallbackOrderUpdate(orderId, { status, updatedAt: new Date().toISOString() })
+    if(updated) return res.json({ok:true,order:updated})
     res.status(404).json({ok:false,error:'Order not found'})
   }catch(e){ reportError(e); res.status(500).json({ok:false,error:String(e)}) }
 })
