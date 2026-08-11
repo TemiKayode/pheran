@@ -217,9 +217,15 @@ function clientIp(req) { return req.ip || 'unknown' }
 let redis = null
 if (process.env.REDIS_URL) {
   const Redis = require('ioredis')
-  redis = new Redis(process.env.REDIS_URL, { maxRetriesPerRequest: 2 })
+  // Low retries + a short command timeout so a Redis outage degrades to the
+  // in-memory fallback within ~200ms instead of ioredis retrying for several
+  // seconds first — verified this was adding multi-second latency to every
+  // login/checkout/admin request during an outage before this was tuned down.
+  redis = new Redis(process.env.REDIS_URL, { maxRetriesPerRequest: 1, commandTimeout: 200 })
   redis.on('error', e => console.warn('[redis] connection error:', e.message))
   redis.on('connect', () => console.log('[redis] connected'))
+} else {
+  console.warn('[redis] REDIS_URL not set — rate limits, the admin lockout, and the orders fallback store are all per-instance in-memory only. Fine for local dev; if this is running with more than one replica, every limit is silently weaker than it looks (a 20-request limit becomes 20-per-replica, and the admin lockout resets whenever the load balancer picks a different instance).')
 }
 
 // Order-confirmation email queue. sendOrderEmail() previously ran fire-and-
@@ -248,7 +254,11 @@ if (process.env.REDIS_URL) {
       removeOnFail: { age: 604800 }, // kept a week so a persistent failure (e.g. bad API key) is inspectable
     },
   })
-  const emailWorker = new Worker('order-emails', job => sendOrderEmail(job.data), { connection: bullConnection })
+  const emailWorker = new Worker('order-emails', async job => {
+    const order = await fetchOrderForEmail(job.data.orderId)
+    if (!order) throw new Error(`Order ${job.data.orderId} not found for confirmation email`)
+    await sendOrderEmail(order)
+  }, { connection: bullConnection })
   // 'failed' fires on every failed attempt, not just once retries run out —
   // verified against a real (intentionally broken) Resend key, which logged
   // this after attempt 1 alone. Only alert Sentry once the job has genuinely
@@ -336,9 +346,15 @@ app.use((req, res, next) => {
 // Railway replicas when Redis is; per-instance is still correct, just looser,
 // on a single instance.
 //
-// On a Redis error this fails OPEN (returns 0, i.e. "not limited yet") rather
-// than blocking the request — a transient Redis blip shouldn't be able to
-// take down login or checkout for every customer.
+// On a Redis error this falls through to the same in-memory Map used when
+// Redis isn't configured at all, rather than returning 0 ("not limited yet").
+// Returning 0 was demonstrated to take the admin brute-force lockout
+// completely offline for the duration of any Redis blip — 15 wrong-PIN
+// requests against a dead Redis connection, zero 429s. Per-replica limiting
+// during an outage is weaker than normal but is a real limit; "no limit at
+// all" is not an acceptable degradation for the credential gate specifically,
+// and there's no reason the customer-facing limits need the fully-open
+// version either when the Map fallback is sitting right there already.
 async function windowedCount(map, prefix, key, windowMs) {
   if (redis) {
     try {
@@ -347,8 +363,8 @@ async function windowedCount(map, prefix, key, windowMs) {
       if (count === 1) await redis.pexpire(rkey, windowMs)
       return count
     } catch (e) {
-      console.warn('[redis] rate-limit check failed, failing open:', e.message)
-      return 0
+      console.warn('[redis] rate-limit check failed, using in-memory fallback:', e.message)
+      // fall through to the Map path below
     }
   }
   const now = Date.now()
@@ -360,9 +376,11 @@ async function windowedCount(map, prefix, key, windowMs) {
 }
 async function windowedClear(map, prefix, key) {
   if (redis) {
-    try { await redis.del(`${prefix}:${key}`) } catch (e) { console.warn('[redis] rate-limit clear failed:', e.message) }
-    return
+    try { await redis.del(`${prefix}:${key}`); return } catch (e) { console.warn('[redis] rate-limit clear failed, clearing in-memory fallback too:', e.message) }
   }
+  // Also runs when Redis is down (see windowedCount) — the Map is what's
+  // actually being checked while Redis is unreachable, so it's what needs
+  // clearing on a correct PIN, not just the Redis key that isn't in use.
   map.delete(key)
 }
 
@@ -1293,11 +1311,29 @@ async function getSessionUserId(req) {
 // this store exists to survive. Falls back further to an in-memory Map when
 // Redis isn't configured either (e.g. local dev with neither set).
 const ORDERS_STORE = new Map()
-const ORDERS_REDIS_KEY = 'orders:fallback' // hash: orderId -> JSON order
+const ORDERS_REDIS_PREFIX = 'orders:fallback:'
+// A fallback store only needs to cover a Supabase outage window, not stand in
+// as a second permanent order history — it was previously written on every
+// single order (not just failed ones) with no expiry at all, silently turning
+// Redis into an unaudited, unencrypted duplicate of every customer's name,
+// email, phone and home address forever. 7 days is enough to cover and
+// investigate an extended outage without becoming a shadow database.
+const ORDERS_REDIS_TTL_SECONDS = 7 * 24 * 60 * 60
+
+async function redisScanKeys(pattern) {
+  const keys = []
+  let cursor = '0'
+  do {
+    const [next, batch] = await redis.scan(cursor, 'MATCH', pattern, 'COUNT', 100)
+    cursor = next
+    keys.push(...batch)
+  } while (cursor !== '0')
+  return keys
+}
 
 async function fallbackOrderSave(order) {
   if (redis) {
-    try { return await redis.hset(ORDERS_REDIS_KEY, order.id, JSON.stringify(order)) }
+    try { return await redis.set(ORDERS_REDIS_PREFIX + order.id, JSON.stringify(order), 'EX', ORDERS_REDIS_TTL_SECONDS) }
     catch (e) { console.warn('[redis] order fallback save failed:', e.message) }
     return
   }
@@ -1310,8 +1346,10 @@ async function fallbackOrderSave(order) {
 async function fallbackOrdersAll() {
   if (redis) {
     try {
-      const all = await redis.hgetall(ORDERS_REDIS_KEY)
-      return Object.values(all).map(v => JSON.parse(v))
+      const keys = await redisScanKeys(ORDERS_REDIS_PREFIX + '*')
+      if (!keys.length) return []
+      const vals = await redis.mget(keys)
+      return vals.filter(Boolean).map(v => JSON.parse(v))
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     } catch (e) { console.warn('[redis] order fallback read failed:', e.message); return [] }
   }
@@ -1325,7 +1363,7 @@ async function fallbackOrdersForUser(userId) {
 async function fallbackOrderById(orderId) {
   if (redis) {
     try {
-      const raw = await redis.hget(ORDERS_REDIS_KEY, orderId)
+      const raw = await redis.get(ORDERS_REDIS_PREFIX + orderId)
       return raw ? JSON.parse(raw) : null
     } catch (e) { console.warn('[redis] order fallback lookup failed:', e.message); return null }
   }
@@ -1334,6 +1372,20 @@ async function fallbackOrderById(orderId) {
     if (o) return o
   }
   return null
+}
+
+// Re-fetches a full order by id for the email worker below — the queue job
+// itself carries only the id, not the order, so a customer's name/email/
+// phone/address isn't duplicated a second time into BullMQ's own Redis
+// retention (1 day on success, 7 on failure) on top of the fallback store's.
+// sendOrderEmail() already reads both snake_case (Supabase row) and camelCase
+// (in-process object) field names, so either shape works here unmodified.
+async function fetchOrderForEmail(orderId) {
+  if (supabase) {
+    const { data, error } = await supabase.from('orders').select('*').eq('id', orderId).single()
+    if (!error && data) return data
+  }
+  return fallbackOrderById(orderId)
 }
 async function fallbackOrderUpdate(orderId, patch) {
   const order = await fallbackOrderById(orderId)
@@ -1486,11 +1538,17 @@ app.post('/api/orders', mutationRateLimit, async(req,res)=>{
         return res.status(500).json({ ok:false, error:'Could not save your order — please try again' })
       }
     }
-    // Also keep in the shared fallback store (admin fallback / fast lookup)
-    await fallbackOrderSave(order)
+    // Only write the fallback copy when Supabase isn't the source of truth for
+    // this order (local dev with no Supabase configured — a real failure above
+    // already returned before reaching here). Previously ran unconditionally on
+    // every order regardless of whether Supabase succeeded, silently keeping a
+    // second permanent, unaudited copy of every customer's PII in Redis for no
+    // reason — the fallback only needs to exist for the outage window it's
+    // actually covering.
+    if(!supabase) await fallbackOrderSave(order)
     // Never delays the response. Durable + retried via BullMQ when Redis is
     // configured; falls back to a direct fire-and-forget send otherwise.
-    if (emailQueue) emailQueue.add('order-confirmation', order).catch(e => console.warn('[email-queue] enqueue failed, email lost:', e.message))
+    if (emailQueue) emailQueue.add('order-confirmation', { orderId: order.id }).catch(e => console.warn('[email-queue] enqueue failed, email lost:', e.message))
     else sendOrderEmail(order).catch(()=>{})
     res.status(201).json({ ok:true, order })
   }catch(e){
