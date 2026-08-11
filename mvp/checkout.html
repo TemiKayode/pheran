@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <script src="https://js.sentry-cdn.com/6de81974c2a513ec04b868a2f6fda26d.min.js" crossorigin="anonymous"></script>
@@ -53,9 +53,10 @@
     .delivery-option strong{display:block;font-size:.92rem}
     .delivery-option small{color:var(--text-secondary);font-size:.82rem}
     /* Review panel */
-    .review-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gray-100);font-size:.9rem}
+    .review-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--gray-100);font-size:.9rem}
     .review-row:last-child{border-bottom:none}
-    .review-label{color:var(--text-muted);font-size:.78rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px}
+    .review-row span:last-child{text-align:right;word-break:break-word;overflow-wrap:anywhere;min-width:0;flex:1}
+    .review-label{flex-shrink:0;color:var(--text-muted);font-size:.78rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px}
     /* Bank details card */
     .bank-card{background:linear-gradient(135deg,#2D1B4E 0%,#4a2a7a 100%);border-radius:16px;padding:24px;color:#fff;margin-bottom:20px}
     .bank-card .bc-label{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(212,169,106,.8);margin-bottom:4px}
@@ -162,6 +163,14 @@
               <div class="info"><strong>Express Delivery</strong><small>1–2 business days</small></div>
               <span style="font-weight:700">₦3,500</span>
             </label>
+            <label class="delivery-option">
+              <input type="radio" name="delivery" value="international">
+              <div class="info"><strong>International Delivery</strong><small>Contact us for timeline</small></div>
+              <span style="font-weight:700;font-size:.82rem;color:var(--text-muted)">Quote</span>
+            </label>
+          </div>
+          <div id="intl-notice" style="display:none;margin-top:10px;padding:12px 14px;background:#FFF8E7;border:1px solid #F59E0B;border-radius:10px;font-size:.83rem;color:#92400E;line-height:1.5">
+            <strong>International order?</strong> Place your order and our team will contact you on WhatsApp within 24 hours with your delivery quote. The international shipping fee will be invoiced separately before dispatch.
           </div>
         </div>
 
@@ -284,11 +293,11 @@
     function calcTotals(cart){
       const sub=cart.reduce((s,i)=>s+Number(i.price||0)*Number(i.qty||1),0)
       const method=document.querySelector('input[name="delivery"]:checked')?.value
-      const fee=method==='express'?3500:(sub>=100000?0:1500)
-      return {sub,fee,total:sub+fee}
+      const fee=method==='express'?3500:method==='international'?0:(sub>=100000?0:1500)
+      return {sub,fee,total:sub+fee,method}
     }
     function renderSummary(){
-      const cart=getCart(), {sub,fee,total}=calcTotals(cart)
+      const cart=getCart(), {sub,fee,total,method}=calcTotals(cart)
       const el=document.getElementById('sum-items')
       if(!cart.length){el.innerHTML='<p style="color:var(--text-muted);font-size:.88rem">Your cart is empty.</p>';return}
       el.innerHTML=cart.map(i=>`
@@ -297,10 +306,15 @@
           <div class="si-info"><div class="si-title">${esc(i.title)}</div><div class="si-meta">${esc(i.color||'')} · ${esc(i.size||'')} · Qty ${Number(i.qty)||1}</div></div>
           <div class="si-price">${fmt(Number(i.price||0)*Number(i.qty||1))}</div>
         </div>`).join('')
+      const stdEl=document.getElementById('std-price')
+      if(stdEl) stdEl.textContent=sub>=100000?'Free':'₦1,500'
+      const intlNotice=document.getElementById('intl-notice')
+      if(intlNotice) intlNotice.style.display=method==='international'?'block':'none'
+      const feeLabel=method==='international'?'<span style="font-size:.82rem;color:#92400E;font-weight:700">Quoted separately</span>':fee===0?'<span style="color:var(--success)">Free</span>':fmt(fee)
       document.getElementById('sum-totals').innerHTML=`
         <div class="sum-row"><span>Subtotal</span><span>${fmt(sub)}</span></div>
-        <div class="sum-row"><span>Delivery</span><span style="color:${fee===0?'var(--success)':''}">${fee===0?'Free':fmt(fee)}</span></div>
-        <div class="sum-total"><span>Total</span><span>${fmt(total)}</span></div>`
+        <div class="sum-row"><span>Delivery</span><span>${feeLabel}</span></div>
+        <div class="sum-total"><span>Total</span><span>${fmt(total)}${method==='international'?'<span style="font-size:.72rem;font-weight:400;color:var(--text-muted);display:block">+ intl. delivery</span>':''}</span></div>`
       // Update bank card amount
       document.getElementById('bd-amount').textContent=fmt(total)
       document.getElementById('s-amount').textContent=fmt(total)
@@ -487,5 +501,10 @@
 
   <script src="icons.js?v=20260801"></script>
   <script src="mobile-menu.js?v=20260801"></script>
+<!-- WhatsApp float button -->
+<a class="wa-float" href="https://wa.me/2347013046873" target="_blank" rel="noopener" aria-label="Chat with PHERAN on WhatsApp">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
+<style>.wa-float{position:fixed;bottom:24px;right:24px;z-index:998;width:56px;height:56px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(37,211,102,.4);transition:transform .15s,box-shadow .15s;text-decoration:none}.wa-float:hover{transform:scale(1.1);box-shadow:0 6px 22px rgba(37,211,102,.55)}@media(max-width:768px){.wa-float{bottom:80px;right:14px;width:50px;height:50px}}</style>
 </body>
 </html>

@@ -156,11 +156,11 @@ function renderCartDrawer(){
     btn.addEventListener('click',()=>cartRemove(btn.dataset.key))
   })
   const total = cartTotal(cart)
-  const shipping = total>=15000?0:1500
+  const shipping = total>=100000?0:1500
   if(footer) footer.innerHTML=`
     <div class="cart-summary-row"><span>Subtotal</span><span>${formatCurrency(total)}</span></div>
     <div class="cart-summary-row"><span>Shipping</span><span>${shipping===0?'<span style="color:var(--success)">Free</span>':formatCurrency(shipping)}</span></div>
-    ${total<15000?`<div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px">Add ${formatCurrency(15000-total)} more for free shipping</div>`:''}
+    ${total<100000?`<div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px">Add ${formatCurrency(100000-total)} more for free shipping</div>`:''}
     <div class="cart-summary-row total"><span>Total</span><span>${formatCurrency(total+shipping)}</span></div>
     <a class="cart-checkout-btn" href="checkout.html">Checkout</a>
     <a class="cart-view-full" href="cart.html">View full cart</a>

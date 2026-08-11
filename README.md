@@ -1,4 +1,5 @@
 # PHERAN — Premium Nigerian Fashion Storefront
+<img width="931" height="403" alt="image" src="https://github.com/user-attachments/assets/550f2e34-8ca4-4887-9b10-643efc890f0f" />
 
 A full-storefront e-commerce prototype for **PHERAN**, a luxury Nigerian fashion label based in Ibadan. Handcrafted gowns, co-ord sets, and bespoke pieces for the modern African woman.
 

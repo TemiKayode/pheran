@@ -1282,7 +1282,7 @@ app.post('/api/orders', mutationRateLimit, async(req,res)=>{
     if(priced.error) return res.status(400).json({ ok:false, error: priced.error })
     const items = priced.items
     const subtotal = items.reduce((s,i)=>s+(i.price*i.qty),0)
-    const deliveryFee = deliveryMethod==='express' ? 3500 : (subtotal>=100000 ? 0 : 1500)
+    const deliveryFee = deliveryMethod==='express' ? 3500 : deliveryMethod==='international' ? 0 : (subtotal>=100000 ? 0 : 1500)
     const safeShipping = {
       firstName: String(shipping.firstName||'').slice(0,60),
       lastName:  String(shipping.lastName||'').slice(0,60),
@@ -1313,18 +1313,27 @@ app.post('/api/orders', mutationRateLimit, async(req,res)=>{
     // reported as placed: the customer would be shown real bank details and told
     // to wire money for an order the business can never see or confirm.
     if(supabase){
-      const { error: insertError } = await supabase.from('orders').insert({
+      // Include deliveryMethod inside shipping JSON so it's never lost even if the
+      // top-level delivery_method column doesn't exist in older table schemas.
+      const shippingWithMethod = { ...order.shipping, deliveryMethod: order.deliveryMethod }
+      const basePayload = {
         id: order.id,
         user_id: userId !== 'anonymous' ? userId : null,
         user_email: userEmail,
         items: order.items,
-        shipping: order.shipping,
+        shipping: shippingWithMethod,
         subtotal: order.subtotal,
         delivery_fee: order.deliveryFee,
         total: order.total,
         status: order.status,
         delivery_method: order.deliveryMethod,
-      })
+      }
+      let { error: insertError } = await supabase.from('orders').insert(basePayload)
+      // Retry without delivery_method column if table schema doesn't have it yet
+      if(insertError && /column.+delivery_method|delivery_method.+column/i.test(insertError.message)){
+        const { delivery_method, ...payloadWithoutCol } = basePayload
+        ;({ error: insertError } = await supabase.from('orders').insert(payloadWithoutCol))
+      }
       if(insertError){
         console.error('[orders] insert failed:', insertError.message)
         reportError(new Error('Order insert failed: ' + insertError.message), { orderId: order.id, total: order.total })
