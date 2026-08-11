@@ -130,20 +130,25 @@ async function sendOrderEmail(order) {
 </table>
 </td></tr></table>
 </body></html>`
-  try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        from: `PHERAN <orders@pheran.ng>`,
-        to: [email],
-        subject: `Your PHERAN order ${order.id} is confirmed`,
-        html,
-      }),
-    })
-    if (!res.ok) console.warn('[email] Resend error:', res.status, await res.text().catch(()=>''))
-    else console.log('[email] Order confirmation sent to', email)
-  } catch(e) { console.warn('[email] Failed to send order confirmation:', e.message) }
+  // Resolves on success, rejects on failure (network error or a non-ok Resend
+  // response) — callers decide whether to swallow that or let a queue retry
+  // it. Previously this caught everything internally and just warned, so a
+  // Resend blip silently lost the customer's order confirmation for good.
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      from: `PHERAN <orders@pheran.ng>`,
+      to: [email],
+      subject: `Your PHERAN order ${order.id} is confirmed`,
+      html,
+    }),
+  })
+  if (!res.ok) {
+    const body = await res.text().catch(()=>'')
+    throw new Error(`Resend API error ${res.status}: ${body}`)
+  }
+  console.log('[email] Order confirmation sent to', email)
 }
 
 // ─── Supabase client (optional — falls back to data.json if not configured) ──
@@ -215,6 +220,47 @@ if (process.env.REDIS_URL) {
   redis = new Redis(process.env.REDIS_URL, { maxRetriesPerRequest: 2 })
   redis.on('error', e => console.warn('[redis] connection error:', e.message))
   redis.on('connect', () => console.log('[redis] connected'))
+}
+
+// Order-confirmation email queue. sendOrderEmail() previously ran fire-and-
+// forget with every error swallowed — a Resend blip or transient network
+// error silently lost the customer's confirmation email for good, with no
+// retry and nothing to show it ever happened. BullMQ gives it a durable,
+// retried job instead: up to 5 attempts with exponential backoff, persisted
+// in Redis so it survives a process restart mid-retry. Falls back to the
+// original direct fire-and-forget send when Redis isn't configured (local
+// dev, tests) — same as before in that case, just no worse.
+//
+// Uses its own ioredis connection rather than the `redis` client above:
+// BullMQ's blocking commands require maxRetriesPerRequest: null, which would
+// be the wrong setting for the rate limiters' fail-open-fast behavior.
+let emailQueue = null
+if (process.env.REDIS_URL) {
+  const { Queue, Worker } = require('bullmq')
+  const Redis = require('ioredis')
+  const bullConnection = new Redis(process.env.REDIS_URL, { maxRetriesPerRequest: null })
+  emailQueue = new Queue('order-emails', {
+    connection: bullConnection,
+    defaultJobOptions: {
+      attempts: 5,
+      backoff: { type: 'exponential', delay: 30000 },
+      removeOnComplete: { age: 86400, count: 500 },
+      removeOnFail: { age: 604800 }, // kept a week so a persistent failure (e.g. bad API key) is inspectable
+    },
+  })
+  const emailWorker = new Worker('order-emails', job => sendOrderEmail(job.data), { connection: bullConnection })
+  // 'failed' fires on every failed attempt, not just once retries run out —
+  // verified against a real (intentionally broken) Resend key, which logged
+  // this after attempt 1 alone. Only alert Sentry once the job has genuinely
+  // exhausted its retries; earlier attempts are expected noise from a
+  // transient blip and BullMQ is already about to retry them on its own.
+  emailWorker.on('failed', (job, err) => {
+    const exhausted = job && job.attemptsMade >= job.opts.attempts
+    if (!exhausted) { console.warn('[email-queue] attempt failed, will retry:', job?.id, err.message); return }
+    console.error('[email-queue] job failed after all retries:', job?.id, err.message)
+    reportError(err, { orderId: job?.data?.id, queueJobId: job?.id })
+  })
+  console.log('[email-queue] BullMQ worker started')
 }
 
 // gzip/brotli-equivalent compression for every response — text payloads (HTML,
@@ -1442,8 +1488,10 @@ app.post('/api/orders', mutationRateLimit, async(req,res)=>{
     }
     // Also keep in the shared fallback store (admin fallback / fast lookup)
     await fallbackOrderSave(order)
-    // Fire-and-forget — never delays the response
-    sendOrderEmail(order).catch(()=>{})
+    // Never delays the response. Durable + retried via BullMQ when Redis is
+    // configured; falls back to a direct fire-and-forget send otherwise.
+    if (emailQueue) emailQueue.add('order-confirmation', order).catch(e => console.warn('[email-queue] enqueue failed, email lost:', e.message))
+    else sendOrderEmail(order).catch(()=>{})
     res.status(201).json({ ok:true, order })
   }catch(e){
     reportError(e)
